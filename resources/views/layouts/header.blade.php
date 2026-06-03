@@ -1,0 +1,1 @@
+{{-- Header is built inline in layouts/app.blade.php (Krayin-style topbar) --}}
