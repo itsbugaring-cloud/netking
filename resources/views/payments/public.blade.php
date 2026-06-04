@@ -155,82 +155,6 @@
       </div>
       </div>
 
-      <div class="row g-4 mt-0">
-        <div class="col-lg-7 col-md-7">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Tata Cara Bayar</h3>
-            </div>
-            <div class="card-body">
-              <p class="text-secondary mb-3">Langkahnya dibuat runtut dari atas ke bawah agar pelanggan tidak bingung.</p>
-              <div class="list-group list-group-flush">
-                <div class="list-group-item">
-                  <div class="d-flex align-items-start gap-3">
-                    <span class="avatar avatar-sm bg-primary-lt">1</span>
-                    <div>
-                      <div class="fw-medium">Masukkan ID pelanggan</div>
-                      <div class="text-secondary">ID pelanggan berbentuk seperti <strong>NK000123</strong>. Setelah dimasukkan, sistem akan menampilkan tagihan aktif Anda.</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="list-group-item">
-                  <div class="d-flex align-items-start gap-3">
-                    <span class="avatar avatar-sm bg-primary-lt">2</span>
-                    <div>
-                      <div class="fw-medium">Pilih tagihan yang mau dibayar</div>
-                      <div class="text-secondary">Kalau ada lebih dari satu tagihan aktif, pilih invoice yang ingin dibayar terlebih dahulu.</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="list-group-item">
-                  <div class="d-flex align-items-start gap-3">
-                    <span class="avatar avatar-sm bg-primary-lt">3</span>
-                    <div>
-                      <div class="fw-medium">Bayar sesuai nominal</div>
-                      <div class="text-secondary">Gunakan nomor rekening atau QRIS resmi yang tampil di halaman ini. Nominal harus sesuai dengan tagihan yang dipilih.</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="list-group-item">
-                  <div class="d-flex align-items-start gap-3">
-                    <span class="avatar avatar-sm bg-primary-lt">4</span>
-                    <div>
-                      <div class="fw-medium">Unggah bukti transfer</div>
-                      <div class="text-secondary">Setelah transfer, unggah foto bukti pembayaran agar admin bisa meninjau dan mengonfirmasi tagihan Anda.</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-5 col-md-5">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Pertanyaan Umum</h3>
-            </div>
-            <div class="card-body">
-              <p class="text-secondary mb-3">Jawaban singkat untuk hal yang biasanya ditanyakan pelanggan.</p>
-              <div class="list-group list-group-flush">
-                <div class="list-group-item">
-                  <div class="fw-medium mb-1">ID pelanggan saya tidak ketemu</div>
-                  <div class="text-secondary">Pastikan formatnya benar, misalnya <strong>NK000123</strong>. Jika masih tidak ditemukan, hubungi admin Netking.</div>
-                </div>
-                <div class="list-group-item">
-                  <div class="fw-medium mb-1">Sudah transfer tapi belum dikonfirmasi</div>
-                  <div class="text-secondary">Unggah bukti pembayaran dari halaman ini. Admin akan meninjau dan mengubah status tagihan setelah bukti valid.</div>
-                </div>
-                <div class="list-group-item">
-                  <div class="fw-medium mb-1">Bisa bayar lebih dari satu tagihan?</div>
-                  <div class="text-secondary">Bisa, tetapi pilih dan unggah bukti untuk masing-masing tagihan agar pencatatannya tidak tertukar.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       @if($customer)
         <div class="card mt-4">
           <div class="card-header">
@@ -381,6 +305,82 @@
           </div>
         @endif
       @endif
+
+      <div class="row g-4 mt-4 align-items-start">
+        <div class="col-lg-7 col-md-7">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Tata Cara Bayar</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-secondary mb-3">Langkahnya dibuat runtut dari atas ke bawah agar pelanggan tidak bingung.</p>
+              <div class="list-group list-group-flush">
+                <div class="list-group-item">
+                  <div class="d-flex align-items-start gap-3">
+                    <span class="avatar avatar-sm bg-primary-lt">1</span>
+                    <div>
+                      <div class="fw-medium">Masukkan ID pelanggan</div>
+                      <div class="text-secondary">ID pelanggan berbentuk seperti <strong>NK000123</strong>. Setelah dimasukkan, sistem akan menampilkan tagihan aktif Anda.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="list-group-item">
+                  <div class="d-flex align-items-start gap-3">
+                    <span class="avatar avatar-sm bg-primary-lt">2</span>
+                    <div>
+                      <div class="fw-medium">Pilih tagihan yang mau dibayar</div>
+                      <div class="text-secondary">Kalau ada lebih dari satu tagihan aktif, pilih invoice yang ingin dibayar terlebih dahulu.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="list-group-item">
+                  <div class="d-flex align-items-start gap-3">
+                    <span class="avatar avatar-sm bg-primary-lt">3</span>
+                    <div>
+                      <div class="fw-medium">Bayar sesuai nominal</div>
+                      <div class="text-secondary">Gunakan nomor rekening atau QRIS resmi yang tampil di halaman ini. Nominal harus sesuai dengan tagihan yang dipilih.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="list-group-item">
+                  <div class="d-flex align-items-start gap-3">
+                    <span class="avatar avatar-sm bg-primary-lt">4</span>
+                    <div>
+                      <div class="fw-medium">Unggah bukti transfer</div>
+                      <div class="text-secondary">Setelah transfer, unggah foto bukti pembayaran agar admin bisa meninjau dan mengonfirmasi tagihan Anda.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5 col-md-5">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Pertanyaan Umum</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-secondary mb-3">Jawaban singkat untuk hal yang biasanya ditanyakan pelanggan.</p>
+              <div class="list-group list-group-flush">
+                <div class="list-group-item">
+                  <div class="fw-medium mb-1">ID pelanggan saya tidak ketemu</div>
+                  <div class="text-secondary">Pastikan formatnya benar, misalnya <strong>NK000123</strong>. Jika masih tidak ditemukan, hubungi admin Netking.</div>
+                </div>
+                <div class="list-group-item">
+                  <div class="fw-medium mb-1">Sudah transfer tapi belum dikonfirmasi</div>
+                  <div class="text-secondary">Unggah bukti pembayaran dari halaman ini. Admin akan meninjau dan mengubah status tagihan setelah bukti valid.</div>
+                </div>
+                <div class="list-group-item">
+                  <div class="fw-medium mb-1">Bisa bayar lebih dari satu tagihan?</div>
+                  <div class="text-secondary">Bisa, tetapi pilih dan unggah bukti untuk masing-masing tagihan agar pencatatannya tidak tertukar.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
         </div>
       </div>
