@@ -277,57 +277,63 @@
             <div class="card-header">
               <div class="d-flex align-items-center">
                 <span class="avatar avatar-sm bg-green-lt me-2"><i class="ti ti-building-bank"></i></span>
-                <h3 class="card-title mb-0">Pilih Metode Pembayaran</h3>
+                <h3 class="card-title mb-0">Metode Pembayaran</h3>
               </div>
             </div>
-            <div class="card-body p-0">
-              <div class="list-group list-group-flush list-group-hoverable">
+            <div class="card-body">
 
-                {{-- Bank Accounts --}}
+              {{-- Dropdown Pilih Bank/QRIS --}}
+              <label class="form-label">Pilih rekening tujuan transfer:</label>
+              <select class="form-select mb-3" id="paymentMethodSelect" onchange="showPaymentDetail(this.value)">
+                <option value="">— Pilih metode —</option>
                 @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
-                  @foreach($paymentSettings['accounts'] as $account)
-                    <label class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 cursor-pointer">
-                      <input type="radio" name="selected_payment_display" class="form-check-input flex-shrink-0 m-0">
-                      <span class="avatar bg-blue-lt flex-shrink-0"><i class="ti ti-building-bank"></i></span>
-                      <div class="flex-fill min-width-0">
-                        <div class="d-flex align-items-center gap-2">
-                          <span class="fw-bold">{{ $account['bank_name'] ?? '-' }}</span>
-                        </div>
-                        <div class="font-monospace fw-bold text-primary">{{ $account['account_number'] ?? '-' }}</div>
-                        <div class="text-secondary small">a.n. {{ $account['account_holder'] ?? '-' }}</div>
-                      </div>
-                    </label>
+                  @foreach($paymentSettings['accounts'] as $idx => $account)
+                    <option value="bank-{{ $idx }}">{{ $account['bank_name'] ?? '-' }} — {{ $account['account_holder'] ?? '-' }}</option>
                   @endforeach
                 @endif
-
-                {{-- QRIS Option --}}
                 @if(!empty($paymentSettings['qris']))
-                  <label class="list-group-item list-group-item-action d-flex align-items-start gap-3 py-3 cursor-pointer">
-                    <input type="radio" name="selected_payment_display" class="form-check-input flex-shrink-0 m-0 mt-1">
-                    <span class="avatar bg-purple-lt flex-shrink-0"><i class="ti ti-qrcode"></i></span>
-                    <div class="flex-fill min-width-0">
-                      <div class="fw-bold">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
-                      <div class="text-secondary small mb-2">Scan QR code untuk bayar</div>
-                      <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener" class="d-inline-block">
-                        <img class="rounded border shadow-sm" src="{{ $paymentSettings['qris']['image_url'] }}" alt="{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}" style="max-width: 150px; width: 100%;">
-                      </a>
-                      @if(!empty($paymentSettings['qris']['notes']))
-                        <div class="text-secondary small mt-2">{{ $paymentSettings['qris']['notes'] }}</div>
-                      @endif
-                    </div>
-                  </label>
+                  <option value="qris">QRIS</option>
                 @endif
+              </select>
 
-              </div>
+              {{-- Bank Detail Panels --}}
+              @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
+                @foreach($paymentSettings['accounts'] as $idx => $account)
+                  <div class="payment-detail d-none" id="detail-bank-{{ $idx }}">
+                    <div class="border rounded p-3 bg-light text-center">
+                      <img src="https://logo.clearbit.com/{{ strtolower($account['bank_name'] ?? 'bank') }}.co.id" alt="{{ $account['bank_name'] ?? '' }}" style="height: 32px;" class="mb-2" onerror="this.style.display='none'">
+                      <div class="text-uppercase text-secondary small fw-bold">{{ $account['bank_name'] ?? '-' }}</div>
+                      <div class="font-monospace fw-bold fs-2 text-primary my-2">{{ $account['account_number'] ?? '-' }}</div>
+                      <div class="text-secondary">a.n. <strong>{{ $account['account_holder'] ?? '-' }}</strong></div>
+                      <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="copyToClipboard('{{ $account['account_number'] ?? '' }}')">
+                        <i class="ti ti-copy me-1"></i>Salin No. Rekening
+                      </button>
+                    </div>
+                  </div>
+                @endforeach
+              @endif
+
+              {{-- QRIS Detail Panel --}}
+              @if(!empty($paymentSettings['qris']))
+                <div class="payment-detail d-none" id="detail-qris">
+                  <div class="border rounded p-3 bg-light text-center">
+                    <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener">
+                      <img class="rounded shadow-sm" src="{{ $paymentSettings['qris']['image_url'] }}" alt="{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}" style="max-width: 180px; width: 100%;">
+                    </a>
+                    <div class="fw-medium mt-2">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
+                    @if(!empty($paymentSettings['qris']['notes']))
+                      <div class="text-secondary small mt-1">{{ $paymentSettings['qris']['notes'] }}</div>
+                    @endif
+                  </div>
+                </div>
+              @endif
 
               {{-- Payment Note --}}
               @if(!empty($paymentSettings['notes']))
-                <div class="card-footer">
-                  <div class="alert alert-info mb-0">
-                    <div class="d-flex align-items-start">
-                      <i class="ti ti-info-circle me-2 mt-1"></i>
-                      <div class="small">{{ $paymentSettings['notes'] }}</div>
-                    </div>
+                <div class="alert alert-info mb-0 mt-3">
+                  <div class="d-flex align-items-start">
+                    <i class="ti ti-info-circle me-2 mt-1"></i>
+                    <div class="small">{{ $paymentSettings['notes'] }}</div>
                   </div>
                 </div>
               @endif
@@ -346,5 +352,19 @@
 
   <!-- Tabler Core -->
   <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
+  <script>
+    function showPaymentDetail(value) {
+      document.querySelectorAll('.payment-detail').forEach(el => el.classList.add('d-none'));
+      if (value) {
+        const el = document.getElementById('detail-' + value);
+        if (el) el.classList.remove('d-none');
+      }
+    }
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Nomor rekening berhasil disalin!');
+      });
+    }
+  </script>
 </body>
 </html>
