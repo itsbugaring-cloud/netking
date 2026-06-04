@@ -290,19 +290,13 @@
                   @foreach($paymentSettings['accounts'] as $idx => $account)
                     @php
                       $bankSlug = strtolower($account['bank_name'] ?? 'bank');
-                      $heightMap = [
-                        'bri' => '28px',
-                        'bni' => '22px',
-                        'mandiri' => '28px',
-                        'bca' => '28px',
-                      ];
-                      $logoHeight = $heightMap[$bankSlug] ?? '28px';
+                      $logoExt = $bankSlug === 'bni' ? 'svg' : 'png';
                     @endphp
                     <div class="accordion-item">
                       <h2 class="accordion-header">
                         <button class="accordion-button collapsed py-3 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#bank-{{ $idx }}">
                           <div class="d-flex align-items-center gap-2" style="min-height: 32px;">
-                            <img src="{{ asset('img/banks/' . $bankSlug . '.png') }}" alt="{{ $account['bank_name'] }}" style="height: {{ $logoHeight }}; width: auto; object-fit: contain;" onerror="this.outerHTML='<span class=fw-bold>{{ $account['bank_name'] ?? '' }}</span>'">
+                            <img src="{{ asset('img/banks/' . $bankSlug . '.' . $logoExt) }}" alt="{{ $account['bank_name'] }}" style="height: 28px; width: auto; object-fit: contain;" onerror="this.outerHTML='<span class=fw-bold>{{ $account['bank_name'] ?? '' }}</span>'">
                           </div>
                         </button>
                       </h2>
