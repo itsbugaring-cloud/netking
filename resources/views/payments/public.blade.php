@@ -24,7 +24,18 @@
     }
     body {
       font-feature-settings: "cv03", "cv04", "cv11";
+      background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f0f9ff 100%);
+      min-height: 100vh;
     }
+    .pay-header {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb 60%, #4f46e5);
+      border-radius: 1rem;
+      padding: 2rem;
+      color: #fff;
+      margin-bottom: 1.5rem;
+    }
+    .pay-header h2 { margin: 0; font-weight: 700; }
+    .pay-header p { margin: 0.5rem 0 0; opacity: 0.85; }
     .bento-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -40,6 +51,17 @@
       grid-column: 2;
       grid-row: 1 / -1;
     }
+    .card {
+      border: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.04);
+      transition: box-shadow .2s;
+    }
+    .card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+    .accordion-button:not(.collapsed) {
+      background: #eef2ff;
+    }
     @media (max-width: 767.98px) {
       .bento-grid {
         grid-template-columns: 1fr;
@@ -47,6 +69,10 @@
       .bento-grid .bento-side {
         grid-column: 1;
         grid-row: auto;
+      }
+      .pay-header {
+        border-radius: 0.75rem;
+        padding: 1.5rem;
       }
     }
   </style>
@@ -57,16 +83,15 @@
       <div class="page-body">
         <div class="container-xl py-4">
 
-      {{-- Page Header --}}
-      <div class="page-header d-print-none mb-4">
-        <div class="row align-items-center">
-          <div class="col-auto">
-            <span class="avatar avatar-lg bg-primary-lt">
-              <i class="ti ti-credit-card"></i>
-            </span>
-          </div>
-          <div class="col">
-            <h2 class="page-title">Pembayaran Netking</h2>
+      {{-- Hero Header --}}
+      <div class="pay-header">
+        <div class="d-flex align-items-center gap-3">
+          <span class="avatar avatar-lg" style="background: rgba(255,255,255,.15); backdrop-filter: blur(4px);">
+            <i class="ti ti-credit-card" style="color: #fff;"></i>
+          </span>
+          <div>
+            <h2>Pembayaran Netking</h2>
+            <p>Bayar tagihan internet Anda dengan mudah dan cepat.</p>
           </div>
         </div>
       </div>
@@ -98,7 +123,7 @@
               <form method="GET" action="{{ route('payment.public.root') }}">
                 <div class="row g-2">
                   <div class="col">
-                    <input type="text" class="form-control" name="customer_code" value="{{ old('customer_code', $customerCode) }}" placeholder="Masukkan ID pelanggan, contoh NK000568" maxlength="32">
+                    <input type="text" class="form-control" name="customer_code" value="{{ old('customer_code', $customerCode) }}" placeholder="Masukkan ID pelanggan" maxlength="32">
                   </div>
                   <div class="col-auto">
                     <button class="btn btn-primary" type="submit" id="btnCekTagihan"><i class="ti ti-search"></i> Cek Tagihan</button>
