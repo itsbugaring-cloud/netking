@@ -147,6 +147,16 @@ class PaymentPageController extends Controller
                 'account_number' => Setting::get('payment_bank_2_number', '0320906963'),
                 'account_holder' => Setting::get('payment_bank_2_holder', 'Deni Firmansyah'),
             ],
+            [
+                'bank_name' => Setting::get('payment_bank_3_name', 'MANDIRI'),
+                'account_number' => Setting::get('payment_bank_3_number', '1300029358960'),
+                'account_holder' => Setting::get('payment_bank_3_holder', 'Deni Firmansyah'),
+            ],
+            [
+                'bank_name' => Setting::get('payment_bank_4_name', 'BCA'),
+                'account_number' => Setting::get('payment_bank_4_number', '6395904187'),
+                'account_holder' => Setting::get('payment_bank_4_holder', 'Deni Firmansyah'),
+            ],
         ])->filter(fn ($account) => filled($account['account_number']))->values();
 
         $defaultQrisUrl = url('/img/payments/QRIS-NETKING.jpg');
