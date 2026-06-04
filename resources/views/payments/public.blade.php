@@ -282,51 +282,75 @@
             </div>
             <div class="card-body">
 
-              {{-- Dropdown Pilih Bank/QRIS --}}
-              <label class="form-label">Pilih rekening tujuan transfer:</label>
-              <select class="form-select mb-3" id="paymentMethodSelect" onchange="showPaymentDetail(this.value)">
-                <option value="">— Pilih metode —</option>
+              <div class="text-secondary small mb-3">Pilih rekening tujuan transfer:</div>
+
+              {{-- Custom Accordion Payment Methods --}}
+              <div class="accordion" id="paymentAccordion">
+
                 @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
                   @foreach($paymentSettings['accounts'] as $idx => $account)
-                    <option value="bank-{{ $idx }}">{{ $account['bank_name'] ?? '-' }} — {{ $account['account_holder'] ?? '-' }}</option>
+                    @php
+                      $bankSlug = strtolower($account['bank_name'] ?? 'bank');
+                      $logoMap = [
+                        'bri' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/120px-BANK_BRI_logo.svg.png',
+                        'bni' => 'https://upload.wikimedia.org/wikipedia/id/thumb/5/55/BNI_logo.svg/120px-BNI_logo.svg.png',
+                        'mandiri' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/120px-Bank_Mandiri_logo_2016.svg.png',
+                        'bca' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/120px-Bank_Central_Asia.svg.png',
+                      ];
+                      $logo = $logoMap[$bankSlug] ?? null;
+                    @endphp
+                    <div class="accordion-item">
+                      <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#bank-{{ $idx }}">
+                          <div class="d-flex align-items-center gap-2">
+                            @if($logo)
+                              <img src="{{ $logo }}" alt="{{ $account['bank_name'] }}" style="height: 20px;">
+                            @else
+                              <i class="ti ti-building-bank text-blue"></i>
+                            @endif
+                            <span class="fw-bold">{{ $account['bank_name'] ?? '-' }}</span>
+                          </div>
+                        </button>
+                      </h2>
+                      <div id="bank-{{ $idx }}" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
+                        <div class="accordion-body text-center py-3">
+                          <div class="font-monospace fw-bold fs-2 text-primary mb-1">{{ $account['account_number'] ?? '-' }}</div>
+                          <div class="text-secondary small mb-2">a.n. <strong>{{ $account['account_holder'] ?? '-' }}</strong></div>
+                          <button type="button" class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('{{ $account['account_number'] ?? '' }}')">
+                            <i class="ti ti-copy me-1"></i>Salin
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   @endforeach
                 @endif
-                @if(!empty($paymentSettings['qris']))
-                  <option value="qris">QRIS</option>
-                @endif
-              </select>
 
-              {{-- Bank Detail Panels --}}
-              @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
-                @foreach($paymentSettings['accounts'] as $idx => $account)
-                  <div class="payment-detail d-none" id="detail-bank-{{ $idx }}">
-                    <div class="border rounded p-3 bg-light text-center">
-                      <img src="https://logo.clearbit.com/{{ strtolower($account['bank_name'] ?? 'bank') }}.co.id" alt="{{ $account['bank_name'] ?? '' }}" style="height: 32px;" class="mb-2" onerror="this.style.display='none'">
-                      <div class="text-uppercase text-secondary small fw-bold">{{ $account['bank_name'] ?? '-' }}</div>
-                      <div class="font-monospace fw-bold fs-2 text-primary my-2">{{ $account['account_number'] ?? '-' }}</div>
-                      <div class="text-secondary">a.n. <strong>{{ $account['account_holder'] ?? '-' }}</strong></div>
-                      <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="copyToClipboard('{{ $account['account_number'] ?? '' }}')">
-                        <i class="ti ti-copy me-1"></i>Salin No. Rekening
+                {{-- QRIS --}}
+                @if(!empty($paymentSettings['qris']))
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#qris-panel">
+                        <div class="d-flex align-items-center gap-2">
+                          <i class="ti ti-qrcode text-purple"></i>
+                          <span class="fw-bold">QRIS</span>
+                        </div>
                       </button>
+                    </h2>
+                    <div id="qris-panel" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
+                      <div class="accordion-body text-center py-3">
+                        <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener">
+                          <img class="rounded shadow-sm" src="{{ $paymentSettings['qris']['image_url'] }}" alt="{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}" style="max-width: 160px; width: 100%;">
+                        </a>
+                        <div class="fw-medium small mt-2">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
+                        @if(!empty($paymentSettings['qris']['notes']))
+                          <div class="text-secondary small mt-1">{{ $paymentSettings['qris']['notes'] }}</div>
+                        @endif
+                      </div>
                     </div>
                   </div>
-                @endforeach
-              @endif
+                @endif
 
-              {{-- QRIS Detail Panel --}}
-              @if(!empty($paymentSettings['qris']))
-                <div class="payment-detail d-none" id="detail-qris">
-                  <div class="border rounded p-3 bg-light text-center">
-                    <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener">
-                      <img class="rounded shadow-sm" src="{{ $paymentSettings['qris']['image_url'] }}" alt="{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}" style="max-width: 180px; width: 100%;">
-                    </a>
-                    <div class="fw-medium mt-2">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
-                    @if(!empty($paymentSettings['qris']['notes']))
-                      <div class="text-secondary small mt-1">{{ $paymentSettings['qris']['notes'] }}</div>
-                    @endif
-                  </div>
-                </div>
-              @endif
+              </div>
 
               {{-- Payment Note --}}
               @if(!empty($paymentSettings['notes']))
@@ -353,13 +377,6 @@
   <!-- Tabler Core -->
   <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
   <script>
-    function showPaymentDetail(value) {
-      document.querySelectorAll('.payment-detail').forEach(el => el.classList.add('d-none'));
-      if (value) {
-        const el = document.getElementById('detail-' + value);
-        if (el) el.classList.remove('d-none');
-      }
-    }
     function copyToClipboard(text) {
       navigator.clipboard.writeText(text).then(() => {
         alert('Nomor rekening berhasil disalin!');
