@@ -101,7 +101,7 @@
                     <input type="text" class="form-control" name="customer_code" value="{{ old('customer_code', $customerCode) }}" placeholder="Masukkan ID pelanggan, contoh NK000568" maxlength="32">
                   </div>
                   <div class="col-auto">
-                    <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i> Cek Tagihan</button>
+                    <button class="btn btn-primary" type="submit" id="btnCekTagihan"><i class="ti ti-search"></i> Cek Tagihan</button>
                   </div>
                 </div>
               </form>
@@ -361,14 +361,33 @@
     </div>
   </div>
 
+  <!-- Toast Notification -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+    <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body"><i class="ti ti-check me-1"></i> Nomor rekening berhasil disalin!</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
   <!-- Tabler Core -->
   <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
   <script>
+    // Copy to clipboard with toast
     function copyToClipboard(text) {
       navigator.clipboard.writeText(text).then(() => {
-        alert('Nomor rekening berhasil disalin!');
+        const toast = new bootstrap.Toast(document.getElementById('copyToast'), { delay: 2500 });
+        toast.show();
       });
     }
+
+    // Loading state on search form submit
+    document.querySelector('form[action]').addEventListener('submit', function() {
+      const btn = document.getElementById('btnCekTagihan');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mencari...';
+    });
   </script>
 </body>
 </html>
