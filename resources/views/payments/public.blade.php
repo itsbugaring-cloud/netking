@@ -293,9 +293,10 @@
                       $bankSlug = strtolower($account['bank_name'] ?? 'bank');
                       $logoMap = [
                         'bri' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/120px-BANK_BRI_logo.svg.png',
-                        'bni' => 'https://upload.wikimedia.org/wikipedia/id/thumb/5/55/BNI_logo.svg/120px-BNI_logo.svg.png',
+                        'bni' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/BNI_logo.svg/120px-BNI_logo.svg.png',
                         'mandiri' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/120px-Bank_Mandiri_logo_2016.svg.png',
                         'bca' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/120px-Bank_Central_Asia.svg.png',
+                        'qris' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/QRIS_logo.svg/120px-QRIS_logo.svg.png',
                       ];
                       $logo = $logoMap[$bankSlug] ?? null;
                     @endphp
@@ -304,11 +305,11 @@
                         <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#bank-{{ $idx }}">
                           <div class="d-flex align-items-center gap-2">
                             @if($logo)
-                              <img src="{{ $logo }}" alt="{{ $account['bank_name'] }}" style="height: 20px;">
+                              <img src="{{ $logo }}" alt="{{ $account['bank_name'] }}" style="height: 24px;">
                             @else
                               <i class="ti ti-building-bank text-blue"></i>
+                              <span class="fw-bold">{{ $account['bank_name'] ?? '-' }}</span>
                             @endif
-                            <span class="fw-bold">{{ $account['bank_name'] ?? '-' }}</span>
                           </div>
                         </button>
                       </h2>
@@ -331,8 +332,7 @@
                     <h2 class="accordion-header">
                       <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#qris-panel">
                         <div class="d-flex align-items-center gap-2">
-                          <i class="ti ti-qrcode text-purple"></i>
-                          <span class="fw-bold">QRIS</span>
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/QRIS_logo.svg/120px-QRIS_logo.svg.png" alt="QRIS" style="height: 24px;">
                         </div>
                       </button>
                     </h2>
