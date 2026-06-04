@@ -1,11 +1,112 @@
-@extends('admin.layout.app')
+@extends('layouts.app')
 @section('title', 'Telegram Request')
 
-@push('styles')
+@section('styles')
 <style>
-  .tg-req-page .ms-table-shell { padding: 0; }
+  .tg-req-page .ms-panel {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+  }
+  .tg-req-page .ms-panel-head {
+    border-bottom: 1px solid var(--border) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+  .tg-req-page .ms-panel-body {
+    padding-left: 0;
+    padding-right: 0;
+    background: transparent !important;
+  }
+  .tg-req-page .ms-table-shell {
+    padding: 0;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .tg-req-page .tg-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: .25rem;
+    padding-bottom: .75rem;
+  }
+  .tg-req-page .tg-toolbar-form {
+    display: flex;
+    flex: 1 1 680px;
+    flex-wrap: wrap;
+    gap: .75rem;
+    align-items: center;
+  }
+  .tg-req-page .tg-toolbar-actions {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+  }
+  .tg-req-page .tg-select {
+    min-width: 180px;
+    padding: .45rem .7rem;
+    font-size: .8125rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--txt);
+    outline: none;
+  }
   .tg-req-page .table th,
   .tg-req-page .table td { vertical-align: middle; }
+  .tg-req-page .table th {
+    padding: .55rem .75rem !important;
+    font-size: .73rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .tg-req-page .table td {
+    padding: .55rem .75rem !important;
+    font-size: .8125rem;
+  }
+  .tg-req-page code {
+    background: color-mix(in srgb, var(--blue) 8%, var(--surface));
+    color: color-mix(in srgb, var(--blue) 80%, var(--txt));
+    border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--border));
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: .78rem;
+    font-weight: 600;
+  }
+  .tg-req-page .tg-user {
+    display: flex;
+    gap: .7rem;
+    align-items: center;
+  }
+  .tg-req-page .tg-user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: .8rem;
+    color: #fff;
+    font-weight: 700;
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  }
+  .tg-req-page .tg-user-meta {
+    min-width: 0;
+  }
+  .tg-req-page .tg-user-name {
+    font-weight: 600;
+    color: var(--txt);
+  }
+  .tg-req-page .tg-user-sub {
+    font-size: .73rem;
+    color: var(--txt-3);
+    overflow-wrap: anywhere;
+  }
   .tg-req-status {
     display: inline-flex;
     align-items: center;
@@ -33,8 +134,39 @@
   .tg-req-status.st-menunggu_pppoe_up::before { background: #f97316; }
   .tg-req-status.st-rejected::before { background: #ef4444; }
   .tg-req-status.st-failed_mikrotik::before { background: #dc2626; }
+  .tg-req-page .tg-empty {
+    text-align: center;
+    padding: 3.5rem 1rem;
+    color: var(--txt-3);
+  }
+  .tg-req-page .tg-empty i {
+    display: block;
+    font-size: 2.75rem;
+    color: var(--blue);
+    margin-bottom: .65rem;
+  }
+  .tg-req-page .tg-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 768px) {
+    .tg-req-page .tg-toolbar-form,
+    .tg-req-page .tg-toolbar-actions {
+      width: 100%;
+    }
+    .tg-req-page .tg-select,
+    .tg-req-page .nk-search-wrap,
+    .tg-req-page .ms-btn,
+    .tg-req-page .ms-btn-secondary {
+      width: 100%;
+    }
+  }
 </style>
-@endpush
+@endsection
 
 @section('content')
 <div class="ms-page tg-req-page">
@@ -54,28 +186,24 @@
     </div>
 
     <div class="ms-panel-body">
-      <form class="row g-2 mb-3" method="GET" action="{{ route('admin.telegram.requests.index') }}">
-        <div class="col-lg-5">
+      <div class="tg-toolbar">
+        <form class="tg-toolbar-form" method="GET" action="{{ route('admin.telegram.requests.index') }}">
           <div class="nk-search-wrap">
             <i class='bx bx-search'></i>
-            <input type="text" name="q" class="nk-search-input" value="{{ $q }}" placeholder="">
+            <input type="text" name="q" class="nk-search-input" value="{{ $q }}" placeholder="Cari ref, pelanggan, PPPoE, area, atau user Telegram...">
           </div>
-        </div>
-        <div class="col-lg-3">
-          <select name="status" class="form-select form-select-sm">
+          <select name="status" class="tg-select">
             <option value="">Semua status</option>
             @foreach($statuses as $s)
               <option value="{{ $s }}" @selected($status === $s)>{{ $s }}</option>
             @endforeach
           </select>
-        </div>
-        <div class="col-lg-2">
-          <button class="ms-btn w-100" type="submit"><i class='bx bx-filter-alt'></i> Filter</button>
-        </div>
-        <div class="col-lg-2">
-          <a class="ms-btn-secondary w-100 d-inline-flex justify-content-center" href="{{ route('admin.telegram.requests.index') }}">Reset</a>
-        </div>
-      </form>
+          <div class="tg-toolbar-actions">
+            <button class="ms-btn" type="submit"><i class='bx bx-filter-alt'></i> Terapkan</button>
+            <a class="ms-btn-secondary d-inline-flex justify-content-center" href="{{ route('admin.telegram.requests.index') }}">Reset</a>
+          </div>
+        </form>
+      </div>
 
       <div class="ms-table-shell">
         <div class="table-responsive">
@@ -100,11 +228,18 @@
                   <span class="tg-req-status st-{{ $it['status'] }}">{{ $it['status'] }}</span>
                 </td>
                 <td>{{ $it['area_name'] ?: '-' }}</td>
-                <td>{{ $it['customer_name'] ?: '-' }}</td>
+                <td>
+                  <div style="font-weight:600;color:var(--txt);">{{ $it['customer_name'] ?: '-' }}</div>
+                </td>
                 <td><code>{{ $it['pppoe_user'] ?: '-' }}</code></td>
                 <td>
-                  <div>{{ $it['from_name'] ?: '-' }}</div>
-                  <small class="text-muted">{{ '@' . ($it['from_username'] ?: '-') }} • {{ $it['chat_id'] ?: '-' }}</small>
+                  <div class="tg-user">
+                    <div class="tg-user-avatar">{{ strtoupper(substr($it['from_name'] ?: 'T', 0, 1)) }}</div>
+                    <div class="tg-user-meta">
+                      <div class="tg-user-name">{{ $it['from_name'] ?: '-' }}</div>
+                      <div class="tg-user-sub">{{ '@' . ($it['from_username'] ?: '-') }} • {{ $it['chat_id'] ?: '-' }}</div>
+                    </div>
+                  </div>
                 </td>
                 <td>{{ $it['submitted_at'] ?: '-' }}</td>
                 <td>
@@ -112,14 +247,22 @@
                 </td>
               </tr>
             @empty
-              <tr><td colspan="8" class="text-center text-muted py-4">Belum ada request.</td></tr>
+              <tr>
+                <td colspan="8">
+                  <div class="tg-empty">
+                    <i class='bx bxl-telegram'></i>
+                    <div style="font-size:1rem;font-weight:600;color:var(--txt);margin-bottom:.35rem;">Belum ada request dari bot</div>
+                    <div>Tidak ada draft pelanggan yang menunggu diproses saat ini.</div>
+                  </div>
+                </td>
+              </tr>
             @endforelse
             </tbody>
           </table>
         </div>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center mt-3">
+      <div class="tg-pagination">
         <div class="text-muted small">Halaman {{ $page }} dari {{ $lastPage }}</div>
         <div class="d-flex gap-2">
           @if($page > 1)
