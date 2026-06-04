@@ -28,10 +28,12 @@
   </style>
 </head>
 <body class="d-flex flex-column">
-  <div class="page page-center">
-    <div class="container-xl">
+  <div class="page">
+    <div class="page-wrapper">
+      <div class="page-body">
+        <div class="container-xl">
 
-      <div class="page-header d-print-none mb-4">
+      <div class="page-header d-print-none mb-4 pt-4">
         <div class="row align-items-center">
           <div class="col-auto">
             <span class="avatar avatar-lg bg-primary-lt">
@@ -130,7 +132,7 @@
                 <div class="mb-3">
                   <h4 class="mb-2">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</h4>
                   <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener">
-                    <img class="img-fluid rounded" src="{{ $paymentSettings['qris']['image_url'] }}" alt="{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}">
+                    <img class="img-fluid rounded" src="{{ $paymentSettings['qris']['image_url'] }}" alt="{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}" style="max-width: 220px;">
                   </a>
                   @if(!empty($paymentSettings['qris']['notes']))
                     <div class="text-secondary mt-2">{{ $paymentSettings['qris']['notes'] }}</div>
@@ -380,6 +382,8 @@
         @endif
       @endif
 
+        </div>
+      </div>
     </div>
   </div>
 
