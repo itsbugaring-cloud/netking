@@ -76,6 +76,10 @@ Route::get('/network-status', function () {
     ])->header('Cache-Control', 'no-store');
 })->name('network.status');
 
+Route::get('/bayar', [\App\Http\Controllers\PaymentPageController::class, 'show'])->name('payment.public.root');
+Route::get('/bayar/{customerCode}', [\App\Http\Controllers\PaymentPageController::class, 'show'])->name('payment.public');
+Route::post('/bayar', [\App\Http\Controllers\PaymentPageController::class, 'submit'])->name('payment.public.submit');
+
 // Admin Authentication Routes
 Route::prefix('admin')->name('admin.')->group(function () {
 
@@ -459,14 +463,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
     });
 });
-
-Route::get('/bayar/{customerCode?}', function (?string $customerCode = null) {
-    if (!$customerCode) {
-        return redirect()->route('customer.login');
-    }
-
-    return redirect()->route('customer.login', ['username' => $customerCode]);
-})->name('customer.pay');
 
 Route::prefix('customer')->name('customer.')->group(function () {
     Route::middleware('guest:customer')->group(function () {
