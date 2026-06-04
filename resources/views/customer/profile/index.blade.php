@@ -22,7 +22,8 @@
                     <div class="card-body text-center">
                         <span class="avatar avatar-xl mb-3" style="background-image: url(https://ui-avatars.com/api/?name={{ urlencode(auth('customer')->user()->name) }}&background=206bc4&color=fff&size=128)"></span>
                         <h3 class="mb-0">{{ auth('customer')->user()->name }}</h3>
-                        <p class="text-muted">{{ auth('customer')->user()->pppoe_user }}</p>
+                        <p class="text-muted mb-1">{{ auth('customer')->user()->pppoe_user }}</p>
+                        <div class="text-muted small">ID Pelanggan: <code>{{ auth('customer')->user()->customer_code ?? '-' }}</code></div>
                         @if(auth('customer')->user()->status === 'active')
                         <span class="badge bg-success">Aktif</span>
                         @else

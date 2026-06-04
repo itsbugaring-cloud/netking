@@ -51,6 +51,7 @@ class ProfileController extends Controller
     public function updateContact(Request $request)
     {
         $request->validate([
+            'name' => 'required|string|max:255',
             'phone' => 'required|string|max:15',
             'address' => 'required|string|max:500',
         ]);
@@ -58,6 +59,7 @@ class ProfileController extends Controller
         $customer = auth('customer')->user();
 
         $customer->update([
+            'name' => $request->name,
             'phone' => $request->phone,
             'address' => $request->address,
         ]);

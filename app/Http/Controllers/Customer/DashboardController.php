@@ -56,7 +56,7 @@ class DashboardController extends Controller
         }
 
         $stats = [
-            'package_name' => $customer->package->name ?? 'No Package',
+            'package' => $customer->package->name ?? 'No Package',
             'package_speed' => $customer->package ? $customer->package->speed_label : '-',
             'status' => $customer->status,
             'ip_address' => $customer->remote_ip,

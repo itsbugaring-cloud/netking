@@ -20,6 +20,7 @@ class Customer extends Authenticatable
         'package_id',
         'name',
         'username',
+        'customer_code',
         'pppoe_user',
         'pppoe_pass',
         'portal_password',
@@ -54,6 +55,22 @@ class Customer extends Authenticatable
     public function getAuthPassword()
     {
         return $this->portal_password;
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (Customer $customer): void {
+            if (blank($customer->customer_code)) {
+                $customer->updateQuietly([
+                    'customer_code' => self::makeCustomerCode((int) $customer->id),
+                ]);
+            }
+        });
+    }
+
+    public static function makeCustomerCode(int $id): string
+    {
+        return 'NK' . str_pad((string) $id, 6, '0', STR_PAD_LEFT);
     }
 
     // ─── Relationships ───────────────────────────────────────

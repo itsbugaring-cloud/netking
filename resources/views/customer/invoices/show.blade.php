@@ -107,6 +107,21 @@
                             </div>
                         </div>
                         @else
+                        @if($invoice->payment_review_status === 'submitted')
+                        <div class="alert alert-warning mb-3">
+                            <i class="ti ti-hourglass-high me-2"></i>
+                            Bukti pembayaran Anda sudah diterima dan sedang menunggu review admin. Selama proses review, tagihan ini tidak akan ikut auto isolir.
+                        </div>
+                        @elseif($invoice->payment_review_status === 'rejected')
+                        <div class="alert alert-danger mb-3">
+                            <i class="ti ti-alert-circle me-2"></i>
+                            Bukti pembayaran sebelumnya ditolak.
+                            @if($invoice->payment_reject_reason)
+                            <div class="mt-2 small">{{ $invoice->payment_reject_reason }}</div>
+                            @endif
+                        </div>
+                        @endif
+
                         @if($invoice->payment_url)
                         <a href="{{ $invoice->payment_url }}" class="btn btn-primary w-100 mb-3" target="_blank">
                             <i class="ti ti-credit-card icon"></i> Bayar Sekarang
@@ -145,6 +160,53 @@
                         <div class="alert alert-info mb-0">
                             <i class="ti ti-info-circle me-2"></i>
                             {{ $paymentSettings['notes'] ?? 'Transfer atau bayar via QRIS sesuai nominal invoice, lalu upload bukti pembayaran agar admin bisa memverifikasi pembayaran Anda.' }}
+                        </div>
+
+                        <div class="card mt-3 border">
+                            <div class="card-body">
+                                <div class="fw-bold mb-3">Upload Bukti Pembayaran</div>
+                                <form action="{{ route('customer.invoices.payment-proof', $invoice) }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label class="form-label required">Metode Pembayaran</label>
+                                        <select name="payment_method" class="form-select @error('payment_method') is-invalid @enderror" required>
+                                            <option value="">Pilih metode</option>
+                                            <option value="transfer_bank" @selected(old('payment_method', $invoice->payment_method) === 'transfer_bank')>Transfer Bank</option>
+                                            <option value="qris" @selected(old('payment_method', $invoice->payment_method) === 'qris')>QRIS</option>
+                                            <option value="cash" @selected(old('payment_method', $invoice->payment_method) === 'cash')>Cash</option>
+                                        </select>
+                                        @error('payment_method')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label required">Foto Bukti Transfer</label>
+                                        <input type="file" name="payment_proof" accept=".jpg,.jpeg,.png,.webp,image/*" class="form-control @error('payment_proof') is-invalid @enderror" required>
+                                        @error('payment_proof')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                        <div class="form-hint">Format JPG, PNG, atau WEBP. Maksimal 5 MB.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Catatan</label>
+                                        <textarea name="notes" rows="3" class="form-control @error('notes') is-invalid @enderror" placeholder="Contoh: transfer dari rekening BRI a.n. Andi">{{ old('notes', $invoice->payment_proof_notes) }}</textarea>
+                                        @error('notes')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    @if($invoice->payment_proof_url)
+                                    <div class="mb-3">
+                                        <a href="{{ $invoice->payment_proof_url }}" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm">
+                                            <i class="ti ti-photo me-1"></i> Lihat bukti yang sudah diunggah
+                                        </a>
+                                    </div>
+                                    @endif
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="ti ti-upload me-2"></i>
+                                        {{ $invoice->payment_review_status === 'submitted' ? 'Ganti Bukti Pembayaran' : 'Kirim Bukti Pembayaran' }}
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                         @endif
                     </div>

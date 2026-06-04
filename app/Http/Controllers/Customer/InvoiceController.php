@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Invoice;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Storage;
 
 class InvoiceController extends Controller
 {
@@ -76,6 +77,69 @@ class InvoiceController extends Controller
         $paymentSettings = $this->paymentSettings();
 
         return view('customer.invoices.show', compact('invoice', 'paymentSettings'));
+    }
+
+    public function submitPaymentProof(Request $request, Invoice $invoice)
+    {
+        $customer = auth('customer')->user();
+
+        if ($invoice->customer_id !== $customer->id) {
+            abort(403, 'Unauthorized access to invoice');
+        }
+
+        if ($invoice->status === 'paid') {
+            return back()->with('error', 'Invoice sudah lunas.');
+        }
+
+        if ($invoice->status === 'cancelled') {
+            return back()->with('error', 'Invoice ini sudah dibatalkan.');
+        }
+
+        $validated = $request->validate([
+            'payment_method' => 'required|string|max:50',
+            'payment_proof' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        if ($invoice->payment_proof_path) {
+            Storage::disk('public')->delete($invoice->payment_proof_path);
+        }
+
+        $file = $request->file('payment_proof');
+        $storedPath = $file->store("payment-proofs/customer-{$customer->id}", 'public');
+
+        $invoice->update([
+            'payment_method' => $validated['payment_method'],
+            'payment_proof_path' => $storedPath,
+            'payment_proof_original_name' => $file->getClientOriginalName(),
+            'payment_proof_notes' => $validated['notes'] ?? null,
+            'payment_proof_submitted_at' => now(),
+            'payment_review_status' => 'submitted',
+            'payment_reviewed_at' => null,
+            'payment_reject_reason' => null,
+        ]);
+
+        \App\Models\ActivityLog::log(
+            'payment-proof-submitted',
+            "Customer {$customer->name} submitted payment proof for invoice {$invoice->invoice_number}",
+            $invoice,
+            [
+                'customer_id' => $customer->id,
+                'invoice_number' => $invoice->invoice_number,
+                'payment_method' => $validated['payment_method'],
+            ]
+        );
+
+        \App\Models\AdminNotification::notify(
+            'payment-proof',
+            'Payment proof submitted',
+            "{$customer->name} mengirim bukti bayar untuk invoice {$invoice->invoice_number}",
+            'bx-receipt',
+            'orange',
+            route('admin.invoices.show', $invoice)
+        );
+
+        return back()->with('success', 'Bukti pembayaran berhasil dikirim. Admin akan meninjau pembayaran Anda.');
     }
 
     /**

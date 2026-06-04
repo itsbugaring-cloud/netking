@@ -48,11 +48,20 @@ class SuspendOverdueCustomers extends Command
         $overdueCustomers = Customer::where('status', 'active')
             ->whereHas('invoices', function ($query) use ($cutoffDate) {
                 $query->where('status', 'unpaid')
-                    ->where('due_date', '<', $cutoffDate);
+                    ->where('due_date', '<', $cutoffDate)
+                    ->where(function ($review) {
+                        $review->whereNull('payment_review_status')
+                            ->orWhere('payment_review_status', '!=', 'submitted');
+                    });
             })
             ->with(['area', 'invoices' => function ($query) use ($cutoffDate) {
                 $query->where('status', 'unpaid')
-                    ->where('due_date', '<', $cutoffDate);
+                    ->where('due_date', '<', $cutoffDate)
+                    ->where(function ($review) {
+                        $review->whereNull('payment_review_status')
+                            ->orWhere('payment_review_status', '!=', 'submitted');
+                    })
+                    ->orderBy('due_date');
             }])
             ->get();
 

@@ -50,19 +50,19 @@
                     </div>
                     @endif
 
-                    <form action="{{ route('customer.login') }}" method="POST">
+                    <form action="{{ route('customer.login.post') }}" method="POST">
                         @csrf
                         <div class="mb-3">
-                            <label class="form-label">Nomor HP / Username PPPoE</label>
+                            <label class="form-label">ID Pelanggan / Nomor HP / Username PPPoE</label>
                             <div class="input-group input-group-flat">
                                 <span class="input-group-text"><i class="ti ti-user"></i></span>
                                 <input type="text" name="username" class="form-control @error('username') is-invalid @enderror"
-                                    placeholder="Masukkan nomor HP atau username PPPoE" value="{{ old('username') }}" required autofocus>
+                                    placeholder="Contoh: NK000123 atau 0812xxxx atau username PPPoE" value="{{ old('username', request('username')) }}" required autofocus>
                             </div>
                             @error('username')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
-                            <div class="form-hint">Gunakan password portal pelanggan, bukan password PPPoE internet.</div>
+                            <div class="form-hint">Gunakan ID pelanggan yang dikirim via admin/WhatsApp agar pelanggan langsung masuk ke portal pembayaran.</div>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Password Portal</label>

@@ -460,25 +460,31 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-/*
-|--------------------------------------------------------------------------
-| Customer Portal Routes (Disabled)
-|--------------------------------------------------------------------------
-*/
+Route::get('/bayar/{customerCode?}', function (?string $customerCode = null) {
+    if (!$customerCode) {
+        return redirect()->route('customer.login');
+    }
+
+    return redirect()->route('customer.login', ['username' => $customerCode]);
+})->name('customer.pay');
 
 Route::prefix('customer')->name('customer.')->group(function () {
-    // Keep legacy route names alive, but force users to APK download page.
-    Route::get('/login', fn() => redirect()->route('download.customer'))->name('login');
-    Route::post('/login', fn() => redirect()->route('download.customer'))->name('login.post');
-    Route::post('/logout', fn() => redirect()->route('download.customer'))->name('logout');
-    Route::get('/dashboard', fn() => redirect()->route('download.customer'))->name('dashboard');
-    Route::get('/invoices', fn() => redirect()->route('download.customer'))->name('invoices.index');
-    Route::get('/invoices/{invoice}', fn() => redirect()->route('download.customer'))->name('invoices.show');
-    Route::get('/invoices/{invoice}/pdf', fn() => redirect()->route('download.customer'))->name('invoices.pdf');
-    Route::get('/profile', fn() => redirect()->route('download.customer'))->name('profile.index');
-    Route::put('/profile/password', fn() => redirect()->route('download.customer'))->name('profile.password');
-    Route::put('/profile/contact', fn() => redirect()->route('download.customer'))->name('profile.contact');
-    Route::any('/{any}', fn() => redirect()->route('download.customer'))->where('any', '.*')->name('disabled');
+    Route::middleware('guest:customer')->group(function () {
+        Route::get('/login', [\App\Http\Controllers\Customer\AuthController::class, 'showLogin'])->name('login');
+        Route::post('/login', [\App\Http\Controllers\Customer\AuthController::class, 'login'])->name('login.post');
+    });
+
+    Route::middleware('auth:customer')->group(function () {
+        Route::post('/logout', [\App\Http\Controllers\Customer\AuthController::class, 'logout'])->name('logout');
+        Route::get('/dashboard', [\App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/invoices', [\App\Http\Controllers\Customer\InvoiceController::class, 'index'])->name('invoices.index');
+        Route::get('/invoices/{invoice}', [\App\Http\Controllers\Customer\InvoiceController::class, 'show'])->name('invoices.show');
+        Route::post('/invoices/{invoice}/payment-proof', [\App\Http\Controllers\Customer\InvoiceController::class, 'submitPaymentProof'])->name('invoices.payment-proof');
+        Route::get('/invoices/{invoice}/pdf', [\App\Http\Controllers\Customer\InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
+        Route::get('/profile', [\App\Http\Controllers\Customer\ProfileController::class, 'index'])->name('profile.index');
+        Route::put('/profile/password', [\App\Http\Controllers\Customer\ProfileController::class, 'updatePassword'])->name('profile.password');
+        Route::put('/profile/contact', [\App\Http\Controllers\Customer\ProfileController::class, 'updateContact'])->name('profile.contact');
+    });
 });
 
 // [SECURITY PATCH 2026-03-21] Debug route removed — was unauthenticated, exposed OLT telnet access.

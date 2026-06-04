@@ -317,6 +317,7 @@
                         : ('Full cycle: Rp ' . number_format((float) ($prorationPreview['amount'] ?? 0), 0, ',', '.'))
                     );
                 $fields = [
+                ['ID Pelanggan', "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>" . ($customer->customer_code ?? '-') . "</code> <button class='btn btn-sm btn-clipboard p-0 ms-1' data-clipboard-text='" . ($customer->customer_code ?? '') . "' title='Salin' style='border:none;background:none;color:#94a3b8;cursor:pointer;'><i class='bx bx-copy'></i></button>"],
                 ['PPPoE User', "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>{$customer->pppoe_user}</code> <button class='btn btn-sm btn-clipboard p-0 ms-1' data-clipboard-text='{$customer->pppoe_user}' title='Salin' style='border:none;background:none;color:#94a3b8;cursor:pointer;'><i class='bx bx-copy'></i></button>"],
                 ['Paket', $customer->package->name ?? 'N/A'],
                 ['Harga Bulanan', 'Rp ' . number_format($customer->package_price ?? 0, 0, ',', '.')],

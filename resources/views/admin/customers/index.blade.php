@@ -249,6 +249,7 @@
                   <div>
                     <div style="font-weight:600;color:var(--txt);">{{ $customer->name }}</div>
                     <div style="font-size:.73rem;color:var(--txt-3);">{{ $customer->phone ?: '—' }}</div>
+                    <div style="font-size:.7rem;color:var(--txt-3);">{{ $customer->customer_code ?: 'Belum ada ID' }}</div>
                   </div>
                 </div>
               </td>

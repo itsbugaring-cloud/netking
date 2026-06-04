@@ -44,6 +44,11 @@
                                 @endif
                             </td>
                             <td>
+                                @if($invoice->payment_review_status === 'submitted')
+                                <div class="text-muted small mb-1"><i class="ti ti-clock-hour-4 me-1"></i>Bukti bayar menunggu review</div>
+                                @elseif($invoice->payment_review_status === 'rejected')
+                                <div class="text-danger small mb-1"><i class="ti ti-x me-1"></i>Bukti bayar ditolak</div>
+                                @endif
                                 <a href="{{ route('customer.invoices.show', $invoice) }}" class="btn btn-sm btn-primary">
                                     <i class="ti ti-eye icon"></i> Lihat
                                 </a>

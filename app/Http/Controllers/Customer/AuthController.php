@@ -33,6 +33,10 @@ class AuthController extends Controller
         $customer = Customer::where('phone', $identity)->first();
 
         if (!$customer) {
+            $customer = Customer::whereRaw('LOWER(TRIM(customer_code)) = ?', [mb_strtolower($identity)])->first();
+        }
+
+        if (!$customer) {
             $matches = Customer::whereRaw('LOWER(TRIM(pppoe_user)) = ?', [mb_strtolower($identity)])->get();
 
             if ($matches->count() === 1) {

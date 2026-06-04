@@ -12,11 +12,10 @@ Schedule::command('invoices:generate')
     ->timezone('Asia/Jakarta');
 
 // Auto-suspend customers with overdue invoices (daily at 02:00 WIB)
-// DINONAKTIFKAN SEMENTARA - bisnis sudah disiapkan untuk due date tanggal 20
-// dan eligible suspend mulai tanggal 21, tetapi automation belum diaktifkan.
-// Schedule::command('customers:suspend-overdue')
-//     ->dailyAt('02:00')
-//     ->timezone('Asia/Jakarta');
+// Invoice yang bukti bayarnya sudah dikirim dan masih menunggu review akan dilewati.
+Schedule::command('customers:suspend-overdue')
+    ->dailyAt('02:00')
+    ->timezone('Asia/Jakarta');
 
 // Daily database backup at 03:00 WIB
 Schedule::command('backup:database')
