@@ -26,7 +26,6 @@
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-general">Umum</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-billing">Tagihan</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-notif">Notifikasi</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-whatsapp">WhatsApp</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-telegram">Telegram Bot</a></li>
           </ul>
 
@@ -165,15 +164,6 @@
                   </div>
                   <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background:var(--nk-bg-subtle);">
                     <div>
-                      <div style="font-weight:600;">Notifikasi WhatsApp</div>
-                      <div style="font-size:.78rem;color:#64748b;">Pengingat pembayaran via WhatsApp</div>
-                    </div>
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" name="notif_whatsapp" value="1" {{ ($settings['notif_whatsapp'] ?? '0') == '1' ? 'checked' : '' }}>
-                    </div>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background:var(--nk-bg-subtle);">
-                    <div>
                       <div style="font-weight:600;">Notifikasi SMS</div>
                       <div style="font-size:.78rem;color:#64748b;">OTP dan peringatan kritis</div>
                     </div>
@@ -184,26 +174,6 @@
                 </div>
                 <div class="mt-4">
                   <button type="submit" class="ms-btn"><i class='bx bx-save'></i> Simpan Notifikasi</button>
-                </div>
-              </form>
-            </div>
-
-            <div class="tab-pane fade" id="tab-whatsapp">
-              <form id="form-whatsapp" data-group="whatsapp">
-                @csrf
-                <input type="hidden" name="group" value="whatsapp">
-                <div class="mb-3">
-                  <label class="form-label">Fonnte API Key</label>
-                  <input type="text" name="fonnte_api_key" class="form-control" value="{{ $settings['fonnte_api_key'] ?? '' }}" placeholder="Masukkan API key Fonnte.com Anda">
-                  <div class="form-text">Dapatkan API key Anda dari <a href="https://fonnte.com" target="_blank">fonnte.com</a>.</div>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Template Pengingat Invoice</label>
-                  <textarea name="wa_invoice_template" class="form-control" rows="4" placeholder="Gunakan {name}, {inv_no}, {amount} sebagai placeholder">{{ $settings['wa_invoice_template'] ?? '' }}</textarea>
-                  <div class="form-text">Variabel: <code>{name}</code>, <code>{inv_no}</code>, <code>{amount}</code>, <code>{due_date}</code></div>
-                </div>
-                <div class="mt-4">
-                  <button type="submit" class="ms-btn"><i class='bx bx-save'></i> Simpan WhatsApp</button>
                 </div>
               </form>
             </div>

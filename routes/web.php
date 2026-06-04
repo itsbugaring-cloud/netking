@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AreaController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\InvoiceController;
-use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SearchController;
@@ -299,17 +298,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
                     ->where('due_date', '<', now())->count(),
             ];
 
-            // ACS online devices (try, don't fail the whole request)
-            try {
-                $acs = app(\App\Services\AcsService::class);
-                $allDevices = collect($acs->getDevices(200, 0))->map(fn($d) => $acs->parseDevice($d));
-                $data['acs_total']  = $allDevices->count();
-                $data['acs_online'] = $allDevices->where('online', true)->count();
-            } catch (\Exception $e) {
-                $data['acs_total']  = null;
-                $data['acs_online'] = null;
-            }
-
             // OLT ONT stats
             $data['ont_total']  = \App\Models\Ont::count();
             $data['ont_online'] = \App\Models\Ont::where('status', 'online')->count();
@@ -380,11 +368,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('customers/import-billing-start', [CustomerController::class, 'importBillingStartDates'])
             ->name('customers.import-billing-start');
 
-        // Commission Management
-        Route::get('commissions', [CommissionController::class, 'index'])->name('commissions.index');
-        Route::get('commissions/export', [CommissionController::class, 'export'])->name('commissions.export');
-        Route::post('commissions/pay', [CommissionController::class, 'payCommissions'])->name('commissions.pay');
-        Route::post('commissions/{commission}/pay', [CommissionController::class, 'paySingle'])->name('commissions.pay-single');
+        // [REMOVED] Commission Management — feature removed
 
         // Package Management
         Route::resource('packages', PackageController::class);
@@ -399,13 +383,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/{voucher}', [\App\Http\Controllers\Admin\VoucherController::class, 'destroy'])->name('destroy');
         });
 
-        // WhatsApp Gateway
-        Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\WhatsAppController::class, 'index'])->name('index');
-            Route::post('/test-send', [\App\Http\Controllers\Admin\WhatsAppController::class, 'testSend'])->name('test-send');
-            Route::post('/send-customer', [\App\Http\Controllers\Admin\WhatsAppController::class, 'sendToCustomer'])->name('send-customer');
-            Route::post('/config', [\App\Http\Controllers\Admin\WhatsAppController::class, 'saveConfig'])->name('config');
-        });
+        // [REMOVED] WhatsApp Gateway — feature removed
 
         // Reports
         Route::prefix('reports')->name('reports.')->group(function () {

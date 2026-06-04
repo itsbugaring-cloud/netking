@@ -8,7 +8,6 @@ use App\Models\Area;
 use App\Models\Customer;
 use App\Models\Olt;
 use App\Models\Ont;
-use App\Services\AcsService;
 use App\Services\MikroTikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -17,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 class NmsController extends Controller
 {
     /**
-     * NMS Dashboard — OLT health, ACS stats, router connectivity
+     * NMS Dashboard — OLT health, ONT stats, router connectivity
      */
     public function dashboard()
     {
@@ -31,29 +30,17 @@ class NmsController extends Controller
         $ontTotal = Ont::count();
         $ontOnline = Ont::where('status', 'online')->count();
 
-        $acsDevices = $this->acsSnapshot();
-        $acsTotal = $acsDevices->count();
-        $acsOnline = $acsDevices->where('online', true)->count();
-        $acsByArea = $acsDevices->groupBy(fn ($device) => $device['area'] ?? 'Unassigned');
         $ontsByArea = $onts->groupBy('area_id');
 
-        $areaHealth = $areas->map(function ($area) use ($acsByArea, $ontsByArea) {
+        $areaHealth = $areas->map(function ($area) use ($ontsByArea) {
             $areaOnts = $ontsByArea->get($area->id, collect());
             $ontOnline = $areaOnts->where('status', 'online')->count();
             $ontTotal = $areaOnts->count();
             $ontOffline = max(0, $ontTotal - $ontOnline);
 
-            $areaAcs = $acsByArea->get($area->name, collect());
-            $acsOnline = $areaAcs->where('online', true)->count();
-            $acsTotal = $areaAcs->count();
-            $acsOffline = max(0, $acsTotal - $acsOnline);
-
             $scoreParts = [];
             if ($ontTotal > 0) {
                 $scoreParts[] = ($ontOnline / $ontTotal) * 100;
-            }
-            if ($acsTotal > 0) {
-                $scoreParts[] = ($acsOnline / $acsTotal) * 100;
             }
 
             $healthScore = !empty($scoreParts) ? (int) round(array_sum($scoreParts) / count($scoreParts)) : 0;
@@ -65,16 +52,11 @@ class NmsController extends Controller
                 'ont_total' => $ontTotal,
                 'ont_online' => $ontOnline,
                 'ont_offline' => $ontOffline,
-                'acs_total' => $acsTotal,
-                'acs_online' => $acsOnline,
-                'acs_offline' => $acsOffline,
                 'router_ready' => !empty($area->router_ip),
                 'health_score' => $healthScore,
             ];
         })->sortByDesc('health_score')->values();
 
-        $acsUnassigned = $acsDevices->where('area', 'Unassigned')->count();
-        $acsAmbiguous = $acsDevices->where('area', 'Ambiguous PPPoE')->count();
         $criticalOpticalCount = Ont::whereNotNull('rx_power')->where('rx_power', '<', -27)->count();
 
         $quickAlerts = [
@@ -82,16 +64,6 @@ class NmsController extends Controller
                 'label' => 'ONT Offline',
                 'value' => $ontTotal - $ontOnline,
                 'tone' => ($ontTotal - $ontOnline) > 0 ? 'badge-failed' : 'badge-active',
-            ],
-            [
-                'label' => 'ACS Unassigned',
-                'value' => $acsUnassigned,
-                'tone' => $acsUnassigned > 0 ? 'badge-pending' : 'badge-active',
-            ],
-            [
-                'label' => 'Ambiguous PPPoE',
-                'value' => $acsAmbiguous,
-                'tone' => $acsAmbiguous > 0 ? 'badge-pending' : 'badge-active',
             ],
             [
                 'label' => 'Optical Critical',
@@ -108,7 +80,7 @@ class NmsController extends Controller
             ->get();
 
         $topProblemAreas = $areaHealth
-            ->sortByDesc(fn ($row) => ($row['ont_offline'] + $row['acs_offline']))
+            ->sortByDesc(fn ($row) => $row['ont_offline'])
             ->take(5)
             ->values();
 
@@ -134,8 +106,6 @@ class NmsController extends Controller
             'ont_total' => $ontTotal,
             'ont_online' => $ontOnline,
             'ont_offline' => $ontTotal - $ontOnline,
-            'acs_total' => $acsTotal,
-            'acs_online' => $acsOnline,
             'area_count' => $areas->count(),
         ];
 
@@ -143,7 +113,7 @@ class NmsController extends Controller
     }
 
     /**
-     * NMS Devices — combined view of ACS + OLT devices
+     * NMS Devices — OLT inventory and router overview
      */
     public function devices()
     {
@@ -152,11 +122,9 @@ class NmsController extends Controller
             'onts as online_count' => fn($q) => $q->where('status', 'online'),
         ])->get();
 
-        $acsDevices = $this->acsSnapshot();
-
         $areas = Area::all();
 
-        return view('admin.nms.devices', compact('olts', 'acsDevices', 'areas'));
+        return view('admin.nms.devices', compact('olts', 'areas'));
     }
 
     /**
@@ -461,21 +429,10 @@ class NmsController extends Controller
             $ontTotal = Ont::count();
             $ontOnline = Ont::where('status', 'online')->count();
 
-            try {
-                $allDevices = $this->acsSnapshot();
-                $acsTotal = $allDevices->count();
-                $acsOnline = $allDevices->where('online', true)->count();
-            } catch (\Exception $e) {
-                $acsTotal = 0;
-                $acsOnline = 0;
-            }
-
             return response()->json([
                 'olt_count' => Olt::count(),
                 'ont_total' => $ontTotal,
                 'ont_online' => $ontOnline,
-                'acs_total' => $acsTotal,
-                'acs_online' => $acsOnline,
                 'area_count' => Area::count(),
             ]);
         }
@@ -676,63 +633,5 @@ class NmsController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()]);
         }
-    }
-
-    private function acsSnapshot()
-    {
-        return Cache::remember('nms_acs_snapshot', now()->addSeconds(60), function () {
-            try {
-                $acs = app(AcsService::class);
-                $customersByPppoe = Customer::with('area')
-                    ->whereNotNull('pppoe_user')
-                    ->get()
-                    ->groupBy(fn ($c) => strtolower(trim($c->pppoe_user)));
-                $ontsBySn = Ont::with(['area', 'customer'])
-                    ->whereNotNull('serial_number')
-                    ->get()
-                    ->keyBy(fn ($o) => strtoupper(trim($o->serial_number)));
-
-                return collect($acs->getDevices(500, 0, "", \App\Services\AcsService::PROJECTION_SUMMARY))
-                    ->map(function ($d) use ($acs, $customersByPppoe, $ontsBySn) {
-                        $parsed = $acs->parseDevice($d);
-                        $parsed['area'] = 'Unassigned';
-                        $parsed['customer_name'] = null;
-
-                        $sn = strtoupper(trim($parsed['serial'] ?? ''));
-                        if ($sn !== '' && isset($ontsBySn[$sn])) {
-                            $ont = $ontsBySn[$sn];
-                            $parsed['area'] = $ont->area->name ?? 'Unassigned';
-                            $parsed['customer_name'] = $ont->customer->name ?? null;
-
-                            if (!$parsed['pppoe_user'] && $ont->customer?->pppoe_user) {
-                                $parsed['pppoe_user'] = $ont->customer->pppoe_user;
-                            }
-
-                            if (!$parsed['rx_power'] && $ont->rx_power !== null) {
-                                $parsed['rx_power'] = number_format((float) $ont->rx_power, 2) . ' dBm';
-                            }
-                        }
-
-                        $pppoe = strtolower(trim($parsed['pppoe_user'] ?? ''));
-                        if ($parsed['customer_name'] === null && $pppoe !== '' && isset($customersByPppoe[$pppoe])) {
-                            $candidates = $customersByPppoe[$pppoe];
-                            if ($candidates->count() === 1) {
-                                $customer = $candidates->first();
-                                $parsed['area'] = $customer->area->name ?? $parsed['area'];
-                                $parsed['customer_name'] = $customer->name;
-                                $parsed['pppoe_user'] = $parsed['pppoe_user'] ?: $customer->pppoe_user;
-                            } else {
-                                $parsed['area'] = 'Ambiguous PPPoE';
-                            }
-                        }
-
-                        return $parsed;
-                    })
-                    ->filter(fn($d) => !str_starts_with((string) ($d['id'] ?? ''), 'DISCOVERY'))
-                    ->values();
-            } catch (\Exception $e) {
-                return collect();
-            }
-        });
     }
 }

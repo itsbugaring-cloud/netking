@@ -103,7 +103,7 @@
             <tr>
               <th style="min-width:160px;">Tagihan</th>
               <th style="min-width:220px;">Pelanggan</th>
-              <th style="min-width:180px;">Mitra</th>
+              <th style="min-width:180px;">Area</th>
               <th style="min-width:150px;">Jumlah</th>
               <th style="min-width:120px;">Periode</th>
               <th style="min-width:120px;">Status</th>
@@ -123,7 +123,7 @@
                 <div style="font-weight:600;">{{ $invoice->customer->name ?? '-' }}</div>
                 <div style="font-size:.74rem;color:var(--txt-3);">{{ $invoice->customer->pppoe_user ?? '' }}</div>
               </td>
-              <td>{{ $invoice->customer->partner->name ?? 'Langsung' }}</td>
+              <td>{{ $invoice->customer->area->name ?? '-' }}</td>
               <td style="font-weight:600;">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
               <td>{{ $periodLabel ?: '-' }}</td>
               <td>

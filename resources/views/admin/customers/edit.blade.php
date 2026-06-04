@@ -175,10 +175,6 @@
             </div>
           </div>
           <div class="mb-3 pb-3" style="border-bottom:1px solid #eef2f7;">
-            <div style="font-size:.75rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Mitra</div>
-            <div class="mt-1">{{ $customer->partner->name ?? 'Langsung' }}</div>
-          </div>
-          <div class="mb-3 pb-3" style="border-bottom:1px solid #eef2f7;">
             <div style="font-size:.75rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Remote IP</div>
             <div class="mt-1"><code>{{ $customer->remote_ip ?? 'Dinamis' }}</code></div>
           </div>

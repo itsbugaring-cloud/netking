@@ -161,9 +161,6 @@
         <input type="hidden" name="search" value="{{ request('search') }}">
         <input type="hidden" name="status" value="{{ request('status') }}">
         <input type="hidden" name="per_page" value="{{ $perPage ?? 50 }}">
-        @if(request('partner_id'))
-        <input type="hidden" name="partner_id" value="{{ request('partner_id') }}">
-        @endif
         <select name="area_id" class="no-select2" onchange="this.form.submit()"
           style="padding:.3rem .5rem;font-size:.8125rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--txt);outline:none;cursor:pointer;">
           <option value="">Semua Area</option>
@@ -223,7 +220,7 @@
               <th style="width:38px;">@unless($isFinance)<input type="checkbox" id="select-all" style="accent-color:var(--blue);">@endunless</th>
               <th>Pelanggan</th>
               <th>PPPoE User</th>
-              <th>Mitra / Area</th>
+              <th>Area</th>
               <th>Paket</th>
               <th style="width:110px;">Status</th>
               <th style="width:110px;">Bergabung</th>
@@ -257,8 +254,7 @@
               </td>
               <td><code>{{ $customer->pppoe_user }}</code></td>
               <td>
-                <div style="font-weight:600;color:var(--txt);">{{ $customer->partner->name ?? '—' }}</div>
-                <div style="font-size:.73rem;color:var(--txt-3);">{{ $customer->area->name ?? '—' }}</div>
+                <div style="font-weight:600;color:var(--txt);">{{ $customer->area->name ?? '—' }}</div>
               </td>
               <td>
                 @if($customer->package)

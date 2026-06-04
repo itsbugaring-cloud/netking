@@ -48,15 +48,6 @@
           </select>
         </div>
         <div>
-          <label style="font-size:.75rem;font-weight:600;color:var(--txt-3);display:block;margin-bottom:4px;">Mitra/Teknisi</label>
-          <select name="partner_id" class="form-select form-select-sm" style="min-width:160px;border-radius:8px;">
-            <option value="">Semua Mitra</option>
-            @foreach($partners as $p)
-              <option value="{{ $p->id }}" {{ request('partner_id')==$p->id?'selected':'' }}>{{ $p->name }}</option>
-            @endforeach
-          </select>
-        </div>
-        <div>
           <label style="font-size:.75rem;font-weight:600;color:var(--txt-3);display:block;margin-bottom:4px;">Status Pelanggan</label>
           <select name="status" class="form-select form-select-sm" style="min-width:150px;border-radius:8px;">
             <option value="">Semua Status</option>
@@ -78,7 +69,7 @@
           <button type="submit" class="btn btn-sm btn-primary" style="border-radius:8px;height:31px;">
             <i class='bx bx-filter-alt'></i> Filter
           </button>
-          @if(request()->hasAny(['area_id','partner_id','status','invoice_status']))
+          @if(request()->hasAny(['area_id','status','invoice_status']))
           <a href="{{ route('admin.reports.billing') }}" class="btn btn-sm ms-btn-secondary" style="border-radius:8px;height:31px;">Reset</a>
           @endif
         </div>
@@ -99,7 +90,6 @@
               <th>#</th>
               <th>Nama</th>
               <th>Area</th>
-              <th>Mitra/Teknisi</th>
               <th>Paket</th>
               <th>Status</th>
               <th>Total Bayar</th>
@@ -117,7 +107,6 @@
                 <div style="font-size:.72rem;color:var(--txt-3);">{{ $c->phone ?? '-' }}</div>
               </td>
               <td style="font-size:.8125rem;">{{ $c->area->name ?? '-' }}</td>
-              <td style="font-size:.8125rem;">{{ $c->partner->name ?? '-' }}</td>
               <td style="font-size:.8125rem;">{{ $c->package->name ?? '-' }}</td>
               <td>
                 @php

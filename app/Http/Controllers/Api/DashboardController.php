@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use App\Models\CommissionLog;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -29,15 +28,9 @@ class DashboardController extends Controller
             ->where('status', 'provisioning')
             ->count();
 
-        // Get unpaid commission
-        $unpaidCommission = CommissionLog::where('user_id', $user->id)
-            ->where('status', 'unpaid')
-            ->sum('amount');
-
-        // Get paid commission (lifetime)
-        $paidCommission = CommissionLog::where('user_id', $user->id)
-            ->where('status', 'paid')
-            ->sum('amount');
+        // [REMOVED] Commission feature removed
+        $unpaidCommission = 0;
+        $paidCommission = 0;
 
         // Recent customers
         $recentCustomers = Customer::where('partner_id', $user->id)

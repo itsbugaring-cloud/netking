@@ -5,44 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Customer;
-use App\Models\CommissionLog;
 use App\Models\ActivityLog;
-use App\Services\WhatsAppService;
 use App\Services\BillingCalculator;
 use Illuminate\Http\Request;
 use App\Models\Setting;
 
 class InvoiceController extends Controller
 {
-    private function confirmPartnerCommission(Invoice $invoice): void
-    {
-        if (! $invoice->customer->partner_id) {
-            return;
-        }
-
-        $existing = CommissionLog::where('invoice_id', $invoice->id)
-            ->where('status', 'pending')
-            ->first();
-
-        if ($existing) {
-            $existing->update(['status' => 'unpaid']);
-            return;
-        }
-
-        $commissionAmount = round(((float) $invoice->amount) / 3);
-
-        if ($commissionAmount > 0) {
-            CommissionLog::create([
-                'user_id'     => $invoice->customer->partner_id,
-                'customer_id' => $invoice->customer_id,
-                'invoice_id'  => $invoice->id,
-                'amount'      => $commissionAmount,
-                'month'       => now()->month,
-                'year'        => now()->year,
-                'status'      => 'unpaid',
-            ]);
-        }
-    }
+    // [REMOVED] confirmPartnerCommission — Commission feature removed
 
     private function resolveRejectReason(Request $request): ?string
     {
@@ -197,7 +167,7 @@ class InvoiceController extends Controller
 
         $invoice->markAsPaid($request->payment_method);
 
-        $this->confirmPartnerCommission($invoice);
+        // [REMOVED] Commission feature removed
 
         // Log activity
         \App\Models\ActivityLog::logActivity(
@@ -251,7 +221,7 @@ class InvoiceController extends Controller
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($invoice, $request) {
             $invoice->markAsPaid($request->payment_method);
-            $this->confirmPartnerCommission($invoice);
+            // [REMOVED] Commission feature removed
 
             ActivityLog::logActivity('payment',
                 "Bukti bayar disetujui untuk {$invoice->invoice_number}",
@@ -260,18 +230,7 @@ class InvoiceController extends Controller
             );
         });
 
-        try {
-            $wa = new WhatsAppService();
-            $wa->sendPaymentConfirmation(
-                $invoice->customer->phone ?? '',
-                $invoice->customer->name,
-                $invoice->invoice_number,
-                $invoice->amount,
-                $request->payment_method
-            );
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('WA payment confirm failed: ' . $e->getMessage());
-        }
+        // [REMOVED] WhatsApp notification removed
 
         return back()->with('success', "Invoice {$invoice->invoice_number} dikonfirmasi lunas.");
     }
@@ -305,18 +264,7 @@ class InvoiceController extends Controller
             'payment_reject_reason' => $rejectReason,
         ]);
 
-        // WhatsApp notification
-        try {
-            $wa = new WhatsAppService();
-            $wa->sendPaymentRejected(
-                $invoice->customer->phone ?? '',
-                $invoice->customer->name,
-                $invoice->invoice_number,
-                $rejectReason
-            );
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('WA payment reject failed: ' . $e->getMessage());
-        }
+        // [REMOVED] WhatsApp notification removed
 
         ActivityLog::logActivity('payment',
             "Bukti bayar ditolak untuk {$invoice->invoice_number}: {$rejectReason}",
@@ -324,7 +272,7 @@ class InvoiceController extends Controller
             ['reason' => $rejectReason]
         );
 
-        return back()->with('success', "Bukti bayar {$invoice->invoice_number} ditolak, notifikasi WA dikirim.");
+        return back()->with('success', "Bukti bayar {$invoice->invoice_number} ditolak.");
     }
 
     /**
@@ -401,21 +349,7 @@ class InvoiceController extends Controller
                     'due_date'       => $dueDate,
                 ]);
 
-                // Create pending commission if customer has partner
-                if ($customer->partner_id) {
-                    $commAmt = round(((float) $invoice->amount) / 3);
-                    if ($commAmt > 0) {
-                        CommissionLog::create([
-                            'user_id'     => $customer->partner_id,
-                            'customer_id' => $customer->id,
-                            'invoice_id'  => $invoice->id,
-                            'amount'      => $commAmt,
-                            'month'       => $month,
-                            'year'        => $year,
-                            'status'      => 'pending',
-                        ]);
-                    }
-                }
+                // [REMOVED] Commission feature removed
 
                 $created++;
             }

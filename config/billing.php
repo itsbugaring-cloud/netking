@@ -8,9 +8,6 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    // Commission per active customer per month (in IDR)
-    'commission_per_customer' => env('COMMISSION_PER_CUSTOMER', 10000),
-
     // Default package price if not set (in IDR)
     'default_package_price' => env('DEFAULT_PACKAGE_PRICE', 100000),
 
@@ -28,9 +25,6 @@ return [
     // Base day count for prorata formula.
     // Example: Rp150.000 / 30 hari = Rp5.000 per hari.
     'proration_base_days' => env('BILLING_PRORATION_BASE_DAYS', 30),
-
-    // Send WhatsApp notifications
-    'send_wa_notifications' => env('SEND_WA_NOTIFICATIONS', true),
 
     // Grace period in days after due date before auto-suspension
     // 0 means customer becomes eligible for suspension on the next daily run

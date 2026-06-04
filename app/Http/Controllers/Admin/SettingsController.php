@@ -55,9 +55,8 @@ class SettingsController extends Controller
                 'late_fee_percent',
             ],
             'mikrotik' => ['mikrotik_host', 'mikrotik_port', 'mikrotik_username'],
-            'whatsapp' => ['whatsapp_enabled', 'whatsapp_invoice_template', 'whatsapp_reminder_template'],
             'notification' => ['notify_overdue', 'notify_new_customer', 'notify_payment'],
-            'notifications' => ['notif_email', 'notif_whatsapp', 'notif_sms'],
+            'notifications' => ['notif_email', 'notif_sms'],
             'telegram_bot' => [
                 'telegram_config_bot_token',
                 'telegram_config_bot_secret',

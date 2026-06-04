@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Customer;
 use App\Models\Invoice;
-use App\Models\CommissionLog;
 use App\Models\ActivityLog;
 use App\Services\BillingCalculator;
 use Illuminate\Console\Command;
@@ -112,22 +111,7 @@ class GenerateMonthlyInvoices extends Command
                         $invoice->id
                     );
 
-                    // Auto-create commission for partner (pending until customer pays)
-                    if ($customer->partner_id) {
-                        $commissionAmount = round(((float) $invoice->amount) / 3);
-
-                        if ($commissionAmount > 0) {
-                            CommissionLog::create([
-                                'user_id' => $customer->partner_id,
-                                'customer_id' => $customer->id,
-                                'invoice_id' => $invoice->id,
-                                'amount' => $commissionAmount,
-                                'month' => now()->month,
-                                'year' => now()->year,
-                                'status' => 'pending',
-                            ]);
-                        }
-                    }
+                    // [REMOVED] Commission feature removed
 
                     $created++;
                 } else {

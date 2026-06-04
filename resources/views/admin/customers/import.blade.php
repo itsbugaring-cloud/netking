@@ -59,16 +59,6 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Mitra <span class="text-danger">*</span></label>
-            <select name="partner_id" class="form-select" required>
-              <option value="">Pilih mitra...</option>
-              @foreach($partners ?? [] as $partner)
-              <option value="{{ $partner->id }}">{{ $partner->name }}</option>
-              @endforeach
-            </select>
-          </div>
-
-          <div class="mb-3">
             <label class="form-label">File Excel / CSV <span class="text-danger">*</span></label>
             <div id="file-dropzone" style="border:2px dashed #cbd5e1; border-radius:12px; padding:2rem; text-align:center; cursor:pointer; transition: all 0.2s; background:#fafbfc;">
               <i class='bx bx-cloud-upload' style="font-size:2.5rem; color:#94a3b8;"></i>

@@ -30,9 +30,6 @@
   <a href="{{ route('admin.coverage-map') }}" class="sb-link {{ request()->routeIs('admin.coverage-map') ? 'active' : '' }}">
     <i class='bx bx-globe sb-icon'></i><span>Coverage Map</span>
   </a>
-  <a href="{{ route('admin.acs.index') }}" class="sb-link {{ request()->routeIs('admin.acs*') ? 'active' : '' }}">
-    <i class='bx bx-router sb-icon'></i><span>ACS Devices</span>
-  </a>
   <a href="{{ route('admin.olts.index') }}" class="sb-link {{ request()->routeIs('admin.olts*') ? 'active' : '' }}">
     <i class='bx bx-server sb-icon'></i><span>OLT / ONT</span>
   </a>
@@ -42,11 +39,6 @@
 {{-- CUSTOMERS --}}
 <div class="sb-section">
   <div class="sb-label">Customers</div>
-  @if($isAdmin)
-  <a href="{{ route('admin.partners.index') }}" class="sb-link {{ request()->routeIs('admin.partners*') ? 'active' : '' }}">
-    <i class='bx bx-buildings sb-icon'></i><span>Partners</span>
-  </a>
-  @endif
   <a href="{{ route('admin.customers.index') }}" class="sb-link {{ request()->routeIs('admin.customers*') ? 'active' : '' }}">
     <i class='bx bx-user sb-icon'></i><span>Customers</span>
   </a>
@@ -58,9 +50,6 @@
   <div class="sb-label">Billing</div>
   <a href="{{ route('admin.invoices.index') }}" class="sb-link {{ request()->routeIs('admin.invoices*') ? 'active' : '' }}">
     <i class='bx bx-receipt sb-icon'></i><span>Invoices</span>
-  </a>
-  <a href="{{ route('admin.commissions.index') }}" class="sb-link {{ request()->routeIs('admin.commissions*') ? 'active' : '' }}">
-    <i class='bx bx-dollar-circle sb-icon'></i><span>Commissions</span>
   </a>
   <a href="{{ route('admin.vouchers.index') }}" class="sb-link {{ request()->routeIs('admin.vouchers*') ? 'active' : '' }}">
     <i class='bx bx-purchase-tag sb-icon'></i><span>Vouchers</span>
@@ -74,11 +63,6 @@
   <a href="{{ route('admin.tickets.index') }}" class="sb-link {{ request()->routeIs('admin.tickets*') ? 'active' : '' }}">
     <i class='bx bx-support sb-icon'></i><span>Tickets</span>
   </a>
-  @if($isAdmin)
-  <a href="{{ route('admin.whatsapp.index') }}" class="sb-link {{ request()->routeIs('admin.whatsapp*') ? 'active' : '' }}">
-    <i class='bx bxl-whatsapp sb-icon'></i><span>WhatsApp</span>
-  </a>
-  @endif
 </div>
 
 {{-- ACCOUNT --}}

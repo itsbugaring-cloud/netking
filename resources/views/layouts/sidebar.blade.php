@@ -67,12 +67,6 @@
           'badge' => \App\Models\Invoice::where('payment_review_status','submitted')->where('status','unpaid')->count() ?: null,
         ] : null,
         $isAdmin ? [
-          'route' => route('admin.commissions.index'),
-          'active' => request()->routeIs('admin.commissions*'),
-          'icon' => 'bx bx-dollar-circle',
-          'title' => 'Komisi',
-        ] : null,
-        $isAdmin ? [
           'route' => route('admin.reports.revenue'),
           'active' => request()->routeIs('admin.reports.revenue'),
           'icon' => 'bx bx-bar-chart-alt-2',
@@ -167,20 +161,6 @@
           'title'  => 'Cek Sinyal ONT',
         ],
       ],
-    ];
-  }
-
-  if (! $isFinance) {
-    $sections[] = [
-      'label' => 'Dukungan',
-      'items' => array_values(array_filter([
-        $isAdmin ? [
-          'route' => route('admin.whatsapp.index'),
-          'active' => request()->routeIs('admin.whatsapp*'),
-          'icon' => 'bx bxl-whatsapp',
-          'title' => 'WhatsApp',
-        ] : null,
-      ])),
     ];
   }
 

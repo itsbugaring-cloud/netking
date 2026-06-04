@@ -53,7 +53,7 @@ class SearchController extends Controller
             ];
         }
 
-        // Search partners
+        // Search partners (link to user management since partner module removed)
         $partners = User::where('role', 'partner')
             ->where(function ($query) use ($q) {
                 $query->where('name', 'like', "%{$q}%")
@@ -68,7 +68,7 @@ class SearchController extends Controller
                 'icon' => 'bx-buildings',
                 'title' => $p->name,
                 'subtitle' => $p->email,
-                'url' => route('admin.partners.show', $p->id),
+                'url' => route('admin.users.index', ['search' => $p->name]),
                 'badge' => 'partner',
             ];
         }

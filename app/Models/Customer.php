@@ -78,11 +78,6 @@ class Customer extends Authenticatable
         return $this->hasMany(Invoice::class);
     }
 
-    public function commissionLogs()
-    {
-        return $this->hasMany(CommissionLog::class);
-    }
-
     public function odp()
     {
         return $this->belongsTo(Odp::class);

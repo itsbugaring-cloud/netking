@@ -591,23 +591,23 @@
         <div class="ops-network-card">
           <div class="ops-network-top">
             <div>
-              <div class="ops-network-label">ACS ONTs</div>
-              <div class="ops-network-value"><span id="live-acs-online">—</span> <span class="muted">/ <span id="live-acs-total">—</span></span></div>
+              <div class="ops-network-label">ONT Online</div>
+              <div class="ops-network-value"><span id="live-ont-online">—</span> <span class="muted">/ <span id="live-ont-total">—</span></span></div>
             </div>
             <div class="ops-kpi-icon"><i class='bx bx-wifi'></i></div>
           </div>
-          <div class="ops-network-foot"><span class="ops-dot"></span> Langsung dari Erka ACS</div>
+          <div class="ops-network-foot"><span class="ops-dot"></span> Ringkasan status ONT dari inventaris OLT</div>
         </div>
 
         <div class="ops-network-card">
           <div class="ops-network-top">
             <div>
-              <div class="ops-network-label">Inventaris OLT</div>
-              <div class="ops-network-value"><span id="live-ont-online">—</span> <span class="muted">/ <span id="live-ont-total">—</span></span></div>
+              <div class="ops-network-label">Total Area</div>
+              <div class="ops-network-value">{{ number_format($stats['total_areas'] ?? 0) }}</div>
             </div>
-            <div class="ops-kpi-icon"><i class='bx bx-server'></i></div>
+            <div class="ops-kpi-icon"><i class='bx bx-map-alt'></i></div>
           </div>
-          <div class="ops-network-foot"><span class="ops-dot"></span> Online / total ONT</div>
+          <div class="ops-network-foot"><span class="ops-dot"></span> Wilayah layanan yang sudah terdaftar</div>
         </div>
 
         <div class="ops-network-card">
@@ -967,10 +967,6 @@
       fetch(@json(route('admin.api.dashboard-live')))
         .then(function (response) { return response.json(); })
         .then(function (data) {
-          if (data.acs_online !== undefined) {
-            document.getElementById('live-acs-online').textContent = data.acs_online;
-            document.getElementById('live-acs-total').textContent = data.acs_total;
-          }
           if (data.ont_online !== undefined) {
             document.getElementById('live-ont-online').textContent = data.ont_online;
             document.getElementById('live-ont-total').textContent = data.ont_total;

@@ -323,7 +323,6 @@
                 ['Mulai Tagihan', $billingStartLabel],
                 ['Preview Prorata', $prorataSummary],
                 ['Area', $customer->area->name ?? 'N/A'],
-                ['Mitra', $customer->partner->name ?? 'Langsung'],
                 ['ODP', $customer->odp ? $customer->odp->name . ' (Port ' . ($customer->odp_port ?? '?') . ')' : 'N/A'],
                 ['ONT SN', $customer->ont_sn ? "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>{$customer->ont_sn}</code>" : 'N/A'],
                 ['Remote IP', "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>" . ($customer->remote_ip ?? 'Dinamis') . "</code> <button class='btn btn-sm btn-clipboard p-0 ms-1' data-clipboard-text='" . ($customer->remote_ip ?? ' Dinamis') . "' title='Salin' style='border:none;background:none;color:#94a3b8;cursor:pointer;'><i class='bx bx-copy'></i></button>" ],

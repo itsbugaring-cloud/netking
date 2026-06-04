@@ -8,10 +8,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'fonnte' => [
-        'api_key' => env('FONNTE_API_KEY'),
-        'base_url' => 'https://api.fonnte.com',
-    ],
+    // [REMOVED] Fonnte WhatsApp — feature removed
 
     'midtrans' => [
         'server_key' => env('MIDTRANS_SERVER_KEY'),

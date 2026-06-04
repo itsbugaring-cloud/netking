@@ -117,11 +117,11 @@
   </div>
   <div class="stat-card">
     <div>
-      <div class="stat-label">Perangkat ACS</div>
-      <div class="stat-value"><span id="nms-acs-online" style="color:var(--green);">{{ $stats['acs_online'] }}</span> <span class="stat-value-sub">/ {{ $stats['acs_total'] }}</span></div>
-      <div class="stat-change up">↑ NETKING-ACS Online</div>
+      <div class="stat-label">Area Aktif</div>
+      <div class="stat-value" id="nms-areas">{{ $stats['area_count'] }}</div>
+      <div class="stat-change neutral">Router dan OLT terpetakan</div>
     </div>
-    <div class="stat-icon si-blue"><i class='bx bx-chip'></i></div>
+    <div class="stat-icon si-blue"><i class='bx bx-map-alt'></i></div>
   </div>
 </div>
 
@@ -154,7 +154,6 @@
                             <tr>
                                 <th>Area</th>
                                 <th>ONT Offline</th>
-                                <th>ACS Offline</th>
                                 <th>Kesehatan</th>
                             </tr>
                         </thead>
@@ -163,7 +162,6 @@
                             <tr>
                                 <td class="cell-strong">{{ $row['name'] }}</td>
                                 <td><span class="{{ $row['ont_offline'] > 0 ? 'metric-bad' : 'metric-idle' }}">{{ $row['ont_offline'] }}</span></td>
-                                <td><span class="{{ $row['acs_offline'] > 0 ? 'metric-bad' : 'metric-idle' }}">{{ $row['acs_offline'] }}</span></td>
                                 <td>
                                     @php
                                         $problemHealthColor = $row['health_score'] >= 90 ? 'var(--green)' : ($row['health_score'] >= 70 ? 'var(--orange)' : 'var(--red)');
@@ -172,7 +170,7 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr><td colspan="4" class="text-center text-muted py-3">Tidak ada masalah area ditemukan</td></tr>
+                            <tr><td colspan="3" class="text-center text-muted py-3">Tidak ada masalah area ditemukan</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -234,7 +232,6 @@
                                 <th>Area</th>
                                 <th>Pelanggan</th>
                                 <th>ONT</th>
-                                <th>ACS</th>
                                 <th>Router</th>
                                 <th>Kesehatan</th>
                             </tr>
@@ -250,10 +247,6 @@
                                 <td>
                                     <span class="metric-ok">{{ $row['ont_online'] }}</span>
                                     <span class="cell-muted">/ {{ $row['ont_total'] }}</span>
-                                </td>
-                                <td>
-                                    <span class="metric-ok">{{ $row['acs_online'] }}</span>
-                                    <span class="cell-muted">/ {{ $row['acs_total'] }}</span>
                                 </td>
                                 <td>
                                     @if($row['router_ready'])
@@ -457,7 +450,7 @@
             .done(function(d) {
                 $('#nms-ont-online').text(d.ont_online);
                 $('#nms-ont-offline').text(d.ont_total - d.ont_online);
-                $('#nms-acs-online').text(d.acs_online);
+                $('#nms-areas').text(d.area_count);
             });
     }
     setInterval(refreshNmsStats, 30000);

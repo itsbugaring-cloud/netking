@@ -60,16 +60,6 @@
                     </a>
                 </li>
 
-                @if(\Illuminate\Support\Facades\Route::has('admin.partners.index'))
-                <li class="nav-item {{ request()->routeIs('admin.partners.*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.partners.index') }}">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <i class="ti ti-users"></i>
-                        </span>
-                        <span class="nav-link-title">Mitra</span>
-                    </a>
-                </li>
-                @endif
                 @endif
 
                 <li class="nav-item {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
@@ -113,15 +103,6 @@
                 @endif
 
                 @if($role === 'admin')
-                <li class="nav-item {{ request()->routeIs('admin.commissions.*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.commissions.index') }}">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <i class="ti ti-cash"></i>
-                        </span>
-                        <span class="nav-link-title">Komisi</span>
-                    </a>
-                </li>
-
                 <li class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.settings') }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">

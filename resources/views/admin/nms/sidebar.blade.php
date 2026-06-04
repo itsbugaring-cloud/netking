@@ -31,9 +31,6 @@
     <i class='bx bx-map-alt sb-icon'></i><span>Coverage Map</span>
   </a>
 
-  <a href="{{ route('admin.acs.index') }}" class="sb-link {{ request()->routeIs('admin.acs*') ? 'active' : '' }}" data-title="ACS Devices">
-    <i class='bx bx-devices sb-icon'></i><span>ACS Devices</span>
-  </a>
   <a href="{{ route('admin.olts.index') }}" class="sb-link {{ request()->routeIs('admin.olts*') ? 'active' : '' }}" data-title="OLT / ONT">
     <i class='bx bx-server sb-icon'></i><span>OLT / ONT</span>
   </a>
@@ -43,11 +40,6 @@
 {{-- CUSTOMERS --}}
 <div class="sb-section">
   <div class="sb-label">Customers</div>
-  @if($isAdmin)
-  <a href="{{ route('admin.partners.index') }}" class="sb-link {{ request()->routeIs('admin.partners*') ? 'active' : '' }}" data-title="Partners">
-    <i class='bx bx-buildings sb-icon'></i><span>Partners</span>
-  </a>
-  @endif
   <a href="{{ route('admin.customers.index') }}" class="sb-link {{ request()->routeIs('admin.customers*') ? 'active' : '' }}" data-title="Customers">
     <i class='bx bx-user sb-icon'></i><span>Customers</span>
   </a>
@@ -59,9 +51,6 @@
   <div class="sb-label">Billing</div>
   <a href="{{ route('admin.invoices.index') }}" class="sb-link {{ request()->routeIs('admin.invoices*') ? 'active' : '' }}" data-title="Invoices">
     <i class='bx bx-receipt sb-icon'></i><span>Invoices</span>
-  </a>
-  <a href="{{ route('admin.commissions.index') }}" class="sb-link {{ request()->routeIs('admin.commissions*') ? 'active' : '' }}" data-title="Commissions">
-    <i class='bx bx-dollar-circle sb-icon'></i><span>Commissions</span>
   </a>
   <a href="{{ route('admin.vouchers.index') }}" class="sb-link {{ request()->routeIs('admin.vouchers*') ? 'active' : '' }}" data-title="Vouchers">
     <i class='bx bx-purchase-tag sb-icon'></i><span>Vouchers</span>
@@ -101,11 +90,6 @@
   <a href="{{ route('admin.tickets.index') }}" class="sb-link {{ request()->routeIs('admin.tickets*') ? 'active' : '' }}" data-title="Tickets">
     <i class='bx bx-support sb-icon'></i><span>Tickets</span>
   </a>
-  @if($isAdmin)
-  <a href="{{ route('admin.whatsapp.index') }}" class="sb-link {{ request()->routeIs('admin.whatsapp*') ? 'active' : '' }}" data-title="WhatsApp">
-    <i class='bx bxl-whatsapp sb-icon'></i><span>WhatsApp</span>
-  </a>
-  @endif
 </div>
 
 {{-- ACCOUNT --}}

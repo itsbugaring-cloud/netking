@@ -57,16 +57,6 @@
                 @error('area_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
               <div class="col-md-6">
-                <label class="form-label">Mitra (Reseller)</label>
-                <select name="partner_id" class="form-select @error('partner_id') is-invalid @enderror">
-                  <option value="">Langsung / Tanpa Mitra</option>
-                  @foreach($partners as $partner)
-                  <option value="{{ $partner->id }}" {{ old('partner_id') == $partner->id ? 'selected' : '' }}>{{ $partner->name }}</option>
-                  @endforeach
-                </select>
-                @error('partner_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              </div>
-              <div class="col-md-6">
                 <label class="form-label">ODP</label>
                 <select name="odp_id" id="odp_id" class="form-select @error('odp_id') is-invalid @enderror">
                   @if($odps->isEmpty())

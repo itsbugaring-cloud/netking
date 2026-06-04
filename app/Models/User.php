@@ -60,9 +60,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Customer::class, 'partner_id');
     }
-
-    public function commissionLogs(): HasMany
-    {
-        return $this->hasMany(CommissionLog::class);
-    }
 }

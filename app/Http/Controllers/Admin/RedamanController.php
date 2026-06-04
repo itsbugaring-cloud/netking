@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Olt;
 use App\Models\RedamanCalculation;
-use App\Services\AcsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -193,74 +192,28 @@ class RedamanController extends Controller
      * Cek Sinyal ONT — AJAX fetch live signal
      * GET /admin/signal/check/{customer}
      */
-    public function signalCheck(Customer $customer, AcsService $acs)
+    public function signalCheck(Customer $customer)
     {
         $this->ensureCustomerAccess($customer);
 
-        if (!$customer->ont_sn) {
-            $rxPower = $customer->ont?->rx_power;
-            return response()->json([
-                'success' => (bool) $rxPower,
-                'source'  => 'database',
-                'data'    => $rxPower ? [
-                    'rx_power'     => (float) $rxPower,
-                    'rx_power_str' => number_format((float) $rxPower, 2) . ' dBm',
-                    'quality'      => $this->signalQuality((float) $rxPower),
-                    'serial_number'=> $customer->ont?->serial_number,
-                    'model'        => $customer->ont?->model,
-                    'status'       => $customer->ont?->status,
-                ] : null,
-                'message' => $rxPower ? null : 'Serial ONT tidak terdaftar.',
-            ]);
-        }
-
-        try {
-            $devices = $acs->getDevices(200, 0, $customer->ont_sn);
-            $device  = $this->findOntDevice($devices, $customer->ont_sn);
-
-            if (!$device) {
-                $rxPower = $customer->ont?->rx_power;
-                return response()->json([
-                    'success' => (bool) $rxPower,
-                    'source'  => 'database',
-                    'data'    => $rxPower ? [
-                        'rx_power'     => (float) $rxPower,
-                        'rx_power_str' => number_format((float) $rxPower, 2) . ' dBm',
-                        'quality'      => $this->signalQuality((float) $rxPower),
-                        'serial_number'=> $customer->ont_sn,
-                        'model'        => $customer->ont?->model,
-                        'status'       => 'offline',
-                    ] : null,
-                    'message' => 'ONT tidak ditemukan di ACS.' . ($rxPower ? ' Menampilkan data terakhir.' : ''),
-                ]);
-            }
-
-            $parsed  = $acs->parseDevice($device);
-            $rxRaw   = $parsed['rx_power'] ?? $parsed['signal'] ?? $customer->ont?->rx_power;
-            $rxPower = $rxRaw !== null ? (float) str_replace(' dBm', '', (string) $rxRaw) : null;
-
-            return response()->json([
-                'success' => true,
-                'source'  => 'acs_live',
-                'data'    => [
-                    'rx_power'      => $rxPower,
-                    'rx_power_str'  => $rxPower !== null ? number_format($rxPower, 2) . ' dBm' : null,
-                    'quality'       => $rxPower !== null ? $this->signalQuality($rxPower) : 'unknown',
-                    'serial_number' => $parsed['serial_number'] ?? $customer->ont_sn,
-                    'model'         => $parsed['model']  ?? $customer->ont?->model,
-                    'brand'         => $parsed['brand']  ?? null,
-                    'status'        => $parsed['status'] ?? null,
-                    'uptime'        => $parsed['uptime'] ?? null,
-                    'wan_ip'        => $parsed['wan_ip'] ?? null,
-                    'ssid'          => $parsed['ssid']   ?? null,
-                    'area'          => $customer->area?->name,
-                    'customer_name' => $customer->name,
-                    'pppoe_user'    => $customer->pppoe_user,
-                ],
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json(['success' => false, 'message' => 'Gagal: ' . $e->getMessage()], 500);
-        }
+        // [REMOVED] ACS/GenieACS feature removed — return database-only signal data
+        $rxPower = $customer->ont?->rx_power;
+        return response()->json([
+            'success' => (bool) $rxPower,
+            'source'  => 'database',
+            'data'    => $rxPower ? [
+                'rx_power'     => (float) $rxPower,
+                'rx_power_str' => number_format((float) $rxPower, 2) . ' dBm',
+                'quality'      => $this->signalQuality((float) $rxPower),
+                'serial_number'=> $customer->ont_sn ?: $customer->ont?->serial_number,
+                'model'        => $customer->ont?->model,
+                'status'       => $customer->ont?->status,
+                'area'         => $customer->area?->name,
+                'customer_name' => $customer->name,
+                'pppoe_user'   => $customer->pppoe_user,
+            ] : null,
+            'message' => $rxPower ? null : 'Data sinyal tidak tersedia (ACS tidak aktif).',
+        ]);
     }
 
     private function signalQuality(float $rx): string
@@ -270,18 +223,6 @@ class RedamanController extends Controller
         if ($rx >= -27) return 'fair';
         if ($rx >= -30) return 'weak';
         return 'critical';
-    }
-
-    private function findOntDevice(array $devices, string $sn): ?array
-    {
-        if (empty($devices)) return null;
-        $norm = strtolower(trim($sn));
-        foreach ($devices as $d) {
-            $candidate = strtolower((string) data_get($d, '_deviceId._SerialNumber', ''));
-            $id        = strtolower((string) ($d['_id'] ?? ''));
-            if ($candidate === $norm || str_contains($id, $norm)) return $d;
-        }
-        return $devices[0];
     }
 
     /**

@@ -7,7 +7,6 @@ use App\Models\Area;
 use App\Models\User;
 use App\Models\Customer;
 use App\Models\Invoice;
-use App\Models\CommissionLog;
 
 class DashboardController extends Controller
 {
@@ -50,8 +49,8 @@ class DashboardController extends Controller
             'unpaid_invoices_amount' => Invoice::where('status', 'unpaid')->sum('amount'),
             'overdue_invoices_count' => Invoice::where('status', 'unpaid')
                 ->where('due_date', '<', now())->count(),
-            'unpaid_commissions'     => CommissionLog::where('status', 'unpaid')->sum('amount'),
-            'paid_commissions'       => CommissionLog::where('status', 'paid')->sum('amount'),
+            'unpaid_commissions'     => 0, // [REMOVED] Commission feature removed
+            'paid_commissions'       => 0, // [REMOVED] Commission feature removed
             'open_tickets'           => \App\Models\Ticket::whereIn('status', ['open', 'pending'])->count(),
         ];
 
@@ -165,8 +164,8 @@ class DashboardController extends Controller
             'overdue_invoices_count' => Invoice::whereIn('customer_id', $customerIds)
                 ->where('status', 'unpaid')
                 ->where('due_date', '<', now())->count(),
-            'unpaid_commissions'     => CommissionLog::where('user_id', $partner->id)->where('status', 'unpaid')->sum('amount'),
-            'paid_commissions'       => CommissionLog::where('user_id', $partner->id)->where('status', 'paid')->sum('amount'),
+            'unpaid_commissions'     => 0, // [REMOVED] Commission feature removed
+            'paid_commissions'       => 0, // [REMOVED] Commission feature removed
             'open_tickets'           => \App\Models\Ticket::whereIn('status', ['open', 'pending'])->count(),
         ];
 

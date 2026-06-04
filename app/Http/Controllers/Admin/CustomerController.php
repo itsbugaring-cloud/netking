@@ -8,7 +8,6 @@ use App\Models\Customer;
 use App\Models\CustomerDevice;
 use App\Models\Odp;
 use App\Models\User;
-use App\Services\AcsService;
 use App\Services\BillingCalculator;
 use App\Jobs\CreateMikrotikSecretJob;
 use Carbon\Carbon;
@@ -112,7 +111,6 @@ class CustomerController extends Controller
 
         if ($user->role === 'partner') {
             $areas    = Area::where('id', $user->area_id)->get();
-            $partners = collect();
             // Partner hanya lihat ODP area-nya sendiri
             $odps     = Odp::where('area_id', $user->area_id)->orderBy('name')->get();
             $packages = \App\Models\Package::where('is_active', true)
@@ -121,13 +119,12 @@ class CustomerController extends Controller
                 ->get();
         } else {
             $areas    = Area::orderBy('name')->get();
-            $partners = User::where('role', 'partner')->orderBy('name')->get();
             // Admin: ODP dimuat semua di awal, akan di-filter AJAX saat area dipilih
             $odps     = collect();
             $packages = \App\Models\Package::where('is_active', true)->orderBy('name')->get();
         }
 
-        return view('admin.customers.create', compact('areas', 'partners', 'odps', 'packages'));
+        return view('admin.customers.create', compact('areas', 'odps', 'packages'));
     }
 
     public function store(Request $request)
@@ -201,7 +198,6 @@ class CustomerController extends Controller
 
         if ($user->role === 'partner') {
             $areas    = Area::where('id', $user->area_id)->get();
-            $partners = collect();
             $odps     = Odp::where('area_id', $customer->area_id)->orderBy('name')->get();
             $packages = \App\Models\Package::where('is_active', true)
                 ->where('area_id', $customer->area_id)
@@ -209,12 +205,11 @@ class CustomerController extends Controller
                 ->get();
         } else {
             $areas    = Area::orderBy('name')->get();
-            $partners = User::where('role', 'partner')->orderBy('name')->get();
             // Admin: ODP di-filter per area customer, AJAX bisa reload jika ganti area
             $odps     = Odp::where('area_id', $customer->area_id)->orderBy('name')->get();
             $packages = \App\Models\Package::where('is_active', true)->orderBy('name')->get();
         }
-        return view('admin.customers.edit', compact('customer', 'areas', 'packages', 'partners', 'odps'));
+        return view('admin.customers.edit', compact('customer', 'areas', 'packages', 'odps'));
     }
 
     public function update(Request $request, Customer $customer)
@@ -433,22 +428,7 @@ class CustomerController extends Controller
         // Try to get live data from GenieACS
         if ($customer->ont_sn) {
             try {
-                $acs = new AcsService();
-                $devices = $acs->getDevices(1, 0, $customer->ont_sn);
-                if (!empty($devices)) {
-                    $parsed = $acs->parseDevice($devices[0]);
-                    $result['acs'] = [
-                        'online'       => $parsed['online'],
-                        'last_seen'    => $parsed['last_seen'],
-                        'wan_ip'       => $parsed['wan_ip'],
-                        'uptime'       => $parsed['uptime'],
-                        'ssid'         => $parsed['ssid'],
-                        'firmware'     => $parsed['firmware'],
-                        'manufacturer' => $parsed['manufacturer'],
-                        'model'        => $parsed['model'],
-                        'serial'       => $parsed['serial'],
-                    ];
-                }
+                // [REMOVED] ACS/GenieACS feature removed — skip live ACS data
             } catch (\Exception $e) {
                 Log::warning('Topology ACS fetch failed: ' . $e->getMessage());
             }
@@ -548,10 +528,9 @@ class CustomerController extends Controller
     {
         abort_if(auth()->user()->role !== 'admin', 403);
 
-        $areas    = Area::orderBy('name')->get();
-        $partners = User::where('role', 'partner')->orderBy('name')->get();
+        $areas = Area::orderBy('name')->get();
 
-        return view('admin.customers.import', compact('areas', 'partners'));
+        return view('admin.customers.import', compact('areas'));
     }
 
     /**

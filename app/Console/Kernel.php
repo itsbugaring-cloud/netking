@@ -20,12 +20,7 @@ class Kernel extends ConsoleKernel
                  ->runInBackground()
                  ->appendOutputTo(storage_path('logs/olt-sync.log'));
 
-        // Auto-refresh semua ACS devices (GenieACS) setiap 15 menit.
-        // Job hanya menyentuh device yang currently online agar tidak membanjiri GenieACS.
-        $schedule->job(\App\Jobs\RefreshAllAcsJob::class)
-                 ->everyFifteenMinutes()
-                 ->withoutOverlapping(10)
-                 ->onOneServer();
+        // [REMOVED] ACS/GenieACS refresh — feature removed
 
         // Generate invoice bulanan untuk semua pelanggan aktif (tiap tgl 1 pukul 07:00)
         $schedule->command('invoices:generate')
@@ -40,10 +35,7 @@ class Kernel extends ConsoleKernel
         //          ->withoutOverlapping()
         //          ->appendOutputTo(storage_path('logs/suspend-overdue.log'));
 
-        // Rekap komisi bulanan ke partner (tiap tgl 2 pukul 09:00)
-        $schedule->command('commissions:recap')
-                 ->monthlyOn(2, '09:00')
-                 ->withoutOverlapping();
+        // [REMOVED] Commission recap — feature removed
     }
 
     /**
