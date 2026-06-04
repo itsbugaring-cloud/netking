@@ -290,19 +290,12 @@
                   @foreach($paymentSettings['accounts'] as $idx => $account)
                     @php
                       $bankSlug = strtolower($account['bank_name'] ?? 'bank');
-                      $colorMap = [
-                        'bri' => 'bg-blue text-white',
-                        'bni' => 'bg-orange text-white',
-                        'mandiri' => 'bg-dark text-white',
-                        'bca' => 'bg-blue text-white',
-                      ];
-                      $badgeColor = $colorMap[$bankSlug] ?? 'bg-secondary text-white';
                     @endphp
                     <div class="accordion-item">
                       <h2 class="accordion-header">
                         <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#bank-{{ $idx }}">
                           <div class="d-flex align-items-center gap-2">
-                            <span class="badge {{ $badgeColor }}" style="font-size: 0.75rem; padding: 4px 8px;">{{ $account['bank_name'] ?? '-' }}</span>
+                            <img src="{{ asset('img/banks/' . $bankSlug . '.png') }}" alt="{{ $account['bank_name'] }}" style="height: 24px;" onerror="this.outerHTML='<span class=fw-bold>{{ $account['bank_name'] ?? '' }}</span>'">
                           </div>
                         </button>
                       </h2>
@@ -325,7 +318,7 @@
                     <h2 class="accordion-header">
                       <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#qris-panel">
                         <div class="d-flex align-items-center gap-2">
-                          <span class="badge bg-purple text-white" style="font-size: 0.75rem; padding: 4px 8px;">QRIS</span>
+                          <img src="{{ asset('img/banks/qris.png') }}" alt="QRIS" style="height: 24px;" onerror="this.outerHTML='<span class=fw-bold>QRIS</span>'">
                         </div>
                       </button>
                     </h2>
