@@ -407,31 +407,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('onts/{ont}/set-profile', [\App\Http\Controllers\Admin\OltController::class, 'setProfile'])->name('olts.set-profile');
         Route::post('olts/{olt}/onts/bulk-unlink', [\App\Http\Controllers\Admin\OltController::class, 'bulkUnlinkOnts'])->name('olts.onts.bulk-unlink');
 
-        // ── NetkingNMS (Network Monitoring) ──
-        Route::prefix('nms')->name('nms.')->group(function () {
-            Route::get('/dashboard', [\App\Http\Controllers\Admin\NmsController::class, 'dashboard'])->name('dashboard');
-            Route::get('/devices', [\App\Http\Controllers\Admin\NmsController::class, 'devices'])->name('devices');
-            Route::get('/devices/{id}', [\App\Http\Controllers\Admin\NmsController::class, 'deviceMonitor'])->name('device-monitor');
-            Route::get('/ports', [\App\Http\Controllers\Admin\NmsController::class, 'ports'])->name('ports');
-            Route::get('/alerts', [\App\Http\Controllers\Admin\NmsController::class, 'alertRules'])->name('alerts');
-            Route::get('/syslog', [\App\Http\Controllers\Admin\NmsController::class, 'syslog'])->name('syslog');
-            Route::get('/topology', [\App\Http\Controllers\Admin\NmsController::class, 'topology'])->name('topology');
-            Route::get('/topology/data', [\App\Http\Controllers\Admin\NmsController::class, 'topologyData'])->name('topology.data');
-            Route::get('/diagnostics', [\App\Http\Controllers\Admin\NmsController::class, 'diagnostics'])->name('diagnostics');
-            Route::post('/diagnostics/run', [\App\Http\Controllers\Admin\NmsController::class, 'runDiagnostic'])->name('diagnostics.run');
-            Route::get('/router-status', [\App\Http\Controllers\Admin\NmsController::class, 'routerStatus'])->name('router-status');
-            Route::get('/live-traffic', [\App\Http\Controllers\Admin\NmsController::class, 'liveTraffic'])->name('live-traffic');
-            Route::get('/live-traffic/data', [\App\Http\Controllers\Admin\NmsController::class, 'liveTrafficData'])->name('live-traffic.data');
-            Route::get('/live-traffic/{area}/sessions', [\App\Http\Controllers\Admin\NmsController::class, 'liveTrafficSessions'])->name('live-traffic.sessions');
-            Route::post('/session-kill', [\App\Http\Controllers\Admin\NmsController::class, 'sessionKill'])->name('session-kill');
-            Route::get('/ip-pool', [\App\Http\Controllers\Admin\NmsController::class, 'ipPool'])->name('ip-pool');
-            Route::get('/ip-pool/data', [\App\Http\Controllers\Admin\NmsController::class, 'ipPoolData'])->name('ip-pool.data');
-            Route::get('/bgp', [\App\Http\Controllers\Admin\NmsController::class, 'bgpMonitor'])->name('bgp');
-            Route::get('/bgp/data', [\App\Http\Controllers\Admin\NmsController::class, 'bgpData'])->name('bgp.data');
-            Route::any('/api/{endpoint}', [\App\Http\Controllers\Admin\NmsController::class, 'apiProxy'])->where('endpoint', '.*')->name('api');
-            Route::get('/api-data', [\App\Http\Controllers\Admin\NmsController::class, 'apiData'])->name('api-data');
-        });
-
         // ── Notifications & Activity Log ──
         Route::get('notifications/recent', [\App\Http\Controllers\Admin\NotificationController::class, 'recent'])->name('notifications.recent');
         Route::post('notifications/mark-all-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
