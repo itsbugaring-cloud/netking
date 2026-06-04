@@ -424,6 +424,7 @@
   </a>
   <div class="nav-links" id="nav-links">
     <a href="{{ route('landing') }}">Beranda</a>
+    <a href="{{ route('payment.public.root') }}">Bayar Tagihan</a>
     <a href="#cakupan">Cakupan Area</a>
     <a href="#harga">Pilihan Paket</a>
     <a href="#layanan">Keunggulan</a>
@@ -447,6 +448,7 @@
       Netking adalah ISP lokal yang mengoperasikan infrastruktur jaringan fiber optik secara mandiri. Koneksi dedicated ke setiap pelanggan, tanpa batasan kecepatan, didukung tim teknis dengan komitmen penanganan gangguan kurang dari 4 jam. Tersedia mulai dari <strong>Rp 100.000 per bulan</strong>.
     </p>
     <div class="hero-cta">
+      <a href="{{ route('payment.public.root') }}" class="btn-plain"><i class='bx bx-credit-card-front'></i> Bayar Tagihan</a>
       <a href="#harga" class="btn-hero-primary"><i class='bx bx-package'></i> Pilihan Paket</a>
     </div>
     <div class="hero-trust">
