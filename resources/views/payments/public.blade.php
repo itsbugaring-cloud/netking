@@ -67,7 +67,6 @@
           </div>
           <div class="col">
             <h2 class="page-title">Pembayaran Netking</h2>
-            <div class="text-secondary">Cek tagihan, lihat rekening resmi atau QRIS, lalu unggah bukti transfer tanpa login portal customer.</div>
           </div>
         </div>
       </div>
@@ -84,7 +83,7 @@
               <h3 class="card-title">Cek Tagihan Pelanggan</h3>
             </div>
             <div class="card-body">
-              <p class="text-secondary mb-3">Masukkan ID pelanggan untuk menampilkan tagihan aktif dan form upload bukti pembayaran.</p>
+              <p class="text-secondary mb-3">Masukkan ID pelanggan untuk melihat tagihan.</p>
 
               @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
@@ -112,21 +111,21 @@
                   <div class="p-3 rounded border">
                     <span class="avatar avatar-sm bg-primary-lt mb-2"><i class="ti ti-search"></i></span>
                     <div class="fw-medium mb-1">1. Cek tagihan</div>
-                    <div class="text-secondary small">Masukkan ID pelanggan untuk menampilkan tagihan aktif.</div>
+                    <div class="text-secondary small">Ketik ID pelanggan lalu klik Cek Tagihan.</div>
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="p-3 rounded border">
                     <span class="avatar avatar-sm bg-primary-lt mb-2"><i class="ti ti-cash"></i></span>
                     <div class="fw-medium mb-1">2. Bayar</div>
-                    <div class="text-secondary small">Gunakan rekening atau QRIS resmi yang tampil di halaman ini.</div>
+                    <div class="text-secondary small">Transfer ke rekening atau scan QRIS di samping.</div>
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="p-3 rounded border">
                     <span class="avatar avatar-sm bg-primary-lt mb-2"><i class="ti ti-shield-check"></i></span>
                     <div class="fw-medium mb-1">3. Upload bukti</div>
-                    <div class="text-secondary small">Admin akan meninjau bukti bayar Anda.</div>
+                    <div class="text-secondary small">Kirim foto bukti transfer untuk dikonfirmasi admin.</div>
                   </div>
                 </div>
               </div>
@@ -282,7 +281,7 @@
             </div>
             <div class="card-body">
 
-              <div class="text-secondary small mb-3">Pilih rekening tujuan transfer:</div>
+              <div class="text-secondary small mb-3">Pilih rekening tujuan:</div>
 
               {{-- Custom Accordion Payment Methods --}}
               <div class="accordion" id="paymentAccordion">
@@ -292,11 +291,11 @@
                     @php
                       $bankSlug = strtolower($account['bank_name'] ?? 'bank');
                       $logoMap = [
-                        'bri' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/120px-BANK_BRI_logo.svg.png',
-                        'bni' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/BNI_logo.svg/120px-BNI_logo.svg.png',
-                        'mandiri' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/120px-Bank_Mandiri_logo_2016.svg.png',
-                        'bca' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/120px-Bank_Central_Asia.svg.png',
-                        'qris' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/QRIS_logo.svg/120px-QRIS_logo.svg.png',
+                        'bri' => '/img/banks/bri.png',
+                        'bni' => '/img/banks/bni.png',
+                        'mandiri' => '/img/banks/mandiri.png',
+                        'bca' => '/img/banks/bca.png',
+                        'qris' => '/img/banks/qris.png',
                       ];
                       $logo = $logoMap[$bankSlug] ?? null;
                     @endphp
@@ -305,7 +304,7 @@
                         <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#bank-{{ $idx }}">
                           <div class="d-flex align-items-center gap-2">
                             @if($logo)
-                              <img src="{{ $logo }}" alt="{{ $account['bank_name'] }}" style="height: 24px;">
+                              <img src="{{ $logo }}" alt="{{ $account['bank_name'] }}" style="height: 24px;" onerror="this.outerHTML='<span class=fw-bold>{{ $account['bank_name'] ?? '' }}</span>'">
                             @else
                               <i class="ti ti-building-bank text-blue"></i>
                               <span class="fw-bold">{{ $account['bank_name'] ?? '-' }}</span>
@@ -332,7 +331,7 @@
                     <h2 class="accordion-header">
                       <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#qris-panel">
                         <div class="d-flex align-items-center gap-2">
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/QRIS_logo.svg/120px-QRIS_logo.svg.png" alt="QRIS" style="height: 24px;">
+                          <img src="/img/banks/qris.png" alt="QRIS" style="height: 24px;" onerror="this.outerHTML='<span class=fw-bold>QRIS</span>'">
                         </div>
                       </button>
                     </h2>
