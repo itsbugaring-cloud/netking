@@ -275,33 +275,51 @@
         <div class="bento-side">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Metode Pembayaran Resmi</h3>
+              <div class="d-flex align-items-center">
+                <span class="avatar avatar-sm bg-green-lt me-2"><i class="ti ti-building-bank"></i></span>
+                <h3 class="card-title mb-0">Metode Pembayaran Resmi</h3>
+              </div>
             </div>
             <div class="card-body">
+
+              {{-- Bank Accounts --}}
               @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
-                <div class="list-group list-group-flush mb-3">
+                <div class="mb-3">
+                  <div class="text-uppercase text-secondary small fw-bold mb-2"><i class="ti ti-credit-card me-1"></i>Transfer Bank</div>
                   @foreach($paymentSettings['accounts'] as $account)
-                    <div class="list-group-item">
-                      <div class="text-uppercase text-secondary small">{{ $account['bank_name'] ?? '-' }}</div>
-                      <div class="fw-bold fs-3">{{ $account['account_number'] ?? '-' }}</div>
-                      <div class="text-secondary small">a.n. {{ $account['account_holder'] ?? '-' }}</div>
+                    <div class="border rounded p-3 mb-2 bg-light">
+                      <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="badge bg-blue-lt">{{ $account['bank_name'] ?? '-' }}</span>
+                      </div>
+                      <div class="fw-bold fs-3 font-monospace">{{ $account['account_number'] ?? '-' }}</div>
+                      <div class="text-secondary small">a.n. <strong>{{ $account['account_holder'] ?? '-' }}</strong></div>
                     </div>
                   @endforeach
                 </div>
               @endif
 
+              {{-- Divider --}}
+              @if(!empty($paymentSettings['accounts']) && !empty($paymentSettings['qris']))
+                <hr class="my-3">
+              @endif
+
+              {{-- QRIS --}}
               @if(!empty($paymentSettings['qris']))
-                <div class="mb-3 text-center">
-                  <div class="text-uppercase text-secondary small mb-2">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
-                  <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener">
-                    <img class="rounded" src="{{ $paymentSettings['qris']['image_url'] }}" alt="{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}" style="max-width: 200px; width: 100%;">
-                  </a>
-                  @if(!empty($paymentSettings['qris']['notes']))
-                    <div class="text-secondary small mt-2">{{ $paymentSettings['qris']['notes'] }}</div>
-                  @endif
+                <div class="mb-3">
+                  <div class="text-uppercase text-secondary small fw-bold mb-2"><i class="ti ti-qrcode me-1"></i>QRIS</div>
+                  <div class="border rounded p-3 bg-light text-center">
+                    <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener" class="d-inline-block">
+                      <img class="rounded shadow-sm" src="{{ $paymentSettings['qris']['image_url'] }}" alt="{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}" style="max-width: 180px; width: 100%;">
+                    </a>
+                    <div class="fw-medium mt-2">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
+                    @if(!empty($paymentSettings['qris']['notes']))
+                      <div class="text-secondary small mt-1">{{ $paymentSettings['qris']['notes'] }}</div>
+                    @endif
+                  </div>
                 </div>
               @endif
 
+              {{-- Payment Note --}}
               @if(!empty($paymentSettings['notes']))
                 <div class="alert alert-info mb-0">
                   <div class="d-flex align-items-start">
@@ -310,6 +328,7 @@
                   </div>
                 </div>
               @endif
+
             </div>
           </div>
         </div>
