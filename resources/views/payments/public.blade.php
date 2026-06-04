@@ -123,8 +123,14 @@
       backdrop-filter: blur(8px);
     }
     .pay-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .pay-top-grid,
+    .pay-guide-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
       gap: 18px;
       align-items: start;
     }
@@ -313,10 +319,6 @@
       display: grid;
       gap: 12px;
     }
-    .pay-side-stack {
-      display: grid;
-      gap: 18px;
-    }
     .pay-method-card,
     .pay-upload {
       border: 1px solid var(--line);
@@ -433,7 +435,8 @@
       margin-bottom: 6px;
     }
     @media (max-width: 960px) {
-      .pay-layout { grid-template-columns: 1fr; }
+      .pay-top-grid,
+      .pay-guide-grid { grid-template-columns: 1fr; }
       .pay-customer { grid-template-columns: 1fr 1fr; }
       .pay-highlight-grid { grid-template-columns: 1fr; }
     }
@@ -469,48 +472,158 @@
     </section>
 
     <div class="pay-layout">
-      <main class="pay-card">
-        <div class="pay-card-head">
-          <h2 class="pay-card-title">Cek Tagihan Pelanggan</h2>
-          <div class="pay-card-sub">Masukkan ID pelanggan untuk menampilkan tagihan aktif dan form upload bukti pembayaran.</div>
-        </div>
-        <div class="pay-card-body">
-          @if(session('success'))
-            <div class="pay-alert pay-alert-success">{{ session('success') }}</div>
-          @endif
-          @if(session('error'))
-            <div class="pay-alert pay-alert-error">{{ session('error') }}</div>
-          @endif
-          @if($errors->any())
-            <div class="pay-alert pay-alert-error">{{ $errors->first() }}</div>
-          @endif
+      <section class="pay-top-grid">
+        <main class="pay-card">
+          <div class="pay-card-head">
+            <h2 class="pay-card-title">Cek Tagihan Pelanggan</h2>
+            <div class="pay-card-sub">Masukkan ID pelanggan untuk menampilkan tagihan aktif dan form upload bukti pembayaran.</div>
+          </div>
+          <div class="pay-card-body">
+            @if(session('success'))
+              <div class="pay-alert pay-alert-success">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+              <div class="pay-alert pay-alert-error">{{ session('error') }}</div>
+            @endif
+            @if($errors->any())
+              <div class="pay-alert pay-alert-error">{{ $errors->first() }}</div>
+            @endif
 
-          <form class="pay-form" method="GET" action="{{ route('payment.public.root') }}">
-            <input type="text" class="pay-input" name="customer_code" value="{{ old('customer_code', $customerCode) }}" placeholder="Masukkan ID pelanggan, contoh NK000123">
-            <button class="pay-btn pay-btn-primary" type="submit"><i class='bx bx-search'></i> Cek Tagihan</button>
-          </form>
+            <form class="pay-form" method="GET" action="{{ route('payment.public.root') }}">
+              <input type="text" class="pay-input" name="customer_code" value="{{ old('customer_code', $customerCode) }}" placeholder="Masukkan ID pelanggan, contoh NK000123">
+              <button class="pay-btn pay-btn-primary" type="submit"><i class='bx bx-search'></i> Cek Tagihan</button>
+            </form>
 
-          <div class="pay-highlight-grid">
-            <div class="pay-highlight">
-              <div class="pay-highlight-icon"><i class='bx bx-search-alt'></i></div>
-              <div class="pay-highlight-title">1. Cek tagihan</div>
-              <div class="pay-help">Masukkan ID pelanggan untuk menampilkan semua tagihan aktif yang belum lunas.</div>
-            </div>
-            <div class="pay-highlight">
-              <div class="pay-highlight-icon"><i class='bx bx-credit-card'></i></div>
-              <div class="pay-highlight-title">2. Bayar sesuai nominal</div>
-              <div class="pay-help">Gunakan rekening atau QRIS resmi yang tampil di halaman ini sesuai jumlah tagihan.</div>
-            </div>
-            <div class="pay-highlight">
-              <div class="pay-highlight-icon"><i class='bx bx-check-shield'></i></div>
-              <div class="pay-highlight-title">3. Upload bukti transfer</div>
-              <div class="pay-help">Admin akan meninjau bukti bayar Anda sebelum tagihan dikonfirmasi lunas.</div>
+            <div class="pay-highlight-grid">
+              <div class="pay-highlight">
+                <div class="pay-highlight-icon"><i class='bx bx-search-alt'></i></div>
+                <div class="pay-highlight-title">1. Cek tagihan</div>
+                <div class="pay-help">Masukkan ID pelanggan untuk menampilkan semua tagihan aktif yang belum lunas.</div>
+              </div>
+              <div class="pay-highlight">
+                <div class="pay-highlight-icon"><i class='bx bx-credit-card'></i></div>
+                <div class="pay-highlight-title">2. Bayar sesuai nominal</div>
+                <div class="pay-help">Gunakan rekening atau QRIS resmi yang tampil di halaman ini sesuai jumlah tagihan.</div>
+              </div>
+              <div class="pay-highlight">
+                <div class="pay-highlight-icon"><i class='bx bx-check-shield'></i></div>
+                <div class="pay-highlight-title">3. Upload bukti transfer</div>
+                <div class="pay-help">Admin akan meninjau bukti bayar Anda sebelum tagihan dikonfirmasi lunas.</div>
+              </div>
             </div>
           </div>
+        </main>
 
-          @if($customer)
-            <div style="height:18px"></div>
+        <section class="pay-card">
+          <div class="pay-card-head">
+            <h2 class="pay-card-title">Metode Pembayaran Resmi</h2>
+            <div class="pay-card-sub">Rekening dan QRIS resmi Netking tampil langsung dari awal.</div>
+          </div>
+          <div class="pay-card-body">
+            <div class="pay-method-grid">
+              @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
+                <div class="pay-bank-list">
+                  @foreach($paymentSettings['accounts'] as $account)
+                    <div class="pay-bank">
+                      <div class="pay-bank-name">{{ $account['bank_name'] ?? '-' }}</div>
+                      <div class="pay-bank-number">{{ $account['account_number'] ?? '-' }}</div>
+                      <div class="pay-help">a.n. {{ $account['account_holder'] ?? '-' }}</div>
+                    </div>
+                  @endforeach
+                </div>
+              @endif
 
+              @if(!empty($paymentSettings['qris']))
+                <div>
+                  <div class="pay-bank-name" style="margin-bottom:8px;">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
+                  <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener">
+                    <img class="pay-qris" src="{{ $paymentSettings['qris']['image_url'] }}" alt="QRIS NETKING">
+                  </a>
+                  @if(!empty($paymentSettings['qris']['notes']))
+                    <div class="pay-help" style="margin-top:10px;">{{ $paymentSettings['qris']['notes'] }}</div>
+                  @endif
+                </div>
+              @endif
+
+              <div class="pay-mini-note">
+                Pastikan nominal transfer sesuai tagihan yang dipilih. Setelah transfer, unggah bukti pembayaran di halaman ini agar admin dapat meninjau tagihan Anda.
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="pay-guide-grid">
+        <section class="pay-card">
+          <div class="pay-card-head">
+            <h2 class="pay-card-title">Tata Cara Bayar</h2>
+            <div class="pay-card-sub">Langkahnya dibuat runtut dari atas ke bawah agar pelanggan tidak bingung.</div>
+          </div>
+          <div class="pay-card-body">
+            <div class="pay-steps">
+              <div class="pay-step">
+                <div class="pay-step-no">1</div>
+                <div>
+                  <div class="pay-card-title" style="font-size:.9rem;">Masukkan ID pelanggan</div>
+                  <div class="pay-help">ID pelanggan berbentuk seperti <strong>NK000123</strong>. Setelah dimasukkan, sistem akan menampilkan tagihan aktif Anda.</div>
+                </div>
+              </div>
+              <div class="pay-step">
+                <div class="pay-step-no">2</div>
+                <div>
+                  <div class="pay-card-title" style="font-size:.9rem;">Pilih tagihan yang mau dibayar</div>
+                  <div class="pay-help">Kalau ada lebih dari satu tagihan aktif, pilih invoice yang ingin dibayar terlebih dahulu.</div>
+                </div>
+              </div>
+              <div class="pay-step">
+                <div class="pay-step-no">3</div>
+                <div>
+                  <div class="pay-card-title" style="font-size:.9rem;">Bayar sesuai nominal</div>
+                  <div class="pay-help">Gunakan nomor rekening atau QRIS resmi yang tampil di halaman ini. Nominal harus sesuai dengan tagihan yang dipilih.</div>
+                </div>
+              </div>
+              <div class="pay-step">
+                <div class="pay-step-no">4</div>
+                <div>
+                  <div class="pay-card-title" style="font-size:.9rem;">Unggah bukti transfer</div>
+                  <div class="pay-help">Setelah transfer, unggah foto bukti pembayaran agar admin bisa meninjau dan mengonfirmasi tagihan Anda.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="pay-card">
+          <div class="pay-card-head">
+            <h2 class="pay-card-title">Pertanyaan Umum</h2>
+            <div class="pay-card-sub">Jawaban singkat untuk hal yang biasanya ditanyakan pelanggan.</div>
+          </div>
+          <div class="pay-card-body">
+            <div class="pay-faq">
+              <div class="pay-faq-item">
+                <div class="pay-faq-q">ID pelanggan saya tidak ketemu</div>
+                <div class="pay-help">Pastikan formatnya benar, misalnya <strong>NK000123</strong>. Jika masih tidak ditemukan, hubungi admin Netking.</div>
+              </div>
+              <div class="pay-faq-item">
+                <div class="pay-faq-q">Sudah transfer tapi belum dikonfirmasi</div>
+                <div class="pay-help">Unggah bukti pembayaran dari halaman ini. Admin akan meninjau dan mengubah status tagihan setelah bukti valid.</div>
+              </div>
+              <div class="pay-faq-item">
+                <div class="pay-faq-q">Bisa bayar lebih dari satu tagihan?</div>
+                <div class="pay-help">Bisa, tetapi pilih dan unggah bukti untuk masing-masing tagihan agar pencatatannya tidak tertukar.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      @if($customer)
+        <section class="pay-card">
+          <div class="pay-card-head">
+            <h2 class="pay-card-title">Data Pelanggan & Tagihan Aktif</h2>
+            <div class="pay-card-sub">Setelah ID pelanggan dicek, semua tagihan aktif akan tampil di bagian ini.</div>
+          </div>
+          <div class="pay-card-body">
             <div class="pay-customer">
               <div class="pay-kpi">
                 <div class="pay-kpi-label">Pelanggan</div>
@@ -573,191 +686,79 @@
                   </div>
                 @endforeach
               </div>
-
-              @if($selectedInvoice)
-                <div class="pay-panel">
-                  <div class="pay-method-card">
-                    <div class="pay-card-title" style="margin-bottom:12px;">Instruksi Pembayaran</div>
-                    <div class="pay-help" style="margin-bottom:16px;">Bayar sesuai nominal tagihan berikut: <strong>Rp {{ number_format($selectedInvoice->amount, 0, ',', '.') }}</strong>, lalu unggah bukti transfer di form bawah.</div>
-
-                    @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
-                      <div class="pay-bank-list" style="margin-bottom:14px;">
-                        @foreach($paymentSettings['accounts'] as $account)
-                          <div class="pay-bank">
-                            <div class="pay-bank-name">{{ $account['bank_name'] ?? '-' }}</div>
-                            <div class="pay-bank-number">{{ $account['account_number'] ?? '-' }}</div>
-                            <div class="pay-help">a.n. {{ $account['account_holder'] ?? '-' }}</div>
-                          </div>
-                        @endforeach
-                      </div>
-                    @endif
-
-                    @if(!empty($paymentSettings['qris']))
-                      <div style="margin-top:10px;">
-                        <div class="pay-bank-name" style="margin-bottom:8px;">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
-                        <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener">
-                          <img class="pay-qris" src="{{ $paymentSettings['qris']['image_url'] }}" alt="QRIS NETKING">
-                        </a>
-                        @if(!empty($paymentSettings['qris']['notes']))
-                          <div class="pay-help" style="margin-top:10px;">{{ $paymentSettings['qris']['notes'] }}</div>
-                        @endif
-                      </div>
-                    @endif
-
-                    <div class="pay-help" style="margin-top:12px;">{{ $paymentSettings['notes'] ?? 'Transfer atau bayar via QRIS sesuai nominal invoice, lalu upload bukti pembayaran agar admin bisa memverifikasi pembayaran Anda.' }}</div>
-                  </div>
-
-                  <div class="pay-upload">
-                    <div class="pay-card-title" style="margin-bottom:12px;">Upload Bukti Pembayaran</div>
-                    @if($selectedInvoice->payment_review_status === 'submitted')
-                      <div class="pay-alert pay-alert-warning">Bukti pembayaran untuk tagihan ini sudah pernah dikirim dan sedang menunggu review. Jika perlu, Anda bisa ganti file bukti di bawah.</div>
-                    @endif
-                    <form method="POST" action="{{ route('payment.public.submit') }}" enctype="multipart/form-data" style="display:grid;gap:14px;">
-                      @csrf
-                      <input type="hidden" name="customer_code" value="{{ $customer->customer_code }}">
-                      <input type="hidden" name="invoice_id" value="{{ $selectedInvoice->id }}">
-
-                      <div>
-                        <label class="pay-label">Metode Pembayaran</label>
-                        <select name="payment_method" class="pay-select" required>
-                          <option value="">Pilih metode</option>
-                          <option value="transfer_bank" @selected(old('payment_method', $selectedInvoice->payment_method) === 'transfer_bank')>Transfer Bank</option>
-                          <option value="qris" @selected(old('payment_method', $selectedInvoice->payment_method) === 'qris')>QRIS</option>
-                          <option value="cash" @selected(old('payment_method', $selectedInvoice->payment_method) === 'cash')>Cash</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label class="pay-label">Foto Bukti Transfer</label>
-                        <input type="file" name="payment_proof" class="pay-file" accept=".jpg,.jpeg,.png,.webp,image/*" required>
-                        <div class="pay-help" style="margin-top:8px;">Format JPG, PNG, atau WEBP. Maksimal 5 MB.</div>
-                      </div>
-
-                      <div>
-                        <label class="pay-label">Catatan</label>
-                        <textarea name="notes" class="pay-textarea" placeholder="Contoh: transfer dari rekening BRI a.n. Andi">{{ old('notes', $selectedInvoice->payment_proof_notes) }}</textarea>
-                      </div>
-
-                      @if($selectedInvoice->payment_proof_url)
-                        <div>
-                          <a class="pay-btn pay-btn-secondary" href="{{ $selectedInvoice->payment_proof_url }}" target="_blank" rel="noopener">Lihat Bukti yang Sudah Diunggah</a>
-                        </div>
-                      @endif
-
-                      <button class="pay-btn pay-btn-primary" type="submit">
-                        <i class='bx bx-upload'></i>
-                        {{ $selectedInvoice->payment_review_status === 'submitted' ? 'Ganti Bukti Pembayaran' : 'Kirim Bukti Pembayaran' }}
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              @endif
             @endif
-          @endif
-        </div>
-      </main>
-
-      <aside class="pay-side-stack">
-        <section class="pay-card">
-          <div class="pay-card-head">
-            <h2 class="pay-card-title">Metode Pembayaran Resmi</h2>
-            <div class="pay-card-sub">Informasi ini selalu tampil agar pelanggan langsung tahu harus transfer ke mana.</div>
           </div>
-          <div class="pay-card-body">
-            <div class="pay-method-grid">
-              @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
-                <div class="pay-bank-list">
-                  @foreach($paymentSettings['accounts'] as $account)
-                    <div class="pay-bank">
-                      <div class="pay-bank-name">{{ $account['bank_name'] ?? '-' }}</div>
-                      <div class="pay-bank-number">{{ $account['account_number'] ?? '-' }}</div>
-                      <div class="pay-help">a.n. {{ $account['account_holder'] ?? '-' }}</div>
-                    </div>
-                  @endforeach
-                </div>
-              @endif
+        </section>
 
-              @if(!empty($paymentSettings['qris']))
-                <div>
-                  <div class="pay-bank-name" style="margin-bottom:8px;">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
-                  <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener">
-                    <img class="pay-qris" src="{{ $paymentSettings['qris']['image_url'] }}" alt="QRIS NETKING">
-                  </a>
-                  @if(!empty($paymentSettings['qris']['notes']))
-                    <div class="pay-help" style="margin-top:10px;">{{ $paymentSettings['qris']['notes'] }}</div>
+        @if($selectedInvoice)
+          <section class="pay-top-grid">
+            <section class="pay-card">
+              <div class="pay-card-head">
+                <h2 class="pay-card-title">Instruksi Pembayaran Tagihan</h2>
+                <div class="pay-card-sub">Nominal yang harus dibayar untuk tagihan yang dipilih.</div>
+              </div>
+              <div class="pay-card-body">
+                <div class="pay-method-card">
+                  <div class="pay-card-title" style="margin-bottom:12px;">{{ $selectedInvoice->invoice_number }}</div>
+                  <div class="pay-help" style="margin-bottom:16px;">Bayar sesuai nominal tagihan berikut: <strong>Rp {{ number_format($selectedInvoice->amount, 0, ',', '.') }}</strong>, lalu unggah bukti transfer di form sebelah.</div>
+                  <div class="pay-mini-note">{{ $paymentSettings['notes'] ?? 'Transfer atau bayar via QRIS sesuai nominal invoice, lalu upload bukti pembayaran agar admin bisa memverifikasi pembayaran Anda.' }}</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="pay-card">
+              <div class="pay-card-head">
+                <h2 class="pay-card-title">Upload Bukti Pembayaran</h2>
+                <div class="pay-card-sub">Setelah transfer, kirim bukti pembayaran agar admin dapat melakukan review.</div>
+              </div>
+              <div class="pay-card-body">
+                <div class="pay-upload">
+                  @if($selectedInvoice->payment_review_status === 'submitted')
+                    <div class="pay-alert pay-alert-warning">Bukti pembayaran untuk tagihan ini sudah pernah dikirim dan sedang menunggu review. Jika perlu, Anda bisa ganti file bukti di bawah.</div>
                   @endif
-                </div>
-              @endif
+                  <form method="POST" action="{{ route('payment.public.submit') }}" enctype="multipart/form-data" style="display:grid;gap:14px;">
+                    @csrf
+                    <input type="hidden" name="customer_code" value="{{ $customer->customer_code }}">
+                    <input type="hidden" name="invoice_id" value="{{ $selectedInvoice->id }}">
 
-              <div class="pay-mini-note">
-                Pastikan nominal transfer sesuai tagihan yang dipilih. Setelah transfer, unggah bukti pembayaran di halaman ini agar admin dapat meninjau tagihan Anda.
-              </div>
-            </div>
-          </div>
-        </section>
+                    <div>
+                      <label class="pay-label">Metode Pembayaran</label>
+                      <select name="payment_method" class="pay-select" required>
+                        <option value="">Pilih metode</option>
+                        <option value="transfer_bank" @selected(old('payment_method', $selectedInvoice->payment_method) === 'transfer_bank')>Transfer Bank</option>
+                        <option value="qris" @selected(old('payment_method', $selectedInvoice->payment_method) === 'qris')>QRIS</option>
+                        <option value="cash" @selected(old('payment_method', $selectedInvoice->payment_method) === 'cash')>Cash</option>
+                      </select>
+                    </div>
 
-        <section class="pay-card">
-          <div class="pay-card-head">
-            <h2 class="pay-card-title">Tata Cara Bayar</h2>
-            <div class="pay-card-sub">Biar pelanggan tinggal ikuti langkahnya saja.</div>
-          </div>
-          <div class="pay-card-body">
-            <div class="pay-steps">
-              <div class="pay-step">
-                <div class="pay-step-no">1</div>
-                <div>
-                  <div class="pay-card-title" style="font-size:.9rem;">Masukkan ID pelanggan</div>
-                  <div class="pay-help">ID pelanggan berbentuk seperti <strong>NK000123</strong>. Setelah dimasukkan, sistem akan menampilkan tagihan aktif Anda.</div>
-                </div>
-              </div>
-              <div class="pay-step">
-                <div class="pay-step-no">2</div>
-                <div>
-                  <div class="pay-card-title" style="font-size:.9rem;">Pilih tagihan yang mau dibayar</div>
-                  <div class="pay-help">Kalau ada lebih dari satu tagihan aktif, pilih invoice yang ingin dibayar terlebih dahulu.</div>
-                </div>
-              </div>
-              <div class="pay-step">
-                <div class="pay-step-no">3</div>
-                <div>
-                  <div class="pay-card-title" style="font-size:.9rem;">Bayar sesuai nominal</div>
-                  <div class="pay-help">Gunakan nomor rekening atau QRIS resmi yang tampil di halaman ini. Nominal harus sesuai dengan tagihan yang dipilih.</div>
-                </div>
-              </div>
-              <div class="pay-step">
-                <div class="pay-step-no">4</div>
-                <div>
-                  <div class="pay-card-title" style="font-size:.9rem;">Unggah bukti transfer</div>
-                  <div class="pay-help">Setelah transfer, unggah foto bukti pembayaran agar admin bisa meninjau dan mengonfirmasi tagihan Anda.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+                    <div>
+                      <label class="pay-label">Foto Bukti Transfer</label>
+                      <input type="file" name="payment_proof" class="pay-file" accept=".jpg,.jpeg,.png,.webp,image/*" required>
+                      <div class="pay-help" style="margin-top:8px;">Format JPG, PNG, atau WEBP. Maksimal 5 MB.</div>
+                    </div>
 
-        <section class="pay-card">
-          <div class="pay-card-head">
-            <h2 class="pay-card-title">Pertanyaan Umum</h2>
-            <div class="pay-card-sub">Jawaban singkat untuk hal yang biasanya ditanyakan pelanggan.</div>
-          </div>
-          <div class="pay-card-body">
-            <div class="pay-faq">
-              <div class="pay-faq-item">
-                <div class="pay-faq-q">ID pelanggan saya tidak ketemu</div>
-                <div class="pay-help">Pastikan formatnya benar, misalnya <strong>NK000123</strong>. Jika masih tidak ditemukan, hubungi admin Netking.</div>
+                    <div>
+                      <label class="pay-label">Catatan</label>
+                      <textarea name="notes" class="pay-textarea" placeholder="Contoh: transfer dari rekening BRI a.n. Andi">{{ old('notes', $selectedInvoice->payment_proof_notes) }}</textarea>
+                    </div>
+
+                    @if($selectedInvoice->payment_proof_url)
+                      <div>
+                        <a class="pay-btn pay-btn-secondary" href="{{ $selectedInvoice->payment_proof_url }}" target="_blank" rel="noopener">Lihat Bukti yang Sudah Diunggah</a>
+                      </div>
+                    @endif
+
+                    <button class="pay-btn pay-btn-primary" type="submit">
+                      <i class='bx bx-upload'></i>
+                      {{ $selectedInvoice->payment_review_status === 'submitted' ? 'Ganti Bukti Pembayaran' : 'Kirim Bukti Pembayaran' }}
+                    </button>
+                  </form>
+                </div>
               </div>
-              <div class="pay-faq-item">
-                <div class="pay-faq-q">Sudah transfer tapi belum dikonfirmasi</div>
-                <div class="pay-help">Unggah bukti pembayaran dari halaman ini. Admin akan meninjau dan mengubah status tagihan setelah bukti valid.</div>
-              </div>
-              <div class="pay-faq-item">
-                <div class="pay-faq-q">Bisa bayar lebih dari satu tagihan?</div>
-                <div class="pay-help">Bisa, tetapi pilih dan unggah bukti untuk masing-masing tagihan agar pencatatannya tidak tertukar.</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </aside>
+            </section>
+          </section>
+        @endif
+      @endif
     </div>
   </div>
 </body>
