@@ -47,7 +47,7 @@
         </div>
       </div>
 
-      <div class="row g-4">
+      <div class="row g-4 align-items-start">
       <div class="col-lg-7 col-md-7">
         <div class="card">
           <div class="card-header">
