@@ -101,6 +101,27 @@
       margin: 0;
       color: rgba(255,255,255,.8);
     }
+    .pay-hero-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+    .pay-metric {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #fff;
+      font-size: .8rem;
+      font-weight: 600;
+      backdrop-filter: blur(8px);
+    }
     .pay-layout {
       display: grid;
       grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
@@ -132,6 +153,35 @@
     }
     .pay-card-body {
       padding: 20px 22px 22px;
+    }
+    .pay-highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .pay-highlight {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .pay-highlight-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(37,99,235,.08);
+      color: var(--blue);
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+    .pay-highlight-title {
+      font-size: .9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
     }
     .pay-form {
       display: flex;
@@ -263,12 +313,20 @@
       display: grid;
       gap: 12px;
     }
+    .pay-side-stack {
+      display: grid;
+      gap: 18px;
+    }
     .pay-method-card,
     .pay-upload {
       border: 1px solid var(--line);
       border-radius: 18px;
       padding: 16px;
       background: var(--surface-2);
+    }
+    .pay-method-grid {
+      display: grid;
+      gap: 14px;
     }
     .pay-bank-list {
       display: grid;
@@ -329,6 +387,15 @@
       font-size: .79rem;
       line-height: 1.55;
     }
+    .pay-mini-note {
+      border-radius: 16px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      padding: 14px 16px;
+      font-size: .83rem;
+      line-height: 1.6;
+    }
     .pay-steps {
       display: grid;
       gap: 12px;
@@ -350,9 +417,25 @@
       align-items: center;
       justify-content: center;
     }
+    .pay-faq {
+      display: grid;
+      gap: 12px;
+    }
+    .pay-faq-item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: var(--surface-2);
+    }
+    .pay-faq-q {
+      font-size: .87rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
     @media (max-width: 960px) {
       .pay-layout { grid-template-columns: 1fr; }
       .pay-customer { grid-template-columns: 1fr 1fr; }
+      .pay-highlight-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .pay-shell { width: min(100% - 20px, 1120px); padding-top: 14px; }
@@ -373,10 +456,15 @@
           <div class="pay-brand-icon"><i class='bx bx-credit-card-front'></i></div>
           <div>
             <h1>Pembayaran Netking</h1>
-            <p>Cek tagihan, lihat rekening atau QRIS, lalu unggah bukti transfer tanpa login portal.</p>
+            <p>Cek tagihan, lihat rekening resmi atau QRIS, lalu unggah bukti transfer tanpa login portal customer.</p>
           </div>
         </div>
         <div class="pay-hero-note">Cukup siapkan <strong>ID pelanggan</strong> Anda.</div>
+      </div>
+      <div class="pay-hero-metrics">
+        <div class="pay-metric"><i class='bx bx-id-card'></i> Tanpa login portal</div>
+        <div class="pay-metric"><i class='bx bx-qr-scan'></i> Rekening & QRIS resmi</div>
+        <div class="pay-metric"><i class='bx bx-cloud-upload'></i> Upload bukti langsung</div>
       </div>
     </section>
 
@@ -401,6 +489,24 @@
             <input type="text" class="pay-input" name="customer_code" value="{{ old('customer_code', $customerCode) }}" placeholder="Masukkan ID pelanggan, contoh NK000123">
             <button class="pay-btn pay-btn-primary" type="submit"><i class='bx bx-search'></i> Cek Tagihan</button>
           </form>
+
+          <div class="pay-highlight-grid">
+            <div class="pay-highlight">
+              <div class="pay-highlight-icon"><i class='bx bx-search-alt'></i></div>
+              <div class="pay-highlight-title">1. Cek tagihan</div>
+              <div class="pay-help">Masukkan ID pelanggan untuk menampilkan semua tagihan aktif yang belum lunas.</div>
+            </div>
+            <div class="pay-highlight">
+              <div class="pay-highlight-icon"><i class='bx bx-credit-card'></i></div>
+              <div class="pay-highlight-title">2. Bayar sesuai nominal</div>
+              <div class="pay-help">Gunakan rekening atau QRIS resmi yang tampil di halaman ini sesuai jumlah tagihan.</div>
+            </div>
+            <div class="pay-highlight">
+              <div class="pay-highlight-icon"><i class='bx bx-check-shield'></i></div>
+              <div class="pay-highlight-title">3. Upload bukti transfer</div>
+              <div class="pay-help">Admin akan meninjau bukti bayar Anda sebelum tagihan dikonfirmasi lunas.</div>
+            </div>
+          </div>
 
           @if($customer)
             <div style="height:18px"></div>
@@ -551,36 +657,106 @@
         </div>
       </main>
 
-      <aside class="pay-card">
-        <div class="pay-card-head">
-          <h2 class="pay-card-title">Tata Cara Bayar</h2>
-          <div class="pay-card-sub">Biar pelanggan tinggal ikuti langkahnya saja.</div>
-        </div>
-        <div class="pay-card-body">
-          <div class="pay-steps">
-            <div class="pay-step">
-              <div class="pay-step-no">1</div>
-              <div>
-                <div class="pay-card-title" style="font-size:.9rem;">Masukkan ID pelanggan</div>
-                <div class="pay-help">ID pelanggan berbentuk seperti <strong>NK000123</strong>. Setelah dimasukkan, sistem akan menampilkan tagihan aktif Anda.</div>
-              </div>
-            </div>
-            <div class="pay-step">
-              <div class="pay-step-no">2</div>
-              <div>
-                <div class="pay-card-title" style="font-size:.9rem;">Bayar sesuai nominal</div>
-                <div class="pay-help">Gunakan nomor rekening atau QRIS resmi yang tampil di halaman ini. Nominal harus sesuai dengan tagihan yang dipilih.</div>
-              </div>
-            </div>
-            <div class="pay-step">
-              <div class="pay-step-no">3</div>
-              <div>
-                <div class="pay-card-title" style="font-size:.9rem;">Unggah bukti transfer</div>
-                <div class="pay-help">Setelah transfer, unggah foto bukti pembayaran agar admin bisa meninjau dan mengonfirmasi tagihan Anda.</div>
+      <aside class="pay-side-stack">
+        <section class="pay-card">
+          <div class="pay-card-head">
+            <h2 class="pay-card-title">Metode Pembayaran Resmi</h2>
+            <div class="pay-card-sub">Informasi ini selalu tampil agar pelanggan langsung tahu harus transfer ke mana.</div>
+          </div>
+          <div class="pay-card-body">
+            <div class="pay-method-grid">
+              @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
+                <div class="pay-bank-list">
+                  @foreach($paymentSettings['accounts'] as $account)
+                    <div class="pay-bank">
+                      <div class="pay-bank-name">{{ $account['bank_name'] ?? '-' }}</div>
+                      <div class="pay-bank-number">{{ $account['account_number'] ?? '-' }}</div>
+                      <div class="pay-help">a.n. {{ $account['account_holder'] ?? '-' }}</div>
+                    </div>
+                  @endforeach
+                </div>
+              @endif
+
+              @if(!empty($paymentSettings['qris']))
+                <div>
+                  <div class="pay-bank-name" style="margin-bottom:8px;">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</div>
+                  <a href="{{ $paymentSettings['qris']['image_url'] }}" target="_blank" rel="noopener">
+                    <img class="pay-qris" src="{{ $paymentSettings['qris']['image_url'] }}" alt="QRIS NETKING">
+                  </a>
+                  @if(!empty($paymentSettings['qris']['notes']))
+                    <div class="pay-help" style="margin-top:10px;">{{ $paymentSettings['qris']['notes'] }}</div>
+                  @endif
+                </div>
+              @endif
+
+              <div class="pay-mini-note">
+                Pastikan nominal transfer sesuai tagihan yang dipilih. Setelah transfer, unggah bukti pembayaran di halaman ini agar admin dapat meninjau tagihan Anda.
               </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        <section class="pay-card">
+          <div class="pay-card-head">
+            <h2 class="pay-card-title">Tata Cara Bayar</h2>
+            <div class="pay-card-sub">Biar pelanggan tinggal ikuti langkahnya saja.</div>
+          </div>
+          <div class="pay-card-body">
+            <div class="pay-steps">
+              <div class="pay-step">
+                <div class="pay-step-no">1</div>
+                <div>
+                  <div class="pay-card-title" style="font-size:.9rem;">Masukkan ID pelanggan</div>
+                  <div class="pay-help">ID pelanggan berbentuk seperti <strong>NK000123</strong>. Setelah dimasukkan, sistem akan menampilkan tagihan aktif Anda.</div>
+                </div>
+              </div>
+              <div class="pay-step">
+                <div class="pay-step-no">2</div>
+                <div>
+                  <div class="pay-card-title" style="font-size:.9rem;">Pilih tagihan yang mau dibayar</div>
+                  <div class="pay-help">Kalau ada lebih dari satu tagihan aktif, pilih invoice yang ingin dibayar terlebih dahulu.</div>
+                </div>
+              </div>
+              <div class="pay-step">
+                <div class="pay-step-no">3</div>
+                <div>
+                  <div class="pay-card-title" style="font-size:.9rem;">Bayar sesuai nominal</div>
+                  <div class="pay-help">Gunakan nomor rekening atau QRIS resmi yang tampil di halaman ini. Nominal harus sesuai dengan tagihan yang dipilih.</div>
+                </div>
+              </div>
+              <div class="pay-step">
+                <div class="pay-step-no">4</div>
+                <div>
+                  <div class="pay-card-title" style="font-size:.9rem;">Unggah bukti transfer</div>
+                  <div class="pay-help">Setelah transfer, unggah foto bukti pembayaran agar admin bisa meninjau dan mengonfirmasi tagihan Anda.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="pay-card">
+          <div class="pay-card-head">
+            <h2 class="pay-card-title">Pertanyaan Umum</h2>
+            <div class="pay-card-sub">Jawaban singkat untuk hal yang biasanya ditanyakan pelanggan.</div>
+          </div>
+          <div class="pay-card-body">
+            <div class="pay-faq">
+              <div class="pay-faq-item">
+                <div class="pay-faq-q">ID pelanggan saya tidak ketemu</div>
+                <div class="pay-help">Pastikan formatnya benar, misalnya <strong>NK000123</strong>. Jika masih tidak ditemukan, hubungi admin Netking.</div>
+              </div>
+              <div class="pay-faq-item">
+                <div class="pay-faq-q">Sudah transfer tapi belum dikonfirmasi</div>
+                <div class="pay-help">Unggah bukti pembayaran dari halaman ini. Admin akan meninjau dan mengubah status tagihan setelah bukti valid.</div>
+              </div>
+              <div class="pay-faq-item">
+                <div class="pay-faq-q">Bisa bayar lebih dari satu tagihan?</div>
+                <div class="pay-help">Bisa, tetapi pilih dan unggah bukti untuk masing-masing tagihan agar pencatatannya tidak tertukar.</div>
+              </div>
+            </div>
+          </div>
+        </section>
       </aside>
     </div>
   </div>
