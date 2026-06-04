@@ -295,7 +295,7 @@
                       <h2 class="accordion-header">
                         <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#bank-{{ $idx }}">
                           <div class="d-flex align-items-center gap-2">
-                            <img src="{{ asset('img/banks/' . $bankSlug . '.png') }}" alt="{{ $account['bank_name'] }}" style="height: 24px;" onerror="this.outerHTML='<span class=fw-bold>{{ $account['bank_name'] ?? '' }}</span>'">
+                            <img src="{{ asset('img/banks/' . $bankSlug . '.png') }}" alt="{{ $account['bank_name'] }}" style="height: 28px; width: auto; object-fit: contain;" onerror="this.outerHTML='<span class=fw-bold>{{ $account['bank_name'] ?? '' }}</span>'">
                           </div>
                         </button>
                       </h2>
@@ -318,7 +318,7 @@
                     <h2 class="accordion-header">
                       <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#qris-panel">
                         <div class="d-flex align-items-center gap-2">
-                          <img src="{{ asset('img/banks/qris.png') }}" alt="QRIS" style="height: 24px;" onerror="this.outerHTML='<span class=fw-bold>QRIS</span>'">
+                          <img src="{{ asset('img/banks/qris.png') }}" alt="QRIS" style="height: 28px; width: auto; object-fit: contain;" onerror="this.outerHTML='<span class=fw-bold>QRIS</span>'">
                         </div>
                       </button>
                     </h2>
