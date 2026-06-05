@@ -46,16 +46,6 @@
     gap: .5rem;
     align-items: center;
   }
-  .tg-req-page .tg-select {
-    min-width: 180px;
-    padding: .45rem .7rem;
-    font-size: .8125rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    color: var(--txt);
-    outline: none;
-  }
   .tg-req-page .table th,
   .tg-req-page .table td { vertical-align: middle; }
   .tg-req-page .table th {
@@ -145,20 +135,11 @@
     color: var(--blue);
     margin-bottom: .65rem;
   }
-  .tg-req-page .tg-pagination {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: .75rem;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-  }
   @media (max-width: 768px) {
     .tg-req-page .tg-toolbar-form,
     .tg-req-page .tg-toolbar-actions {
       width: 100%;
     }
-    .tg-req-page .tg-select,
     .tg-req-page .nk-search-wrap,
     .tg-req-page .ms-btn,
     .tg-req-page .ms-btn-secondary {
@@ -192,7 +173,7 @@
             <i class='bx bx-search'></i>
             <input type="text" name="q" class="nk-search-input" value="{{ $q }}" placeholder="Cari ref, pelanggan, PPPoE, area, atau user Telegram...">
           </div>
-          <select name="status" class="tg-select">
+          <select name="status" class="form-select form-select-sm">
             <option value="">Semua status</option>
             @foreach($statuses as $s)
               <option value="{{ $s }}" @selected($status === $s)>{{ $s }}</option>
@@ -262,14 +243,14 @@
         </div>
       </div>
 
-      <div class="tg-pagination">
+      <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
         <div class="text-muted small">Halaman {{ $page }} dari {{ $lastPage }}</div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-1">
           @if($page > 1)
-            <a class="ms-btn-secondary" href="{{ route('admin.telegram.requests.index', ['q' => $q, 'status' => $status, 'page' => $page - 1]) }}">Prev</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.telegram.requests.index', ['q' => $q, 'status' => $status, 'page' => $page - 1]) }}">Prev</a>
           @endif
           @if($page < $lastPage)
-            <a class="ms-btn-secondary" href="{{ route('admin.telegram.requests.index', ['q' => $q, 'status' => $status, 'page' => $page + 1]) }}">Next</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.telegram.requests.index', ['q' => $q, 'status' => $status, 'page' => $page + 1]) }}">Next</a>
           @endif
         </div>
       </div>

@@ -44,7 +44,7 @@
         </div>
         <div class="ms-table-shell">
           <div class="table-responsive">
-            <table class="table">
+            <table class="table table-flat mb-0">
               <thead>
                 <tr>
                   <th>Nama Kategori</th>

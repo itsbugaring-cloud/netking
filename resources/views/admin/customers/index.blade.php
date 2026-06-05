@@ -161,8 +161,7 @@
         <input type="hidden" name="search" value="{{ request('search') }}">
         <input type="hidden" name="status" value="{{ request('status') }}">
         <input type="hidden" name="per_page" value="{{ $perPage ?? 50 }}">
-        <select name="area_id" class="no-select2" onchange="this.form.submit()"
-          style="padding:.3rem .5rem;font-size:.8125rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--txt);outline:none;cursor:pointer;">
+        <select name="area_id" class="form-select form-select-sm" onchange="this.form.submit()">
           <option value="">Semua Area</option>
           @foreach($areas as $area)
           <option value="{{ $area->id }}" {{ request('area_id') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
@@ -186,8 +185,7 @@
             <input type="text" name="search" class="nk-search-input" value="{{ request('search') }}" placeholder="Cari nama, PPPoE, no HP, alamat...">
           </div>
 
-          <select name="status" class="no-select2"
-            style="width:170px;padding:.3rem .5rem;font-size:.8125rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--txt);outline:none;cursor:pointer;">
+          <select name="status" class="form-select form-select-sm">
             <option value="">Semua status</option>
             <option value="active" @selected(request('status') === 'active')>Aktif</option>
             <option value="suspended" @selected(request('status') === 'suspended')>Diisolir</option>
@@ -198,8 +196,7 @@
 
         <div class="d-flex align-items-center gap-2">
           <span style="font-size:.76rem;color:var(--txt-3);font-weight:500;">Tampilkan</span>
-          <select name="per_page" class="no-select2" onchange="this.form.submit()"
-            style="width:80px;padding:.3rem .4rem;font-size:.8125rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--txt);outline:none;font-family:inherit;cursor:pointer;">
+          <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
             <option value="25" @selected(($perPage ?? 50) == 25)>25</option>
             <option value="50" @selected(($perPage ?? 50) == 50)>50</option>
             <option value="100" @selected(($perPage ?? 50) == 100)>100</option>

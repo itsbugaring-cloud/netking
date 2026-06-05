@@ -78,7 +78,7 @@
             <i class='bx bx-calendar'></i>
             <input type="date" name="to_date" class="nk-search-input nk-date-filter-input" value="{{ request('to_date') }}" title="Sampai tanggal">
           </div>
-          <select name="status" class="nk-length-select" style="width:150px;">
+          <select name="status" class="form-select form-select-sm" style="width:150px;">
             <option value="">Semua status</option>
             <option value="unpaid" @selected(request('status') === 'unpaid')>Belum Lunas</option>
             <option value="paid" @selected(request('status') === 'paid')>Lunas</option>
@@ -87,7 +87,7 @@
         </div>
         <div class="d-flex align-items-center gap-2">
           <span style="font-size:.78rem;color:var(--txt-3);">Tampilkan</span>
-          <select name="per_page" class="nk-length-select">
+          <select name="per_page" class="form-select form-select-sm">
             <option value="10" @selected(($perPage ?? 20) == 10)>10</option>
             <option value="20" @selected(($perPage ?? 20) == 20)>20</option>
             <option value="50" @selected(($perPage ?? 20) == 50)>50</option>

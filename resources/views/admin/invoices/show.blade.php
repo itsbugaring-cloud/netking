@@ -189,7 +189,7 @@
                         </div>
                     </div>
 
-                    <table class="table">
+                    <table class="table table-flat mb-0">
                         <thead>
                             <tr>
                                 <th>Keterangan</th>

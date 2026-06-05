@@ -26,7 +26,7 @@
         </div>
         <div class="d-flex align-items-center gap-2">
           <span style="font-size:.78rem;color:var(--txt-3);">Tampilkan</span>
-          <select id="areas-length" class="nk-length-select">
+          <select id="areas-length" class="form-select form-select-sm">
             <option value="10">10</option>
             <option value="25" selected>25</option>
             <option value="50">50</option>
