@@ -50,6 +50,9 @@
     .bento-grid .bento-side {
       grid-column: 2;
       grid-row: 1 / -1;
+      position: sticky;
+      top: 1rem;
+      align-self: start;
     }
     .card {
       border: none;
@@ -61,6 +64,63 @@
     }
     .accordion-button:not(.collapsed) {
       background: #eef2ff;
+    }
+    /* Skeleton loading */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeleton-pulse 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes skeleton-pulse {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    /* Status timeline */
+    .status-timeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 0.5rem;
+    }
+    .status-timeline .step {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+    .status-timeline .step.active { color: #2563eb; }
+    .status-timeline .step.done { color: #16a34a; }
+    .status-timeline .step.pending { color: #94a3b8; }
+    .status-timeline .line {
+      width: 20px;
+      height: 2px;
+      background: #e2e8f0;
+      margin: 0 4px;
+    }
+    .status-timeline .line.done { background: #16a34a; }
+    /* Confetti */
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      top: -10px;
+      opacity: 0;
+      animation: confetti-fall 3s ease-out forwards;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    @keyframes confetti-fall {
+      0% { opacity: 1; top: -10px; transform: rotate(0deg); }
+      100% { opacity: 0; top: 100vh; transform: rotate(720deg); }
+    }
+    /* Footer */
+    .pay-footer {
+      text-align: center;
+      padding: 2rem 0 1rem;
+      color: #94a3b8;
+      font-size: 0.8rem;
     }
     @media (max-width: 767.98px) {
       .bento-grid {
@@ -222,6 +282,15 @@
                           @if($invoice->payment_review_status === 'rejected' && $invoice->payment_reject_reason)
                             <div class="text-danger small mt-1">Bukti bayar ditolak: {{ $invoice->payment_reject_reason }}</div>
                           @endif
+                          @if($invoice->payment_review_status === 'submitted')
+                            <div class="status-timeline">
+                              <span class="step done"><i class="ti ti-check"></i> Dikirim</span>
+                              <span class="line done"></span>
+                              <span class="step active"><i class="ti ti-clock"></i> Ditinjau</span>
+                              <span class="line"></span>
+                              <span class="step pending"><i class="ti ti-circle-check"></i> Selesai</span>
+                            </div>
+                          @endif
                         </div>
                         <div class="col-auto d-flex align-items-center gap-2 flex-wrap">
                           <span class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
@@ -381,6 +450,11 @@
       </div>
       {{-- End Bento Grid --}}
 
+      {{-- Footer --}}
+      <div class="pay-footer">
+        &copy; {{ date('Y') }} Netking &bull; Powered by Netking
+      </div>
+
         </div>
       </div>
     </div>
@@ -407,12 +481,30 @@
       });
     }
 
-    // Loading state on search form submit
+    // Loading state with skeleton on search form submit
     document.querySelector('form[action]').addEventListener('submit', function() {
       const btn = document.getElementById('btnCekTagihan');
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mencari...';
     });
+
+    // Confetti on successful upload
+    @if(session('success'))
+    (function() {
+      const colors = ['#2563eb','#0ea5e9','#16a34a','#eab308','#ef4444','#8b5cf6'];
+      for (let i = 0; i < 60; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDelay = Math.random() * 1.5 + 's';
+        piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 5000);
+      }
+    })();
+    @endif
   </script>
 </body>
 </html>
