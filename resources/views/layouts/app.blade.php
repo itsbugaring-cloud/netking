@@ -5393,6 +5393,35 @@
       display:none !important;
     }
     .nk-length-select { padding:.3rem .4rem; font-size:.8125rem; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--txt); outline:none; font-family:inherit; cursor:pointer; width:70px; }
+
+    /* === COMPACT OVERRIDES: smaller dropdowns & pagination everywhere === */
+    .workspace-shell .main .form-select-sm,
+    .workspace-shell .main select.form-select {
+      padding: .25rem .5rem !important;
+      font-size: .75rem !important;
+      min-height: 30px !important;
+      height: 30px !important;
+      border-radius: 6px !important;
+    }
+    .workspace-shell .main .pagination {
+      gap: 2px !important;
+    }
+    .workspace-shell .main .pagination .page-link {
+      min-width: 28px !important;
+      height: 28px !important;
+      padding: 0 6px !important;
+      font-size: .72rem !important;
+      line-height: 28px !important;
+      border-radius: 5px !important;
+    }
+    .workspace-shell .main .dataTables_paginate .paginate_button {
+      min-width: 28px !important;
+      height: 28px !important;
+      padding: 0 6px !important;
+      font-size: .72rem !important;
+      line-height: 28px !important;
+      border-radius: 5px !important;
+    }
   </style>
   @yield('styles')
   @livewireStyles
