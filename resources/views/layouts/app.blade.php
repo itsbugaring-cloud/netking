@@ -5417,6 +5417,24 @@
       line-height: 28px !important;
       font-size: .75rem !important;
     }
+    /* Tables: borderless everywhere */
+    .workspace-shell .main .table,
+    .workspace-shell .main .table th,
+    .workspace-shell .main .table td {
+      border: none !important;
+    }
+    .workspace-shell .main .table > :not(caption) > * > * {
+      border-bottom: 1px solid var(--border, #f1f5f9) !important;
+      box-shadow: none !important;
+    }
+    .workspace-shell .main .table thead th {
+      border-bottom: 1px solid var(--border, #e2e8f0) !important;
+      background: transparent !important;
+    }
+    .workspace-shell .main .dataTables_wrapper .table {
+      border-collapse: separate !important;
+      border-spacing: 0 !important;
+    }
     /* Pagination: clean, no shadow, no double border */
     .workspace-shell .main .pagination {
       gap: 2px !important;
