@@ -84,17 +84,7 @@
   }
 
   if (! $isFinance) {
-    $sections[] = [
-      'label' => 'Tools',
-      'items' => [
-        [
-          'route'  => route('admin.signal.index'),
-          'active' => request()->routeIs('admin.signal*'),
-          'icon'   => 'bx bx-wifi-2',
-          'title'  => 'Cek Sinyal ONT',
-        ],
-      ],
-    ];
+    // Tools section removed
   }
 
   if ($isAdmin) {
@@ -112,53 +102,7 @@
   }
 
   if ($isAdmin) {
-    $sections[] = [
-      'label' => 'Inventaris',
-      'items' => [
-        [
-          'route'  => route('admin.inventory.dashboard'),
-          'active' => request()->routeIs('admin.inventory.dashboard'),
-          'icon'   => 'bx bx-tachometer',
-          'title'  => 'Ringkasan Inventaris',
-        ],
-        [
-          'route'  => route('admin.inventory.units.index'),
-          'active' => request()->routeIs('admin.inventory.units*'),
-          'icon'   => 'bx bx-chip',
-          'title'  => 'Unit Perangkat',
-        ],
-        [
-          'route'  => route('admin.inventory.kabel.index'),
-          'active' => request()->routeIs('admin.inventory.kabel*'),
-          'icon'   => 'bx bx-transfer',
-          'title'  => 'Stok Kabel',
-        ],
-        [
-          'route'  => route('admin.inventory.qty.index'),
-          'active' => request()->routeIs('admin.inventory.qty*'),
-          'icon'   => 'bx bx-box',
-          'title'  => 'Stok Barang',
-        ],
-        [
-          'route'  => route('admin.inventory.master-barang.index'),
-          'active' => request()->routeIs('admin.inventory.master-barang*'),
-          'icon'   => 'bx bx-list-ul',
-          'title'  => 'Data Barang',
-        ],
-        [
-          'route'  => route('admin.inventory.lokasi.index'),
-          'active' => request()->routeIs('admin.inventory.lokasi*'),
-          'icon'   => 'bx bx-map-pin',
-          'title'  => 'Lokasi Gudang',
-        ],
-        [
-          'route'  => route('admin.inventory.history.index'),
-          'active' => request()->routeIs('admin.inventory.history*'),
-          'icon'   => 'bx bx-history',
-          'title'  => 'Riwayat Transaksi',
-        ],
-      ],
-    ];
+    // Inventaris section removed
   }
 
   $sections[] = [
