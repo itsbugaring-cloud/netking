@@ -122,6 +122,20 @@
       color: #94a3b8;
       font-size: 0.8rem;
     }
+    /* Pulse animation */
+    .btn-pulse {
+      animation: pulse-ring 2s infinite;
+    }
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(37,99,235,.4); }
+      70% { box-shadow: 0 0 0 8px rgba(37,99,235,0); }
+      100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+    }
+    /* Drop zone */
+    #dropZone.drag-over {
+      border-color: #2563eb !important;
+      background: #eef2ff;
+    }
     @media (max-width: 767.98px) {
       .bento-grid {
         grid-template-columns: 1fr;
@@ -296,7 +310,7 @@
                           <span class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
                           <span class="fs-3 fw-bold">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
                           @if(!$isSelected)
-                            <a class="btn btn-outline-secondary btn-sm" href="{{ route('payment.public', ['customerCode' => $customer->customer_code, 'invoice' => $invoice->id]) }}">Pilih</a>
+                            <a class="btn btn-outline-secondary btn-sm btn-pulse" href="{{ route('payment.public', ['customerCode' => $customer->customer_code, 'invoice' => $invoice->id]) }}">Pilih</a>
                           @else
                             <span class="btn btn-primary btn-sm disabled">Dipilih</span>
                           @endif
@@ -338,8 +352,18 @@
 
                 <div class="mb-3">
                   <label class="form-label">Foto Bukti Transfer</label>
-                  <input type="file" name="payment_proof" class="form-control" accept=".jpg,.jpeg,.png,.webp,image/*" required>
-                  <div class="form-hint mt-1">Format JPG, PNG, atau WEBP. Maksimal 5 MB.</div>
+                  <div id="dropZone" class="border border-2 border-dashed rounded p-4 text-center position-relative" style="cursor: pointer; transition: all .2s;">
+                    <input type="file" name="payment_proof" id="fileInput" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;" accept=".jpg,.jpeg,.png,.webp,image/*" required>
+                    <div id="dropPlaceholder">
+                      <i class="ti ti-cloud-upload fs-1 text-primary"></i>
+                      <div class="fw-medium mt-2">Seret file ke sini atau klik untuk memilih</div>
+                      <div class="text-secondary small mt-1">JPG, PNG, atau WEBP. Maks 5 MB.</div>
+                    </div>
+                    <div id="filePreview" class="d-none">
+                      <img id="previewImg" class="rounded shadow-sm" style="max-height: 150px; max-width: 100%;">
+                      <div id="fileName" class="text-secondary small mt-2"></div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="mb-3">
@@ -487,6 +511,49 @@
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mencari...';
     });
+
+    // Auto-format customer code: uppercase + NK prefix
+    const codeInput = document.querySelector('input[name="customer_code"]');
+    if (codeInput) {
+      codeInput.addEventListener('input', function() {
+        let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (/^\d+$/.test(val) && val.length > 0) {
+          val = 'NK' + val.padStart(6, '0');
+        }
+        this.value = val;
+      });
+    }
+
+    // Drag & drop + preview
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    if (dropZone && fileInput) {
+      ['dragenter','dragover'].forEach(e => {
+        dropZone.addEventListener(e, function(ev) { ev.preventDefault(); dropZone.classList.add('drag-over'); });
+      });
+      ['dragleave','drop'].forEach(e => {
+        dropZone.addEventListener(e, function(ev) { ev.preventDefault(); dropZone.classList.remove('drag-over'); });
+      });
+      dropZone.addEventListener('drop', function(ev) {
+        if (ev.dataTransfer.files.length) {
+          fileInput.files = ev.dataTransfer.files;
+          showPreview(ev.dataTransfer.files[0]);
+        }
+      });
+      fileInput.addEventListener('change', function() {
+        if (this.files.length) showPreview(this.files[0]);
+      });
+      function showPreview(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('previewImg').src = e.target.result;
+          document.getElementById('fileName').textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)';
+          document.getElementById('dropPlaceholder').classList.add('d-none');
+          document.getElementById('filePreview').classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
 
     // Confetti on successful upload
     @if(session('success'))
