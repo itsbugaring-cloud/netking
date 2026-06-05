@@ -5436,8 +5436,8 @@
     }
     .workspace-shell .main .pagination .page-item.active .page-link,
     .workspace-shell .main .dataTables_paginate .paginate_button.current {
-      background: var(--blue, #2563eb) !important;
-      border-color: var(--blue, #2563eb) !important;
+      background: #2563eb !important;
+      border-color: #2563eb !important;
       color: #fff !important;
       box-shadow: none !important;
     }
