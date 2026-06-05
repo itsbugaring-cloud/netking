@@ -5396,24 +5396,32 @@
 
     /* === COMPACT OVERRIDES: smaller dropdowns & pagination everywhere === */
     .workspace-shell .main .form-select-sm,
-    .workspace-shell .main select.form-select {
+    .workspace-shell .main select.form-select,
+    .workspace-shell .main .dataTables_wrapper select,
+    .workspace-shell .main .nk-length-select {
       padding: .25rem .5rem !important;
       font-size: .75rem !important;
       min-height: 30px !important;
       height: 30px !important;
       border-radius: 6px !important;
+      box-shadow: none !important;
     }
+    /* Select2 compact */
+    .workspace-shell .main .select2-container .select2-selection--single {
+      min-height: 30px !important;
+      height: 30px !important;
+      font-size: .75rem !important;
+      border-radius: 6px !important;
+    }
+    .workspace-shell .main .select2-container .select2-selection__rendered {
+      line-height: 28px !important;
+      font-size: .75rem !important;
+    }
+    /* Pagination: clean, no shadow, no double border */
     .workspace-shell .main .pagination {
       gap: 2px !important;
     }
-    .workspace-shell .main .pagination .page-link {
-      min-width: 28px !important;
-      height: 28px !important;
-      padding: 0 6px !important;
-      font-size: .72rem !important;
-      line-height: 28px !important;
-      border-radius: 5px !important;
-    }
+    .workspace-shell .main .pagination .page-link,
     .workspace-shell .main .dataTables_paginate .paginate_button {
       min-width: 28px !important;
       height: 28px !important;
@@ -5421,6 +5429,29 @@
       font-size: .72rem !important;
       line-height: 28px !important;
       border-radius: 5px !important;
+      box-shadow: none !important;
+      border: 1px solid var(--border, #e2e8f0) !important;
+      background: #fff !important;
+      color: var(--txt, #1e293b) !important;
+    }
+    .workspace-shell .main .pagination .page-item.active .page-link,
+    .workspace-shell .main .dataTables_paginate .paginate_button.current {
+      background: var(--blue, #2563eb) !important;
+      border-color: var(--blue, #2563eb) !important;
+      color: #fff !important;
+      box-shadow: none !important;
+    }
+    .workspace-shell .main .pagination .page-link:hover,
+    .workspace-shell .main .dataTables_paginate .paginate_button:hover:not(.current) {
+      background: #f1f5f9 !important;
+      color: var(--txt, #1e293b) !important;
+      box-shadow: none !important;
+    }
+    .workspace-shell .main .pagination .page-item.disabled .page-link,
+    .workspace-shell .main .dataTables_paginate .paginate_button.disabled {
+      opacity: .4 !important;
+      background: transparent !important;
+      box-shadow: none !important;
     }
   </style>
   @yield('styles')
