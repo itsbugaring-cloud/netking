@@ -41,7 +41,7 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
     - Create `app/Models/Ipam/IpamAuditLog.php` with $timestamps = false, only created_at
     - _Requirements: 2.1, 2.2, 2.3_
 
-- [~] 2. Checkpoint - Run migration and verify models
+- [x] 2. Checkpoint - Run migration and verify models
   - Ensure migration runs without errors, ask the user if questions arise.
 
 - [x] 3. Service layer implementation
@@ -76,7 +76,7 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
     - Implement `calculateAll()`: aggregate utilization for all subnets
     - _Requirements: 6.3, 6.4_
 
-- [~] 4. Checkpoint - Verify services compile correctly
+- [x] 4. Checkpoint - Verify services compile correctly
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 5. Controller and routes
@@ -122,7 +122,7 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
     - Define all routes matching the route structure in the design document
     - _Requirements: 11.1, 11.2_
 
-- [~] 6. Checkpoint - Verify routes register without errors
+- [x] 6. Checkpoint - Verify routes register without errors
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 7. Blade views
@@ -168,8 +168,8 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
     - Ensure section only visible to admin-role users
     - _Requirements: 10.1, 10.2, 10.5_
 
-- [ ] 9. Artisan commands
-  - [~] 9.1 Create ipam:migrate-data command
+- [x] 9. Artisan commands
+  - [x] 9.1 Create ipam:migrate-data command
     - Create `app/Console/Commands/IpamMigrateData.php`
     - Accept SQLite file path as argument
     - Read all tables from SQLite and insert into MySQL ipam_* tables
@@ -177,14 +177,14 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
     - Display progress and summary (records migrated per table)
     - _Requirements: 1.5, 14.1_
 
-  - [~] 9.2 Create ipam:verify command
+  - [x] 9.2 Create ipam:verify command
     - Create `app/Console/Commands/IpamVerify.php`
     - Check record counts match between source and destination
     - Test connectivity to each router from VM 103
     - Display pass/fail checklist for each verification step
     - _Requirements: 14.3_
 
-- [~] 10. Checkpoint - Full integration verification
+- [x] 10. Checkpoint - Full integration verification
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 11. Testing
@@ -245,7 +245,7 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
     - Test bulk scan respects concurrency limit
     - _Requirements: 3.1, 3.2, 3.4, 3.5_
 
-- [~] 12. Final checkpoint - Ensure all tests pass
+- [x] 12. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
