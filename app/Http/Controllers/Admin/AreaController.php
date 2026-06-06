@@ -16,7 +16,7 @@ class AreaController extends Controller
 {
     public function index()
     {
-        $areas = Area::withCount('customers')->paginate(15);
+        $areas = Area::withCount('customers')->get();
         return view('admin.areas.index', compact('areas'));
     }
 
@@ -29,7 +29,7 @@ class AreaController extends Controller
     {
         $request->validate([
             'name'                   => 'required|string|max:255',
-            'router_ip'              => 'required|ip',
+            'router_ip'              => 'required|ip|unique:areas,router_ip',
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'required|string|max:255',
             'pools'                  => 'required|array|min:1',
@@ -83,7 +83,7 @@ class AreaController extends Controller
     {
         $request->validate([
             'name'                   => 'required|string|max:255',
-            'router_ip'              => 'required|ip',
+            'router_ip'              => "required|ip|unique:areas,router_ip,{$area->id}",
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'nullable|string|max:255',
             'pools'                  => 'required|array|min:1',

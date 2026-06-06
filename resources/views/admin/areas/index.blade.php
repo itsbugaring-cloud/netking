@@ -39,7 +39,7 @@
             <tr>
               <th style="width:50px;">#</th>
               <th>Nama Area</th>
-              <th>Deskripsi</th>
+              <th>Router IP</th>
               <th style="width:120px;">Pelanggan</th>
               <th style="width:90px;">Aksi</th>
             </tr>
@@ -49,7 +49,7 @@
             <tr>
               <td style="color:var(--txt-3);">{{ $index + 1 }}</td>
               <td><span style="font-weight:500;">{{ $area->name }}</span></td>
-              <td style="color:var(--txt-3);">{{ $area->description ?? '-' }}</td>
+              <td style="color:var(--txt-3);"><code>{{ $area->router_ip }}</code></td>
               <td>
                 <span style="background:color-mix(in srgb,var(--blue) 10%,var(--surface));color:var(--blue);font-size:.75rem;font-weight:600;padding:3px 8px;border-radius:20px;">
                   {{ $area->customers_count ?? 0 }} pelanggan
