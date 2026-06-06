@@ -109,9 +109,12 @@ class PaymentPageController extends Controller
             'payment_reject_reason' => null,
         ]);
 
+        // Auto-approve: langsung tandai lunas + re-enable PPPoE
+        $invoice->markAsPaid($validated['payment_method']);
+
         \App\Models\ActivityLog::log(
-            'payment-proof-submitted',
-            "Customer {$customer->name} submitted payment proof for invoice {$invoice->invoice_number} via public payment page",
+            'payment-auto-approved',
+            "Customer {$customer->name} uploaded payment proof and invoice {$invoice->invoice_number} auto-approved",
             $invoice,
             [
                 'customer_id' => $customer->id,
@@ -122,16 +125,16 @@ class PaymentPageController extends Controller
 
         AdminNotification::notify(
             'payment-proof',
-            'Payment proof submitted',
-            "{$customer->name} mengirim bukti bayar untuk invoice {$invoice->invoice_number}",
-            'bx-receipt',
-            'orange',
+            'Payment auto-approved',
+            "{$customer->name} bayar invoice {$invoice->invoice_number} — otomatis lunas",
+            'bx-check-circle',
+            'green',
             route('admin.invoices.show', $invoice)
         );
 
         return redirect()
             ->route('payment.public', ['customerCode' => $customerCode, 'invoice' => $invoice->id])
-            ->with('success', 'Bukti pembayaran berhasil dikirim. Admin akan meninjau pembayaran Anda.');
+            ->with('success', 'Pembayaran berhasil! Tagihan Anda sudah lunas.');
     }
 
     private function paymentSettings(): array
