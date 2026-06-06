@@ -44,14 +44,14 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
 - [~] 2. Checkpoint - Run migration and verify models
   - Ensure migration runs without errors, ask the user if questions arise.
 
-- [ ] 3. Service layer implementation
-  - [~] 3.1 Create IpamAuditService
+- [x] 3. Service layer implementation
+  - [x] 3.1 Create IpamAuditService
     - Create `app/Services/Ipam/IpamAuditService.php`
     - Implement static `log(action, targetType, targetId, detail)` method
     - Auto-capture authenticated admin username as actor
     - _Requirements: 8.1, 8.2_
 
-  - [~] 3.2 Create MikroTikScannerService
+  - [x] 3.2 Create MikroTikScannerService
     - Create `app/Services/Ipam/MikroTikScannerService.php`
     - Implement `buildHttpClient()` using Laravel Http facade with settings from Setting model (ipam.* keys)
     - Implement `canScan()` with cooldown check against last_scanned_at
@@ -62,14 +62,14 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
     - Handle errors: timeout, auth failure, invalid JSON, TLS errors — store in last_error
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 13.2_
 
-  - [~] 3.3 Create BookmarkParserService
+  - [x] 3.3 Create BookmarkParserService
     - Create `app/Services/Ipam/BookmarkParserService.php`
     - Implement `parse(htmlContent)` to extract name + IP from Netscape bookmark format
     - Implement `importToDatabase(entries, actor)` to create IpamOlt records, skip duplicates
     - Record audit log entries for each imported OLT
     - _Requirements: 4.2, 4.3, 4.4_
 
-  - [~] 3.4 Create SubnetUtilizationService
+  - [x] 3.4 Create SubnetUtilizationService
     - Create `app/Services/Ipam/SubnetUtilizationService.php`
     - Implement `calculateUtilization(subnet)`: compute total usable IPs, count used IPs from addresses + pool ranges
     - Implement `findAvailableSpace(subnet)`: identify gaps in allocations
