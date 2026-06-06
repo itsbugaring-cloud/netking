@@ -25,14 +25,8 @@
         $isAdmin ? [
           'route' => route('admin.pppoe.index'),
           'active' => request()->routeIs('admin.pppoe*'),
-          'icon' => 'bx bx-wifi',
-          'title' => 'PPPoE',
-        ] : null,
-        $isAdmin ? [
-          'route' => route('admin.olts.index'),
-          'active' => request()->routeIs('admin.olts*'),
-          'icon' => 'bx bx-server',
-          'title' => 'OLT & ONT',
+          'icon' => 'bx bx-chip',
+          'title' => 'MikroTik',
         ] : null,
       ])),
     ],

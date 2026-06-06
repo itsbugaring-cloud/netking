@@ -241,4 +241,79 @@ class PppoeController extends Controller
 
         return back()->with('error', $result['error'] ?? 'Toggle failed.');
     }
+
+    /**
+     * Traffic monitor — show live interface bandwidth per router
+     */
+    public function traffic(Request $request)
+    {
+        $request->validate(['area_id' => 'required|exists:areas,id']);
+
+        $area = Area::findOrFail($request->area_id);
+        $mikrotik = MikroTikService::forArea($area);
+
+        try {
+            $traffic = $mikrotik->monitorAllInterfaces();
+            return response()->json([
+                'success' => true,
+                'area' => $area->name,
+                'data' => $traffic,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 503);
+        }
+    }
+
+    /**
+     * IP Pool usage per router
+     */
+    public function pools(Request $request)
+    {
+        $request->validate(['area_id' => 'required|exists:areas,id']);
+
+        $area = Area::findOrFail($request->area_id);
+        $mikrotik = MikroTikService::forArea($area);
+
+        try {
+            $pools = $mikrotik->getIpPools();
+            return response()->json([
+                'success' => true,
+                'area' => $area->name,
+                'data' => $pools,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 503);
+        }
+    }
+
+    /**
+     * Ping from router
+     */
+    public function ping(Request $request)
+    {
+        $request->validate([
+            'area_id' => 'required|exists:areas,id',
+            'target' => 'required|ip',
+            'count' => 'nullable|integer|min:1|max:20',
+        ]);
+
+        $area = Area::findOrFail($request->area_id);
+        $mikrotik = MikroTikService::forArea($area);
+
+        try {
+            $result = $mikrotik->ping($request->target, $request->input('count', 5));
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 503);
+        }
+    }
 }

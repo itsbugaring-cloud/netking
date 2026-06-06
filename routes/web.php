@@ -310,12 +310,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             return response()->json($data);
         })->name('api.dashboard-live');
 
-        // PPPoE Management (scoped per role in controller)
+        // MikroTik Management (scoped per role in controller)
         Route::prefix('pppoe')->name('pppoe.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\PppoeController::class, 'index'])->name('index');
             Route::post('/disconnect', [\App\Http\Controllers\Admin\PppoeController::class, 'disconnect'])->name('disconnect');
             Route::post('/toggle', [\App\Http\Controllers\Admin\PppoeController::class, 'toggle'])->name('toggle');
             Route::post('/sync-customers', [\App\Http\Controllers\Admin\PppoeController::class, 'syncCustomers'])->name('sync-customers');
+            Route::get('/traffic', [\App\Http\Controllers\Admin\PppoeController::class, 'traffic'])->name('traffic');
+            Route::get('/pools', [\App\Http\Controllers\Admin\PppoeController::class, 'pools'])->name('pools');
+            Route::post('/ping', [\App\Http\Controllers\Admin\PppoeController::class, 'ping'])->name('ping');
         });
 
         // ── Kalkulator Redaman (Fiber + Wireless) ─────────────────────────
