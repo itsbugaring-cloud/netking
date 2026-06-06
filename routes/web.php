@@ -470,12 +470,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::prefix('ipam')->name('ipam.')->group(function () {
             Route::get('/', [IpamController::class, 'dashboard'])->name('dashboard');
             Route::get('/routers', [IpamController::class, 'routers'])->name('routers.index');
+            Route::post('/routers', [IpamController::class, 'storeRouter'])->name('routers.store');
             Route::get('/routers/export-csv', [IpamController::class, 'exportCsv'])->name('routers.export');
             Route::get('/routers/{router}', [IpamController::class, 'routerDetail'])->name('routers.show');
             Route::post('/routers/{router}/scan', [IpamController::class, 'scanRouter'])->name('routers.scan');
             Route::post('/routers/scan-all', [IpamController::class, 'scanAll'])->name('routers.scanAll');
             Route::post('/routers/{router}/map-olt', [IpamController::class, 'mapOlt'])->name('routers.mapOlt');
             Route::post('/routers/auto-map', [IpamController::class, 'autoMap'])->name('routers.autoMap');
+            Route::delete('/routers/{router}', [IpamController::class, 'destroyRouter'])->name('routers.destroy');
             Route::get('/olts', [IpamController::class, 'olts'])->name('olts.index');
             Route::post('/olts', [IpamController::class, 'storeOlt'])->name('olts.store');
             Route::put('/olts/{olt}', [IpamController::class, 'updateOlt'])->name('olts.update');

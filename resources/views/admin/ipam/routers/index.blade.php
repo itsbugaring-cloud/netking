@@ -38,6 +38,41 @@
   </div>
   @endif
 
+  {{-- Add Router Form --}}
+  <div class="ms-panel mb-3">
+    <div class="ms-panel-head">
+      <h5 class="ms-panel-title"><i class='bx bx-plus-circle me-2'></i>Tambah Router</h5>
+    </div>
+    <div class="p-3">
+      <form action="{{ route('admin.ipam.routers.store') }}" method="POST">
+        @csrf
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label" style="font-size:.8rem;">Nama Device</label>
+            <input type="text" name="device_name" class="form-control form-control-sm" placeholder="MK-Cangkring-01" required value="{{ old('device_name') }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" style="font-size:.8rem;">WireGuard IP</label>
+            <input type="text" name="wireguard_ip" class="form-control form-control-sm" placeholder="10.10.50.1" required value="{{ old('wireguard_ip') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label" style="font-size:.8rem;">Username</label>
+            <input type="text" name="auth_username" class="form-control form-control-sm" placeholder="admin" value="{{ old('auth_username') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label" style="font-size:.8rem;">Password</label>
+            <input type="password" name="auth_password" class="form-control form-control-sm" placeholder="password">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="ms-btn w-100">
+              <i class='bx bx-plus'></i> Tambah
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   {{-- Search --}}
   <div class="ms-panel mb-3">
     <div class="p-3">
@@ -113,6 +148,12 @@
                     @csrf
                     <button type="submit" class="nk-action-btn" title="Scan">
                       <i class='bx bx-refresh'></i>
+                    </button>
+                  </form>
+                  <form action="{{ route('admin.ipam.routers.destroy', $router) }}" method="POST" class="m-0" data-confirm="Hapus router {{ $router->device_name }}?">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="nk-action-btn delete" title="Hapus">
+                      <i class='bx bx-trash'></i>
                     </button>
                   </form>
                 </div>

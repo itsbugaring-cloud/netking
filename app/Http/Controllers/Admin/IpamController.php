@@ -62,6 +62,34 @@ class IpamController extends Controller
         return view('admin.ipam.routers.index', compact('routers'));
     }
 
+    public function storeRouter(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'device_name' => 'required|string|max:255',
+            'wireguard_ip' => 'required|ipv4|unique:ipam_routers,wireguard_ip',
+            'auth_username' => 'nullable|string|max:255',
+            'auth_password' => 'nullable|string|max:255',
+        ]);
+
+        $router = IpamRouter::create($validated);
+
+        IpamAuditService::log('create', 'router', $router->id, "Created router: {$router->device_name} ({$router->wireguard_ip})");
+
+        return back()->with('success', "Router {$router->device_name} berhasil ditambahkan.");
+    }
+
+    public function destroyRouter(IpamRouter $router): RedirectResponse
+    {
+        $name = $router->device_name;
+        $id = $router->id;
+
+        $router->delete();
+
+        IpamAuditService::log('delete', 'router', $id, "Deleted router: {$name}");
+
+        return back()->with('success', "Router {$name} berhasil dihapus.");
+    }
+
     public function routerDetail(IpamRouter $router): View
     {
         $router->load([
