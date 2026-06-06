@@ -125,43 +125,43 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
 - [~] 6. Checkpoint - Verify routes register without errors
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Blade views
-  - [~] 7.1 Create IPAM dashboard view
+- [x] 7. Blade views
+  - [x] 7.1 Create IPAM dashboard view
     - Create `resources/views/admin/ipam/dashboard.blade.php`
     - Follow ms-page > ms-page-head > ms-panel pattern
     - Display summary cards: total routers, connected, errors, total subnets
     - Use Tabler-inspired CSS framework and Boxicons
     - _Requirements: 10.3, 10.4, 10.5, 13.3_
 
-  - [~] 7.2 Create router explorer views
+  - [x] 7.2 Create router explorer views
     - Create `resources/views/admin/ipam/routers/index.blade.php` — router list with status indicators, search, scan-all button, export CSV button
     - Create `resources/views/admin/ipam/routers/detail.blade.php` — router detail with IP pools table, addresses table, routes table, WireGuard interfaces/peers tables, OLT mapping dropdown
     - Use ms-table-shell pattern for all data tables
     - Show online/offline indicator per router
     - _Requirements: 7.1, 7.2, 9.1, 10.3, 10.4, 13.1_
 
-  - [~] 7.3 Create OLT management view
+  - [x] 7.3 Create OLT management view
     - Create `resources/views/admin/ipam/olts/index.blade.php`
     - Include OLT list table, inline create/edit forms, bookmark import upload form
     - _Requirements: 4.1, 10.3, 10.4_
 
-  - [~] 7.4 Create subnet management view
+  - [x] 7.4 Create subnet management view
     - Create `resources/views/admin/ipam/subnets/index.blade.php`
     - Include subnet list table with utilization percentage bars, create/edit forms
     - _Requirements: 6.1, 6.3, 10.3, 10.4_
 
-  - [~] 7.5 Create audit log view
+  - [x] 7.5 Create audit log view
     - Create `resources/views/admin/ipam/audit-log.blade.php`
     - Display paginated audit log table in reverse chronological order
     - _Requirements: 8.3, 10.3_
 
-  - [~] 7.6 Create settings view
+  - [x] 7.6 Create settings view
     - Create `resources/views/admin/ipam/settings.blade.php`
     - Form for all MikroTik connection parameters with current values pre-filled
     - _Requirements: 12.1, 10.3, 10.4_
 
-- [ ] 8. Sidebar integration
-  - [~] 8.1 Add IPAM section to admin sidebar
+- [x] 8. Sidebar integration
+  - [x] 8.1 Add IPAM section to admin sidebar
     - Modify the admin sidebar partial (likely `resources/views/layouts/partials/sidebar.blade.php` or equivalent)
     - Add "IPAM" section with Boxicons icon (bx class prefix)
     - Add menu items: Dashboard, Routers, Subnets, Audit Log

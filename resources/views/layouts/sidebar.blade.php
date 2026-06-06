@@ -102,6 +102,38 @@
   }
 
   if ($isAdmin) {
+    $sections[] = [
+      'label' => 'IPAM',
+      'items' => [
+        [
+          'route' => route('admin.ipam.dashboard'),
+          'active' => request()->routeIs('admin.ipam.dashboard'),
+          'icon' => 'bx bx-network-chart',
+          'title' => 'Dashboard IPAM',
+        ],
+        [
+          'route' => route('admin.ipam.routers.index'),
+          'active' => request()->routeIs('admin.ipam.routers*'),
+          'icon' => 'bx bx-server',
+          'title' => 'Routers',
+        ],
+        [
+          'route' => route('admin.ipam.subnets.index'),
+          'active' => request()->routeIs('admin.ipam.subnets*'),
+          'icon' => 'bx bx-sitemap',
+          'title' => 'Subnets',
+        ],
+        [
+          'route' => route('admin.ipam.auditLog'),
+          'active' => request()->routeIs('admin.ipam.auditLog'),
+          'icon' => 'bx bx-history',
+          'title' => 'Audit Log',
+        ],
+      ],
+    ];
+  }
+
+  if ($isAdmin) {
     // Inventaris section removed
   }
 
