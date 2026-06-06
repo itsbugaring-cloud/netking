@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SearchController;
+use App\Http\Controllers\Admin\IpamController;
 
 /*
 |--------------------------------------------------------------------------
@@ -460,6 +461,32 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             // History / Transaction Log
             Route::get('history', [\App\Http\Controllers\Admin\Inventory\LogTransaksiController::class, 'index'])->name('history.index');
+        });
+
+        // ── IPAM Module ───────────────────────────────────────────────────────
+        Route::prefix('ipam')->name('ipam.')->group(function () {
+            Route::get('/', [IpamController::class, 'dashboard'])->name('dashboard');
+            Route::get('/routers', [IpamController::class, 'routers'])->name('routers.index');
+            Route::get('/routers/export-csv', [IpamController::class, 'exportCsv'])->name('routers.export');
+            Route::get('/routers/{router}', [IpamController::class, 'routerDetail'])->name('routers.show');
+            Route::post('/routers/{router}/scan', [IpamController::class, 'scanRouter'])->name('routers.scan');
+            Route::post('/routers/scan-all', [IpamController::class, 'scanAll'])->name('routers.scanAll');
+            Route::post('/routers/{router}/map-olt', [IpamController::class, 'mapOlt'])->name('routers.mapOlt');
+            Route::post('/routers/auto-map', [IpamController::class, 'autoMap'])->name('routers.autoMap');
+            Route::get('/olts', [IpamController::class, 'olts'])->name('olts.index');
+            Route::post('/olts', [IpamController::class, 'storeOlt'])->name('olts.store');
+            Route::put('/olts/{olt}', [IpamController::class, 'updateOlt'])->name('olts.update');
+            Route::delete('/olts/{olt}', [IpamController::class, 'destroyOlt'])->name('olts.destroy');
+            Route::post('/olts/import-bookmarks', [IpamController::class, 'importBookmarks'])->name('olts.importBookmarks');
+            Route::get('/subnets', [IpamController::class, 'subnets'])->name('subnets.index');
+            Route::post('/subnets', [IpamController::class, 'storeSubnet'])->name('subnets.store');
+            Route::put('/subnets/{subnet}', [IpamController::class, 'updateSubnet'])->name('subnets.update');
+            Route::delete('/subnets/{subnet}', [IpamController::class, 'destroySubnet'])->name('subnets.destroy');
+            Route::get('/subnets/utilization', [IpamController::class, 'subnetUtilization'])->name('subnets.utilization');
+            Route::get('/subnets/suggestions', [IpamController::class, 'subnetSuggestions'])->name('subnets.suggestions');
+            Route::get('/audit-log', [IpamController::class, 'auditLog'])->name('auditLog');
+            Route::get('/settings', [IpamController::class, 'settings'])->name('settings');
+            Route::post('/settings', [IpamController::class, 'updateSettings'])->name('settings.update');
         });
     });
 });

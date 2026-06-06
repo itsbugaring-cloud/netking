@@ -79,14 +79,14 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
 - [~] 4. Checkpoint - Verify services compile correctly
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Controller and routes
-  - [~] 5.1 Create IpamController with dependency injection
+- [x] 5. Controller and routes
+  - [x] 5.1 Create IpamController with dependency injection
     - Create `app/Http/Controllers/Admin/IpamController.php`
     - Inject MikroTikScannerService, BookmarkParserService, SubnetUtilizationService in constructor
     - Implement `dashboard()` with summary stats (total routers, connected, error, subnets)
     - _Requirements: 10.3, 13.3_
 
-  - [~] 5.2 Implement router explorer actions in IpamController
+  - [x] 5.2 Implement router explorer actions in IpamController
     - Implement `routers()` with search/filter support
     - Implement `routerDetail()` showing pools, addresses, routes, WireGuard data
     - Implement `scanRouter()` with cooldown enforcement
@@ -96,14 +96,14 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
     - Add validation and audit logging for all data-modifying actions
     - _Requirements: 3.1, 3.5, 3.6, 5.1, 5.2, 5.3, 7.1, 7.2, 9.1, 9.2_
 
-  - [~] 5.3 Implement OLT management actions in IpamController
+  - [x] 5.3 Implement OLT management actions in IpamController
     - Implement `olts()` list view with search
     - Implement `storeOlt()`, `updateOlt()`, `destroyOlt()` with validation
     - Implement `importBookmarks()` accepting HTML file upload
     - Add audit logging for all OLT operations
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-  - [~] 5.4 Implement subnet management actions in IpamController
+  - [x] 5.4 Implement subnet management actions in IpamController
     - Implement `subnets()` list view
     - Implement `storeSubnet()`, `updateSubnet()`, `destroySubnet()` with validation (valid CIDR, unique network_address)
     - Implement `subnetUtilization()` returning JSON
@@ -111,13 +111,13 @@ Migrate the standalone Netking IP Manager into the Netking.id admin panel as an 
     - Add audit logging for all subnet operations
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [~] 5.5 Implement audit log and settings actions in IpamController
+  - [x] 5.5 Implement audit log and settings actions in IpamController
     - Implement `auditLog()` with reverse-chronological pagination
     - Implement `settings()` reading from Setting model with ipam.* keys
     - Implement `updateSettings()` storing values in settings table, audit log without password values
     - _Requirements: 8.3, 12.1, 12.2, 12.3_
 
-  - [~] 5.6 Register IPAM routes
+  - [x] 5.6 Register IPAM routes
     - Add route group in `routes/web.php` under `admin/ipam` prefix with `auth` + `admin` middleware
     - Define all routes matching the route structure in the design document
     - _Requirements: 11.1, 11.2_
