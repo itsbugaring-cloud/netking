@@ -2,6 +2,18 @@
 
 @section('title', 'Address List — Isolir')
 
+@section('styles')
+<style>
+    .router-kanban { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .75rem; }
+    .router-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .9rem 1rem; display: flex; flex-direction: column; gap: .45rem; cursor: pointer; text-decoration: none; transition: box-shadow .15s, border-color .15s; }
+    .router-card:hover { border-color: color-mix(in srgb, var(--blue) 45%, var(--border)); box-shadow: 0 4px 16px rgba(0,0,0,.08); text-decoration: none; }
+    .router-card--active { border-color: var(--blue) !important; background: color-mix(in srgb, var(--blue) 6%, var(--surface)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 18%, transparent); }
+    .router-card-name { font-size: .875rem; font-weight: 700; color: var(--txt); display: flex; align-items: center; gap: .4rem; }
+    .router-card-ip { font-size: .7rem; font-family: monospace; background: color-mix(in srgb, var(--orange) 10%, var(--surface-2)); color: var(--orange); padding: .12rem .45rem; border-radius: 5px; border: 1px solid color-mix(in srgb, var(--orange) 20%, var(--border)); display: inline-block; width: fit-content; }
+    .router-card-active-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+</style>
+@endsection
+
 @section('content')
 <div class="ms-page">
     <div class="ms-page-head">
@@ -16,23 +28,27 @@
         <div class="ms-panel-head">
             <div>
                 <h5 class="ms-panel-title">Pilih Router / Area</h5>
-                <div class="ms-panel-subtitle">Pilih area untuk melihat dan mengelola address-list isolir</div>
+                <div class="ms-panel-subtitle">Klik kartu area untuk melihat dan mengelola address-list isolir</div>
             </div>
         </div>
         <div class="ms-panel-body">
-            <form method="GET" action="{{ route('admin.address-list.index') }}" class="d-flex align-items-end gap-3 flex-wrap">
-                <div style="min-width:240px;">
-                    <label class="form-label fw-semibold" style="font-size:.8rem;">Area / Router</label>
-                    <select name="area_id" class="form-select form-select-sm" onchange="this.form.submit()">
-                        <option value="">— Pilih Area —</option>
-                        @foreach($areas as $area)
-                        <option value="{{ $area->id }}" {{ ($selectedArea?->id == $area->id) ? 'selected' : '' }}>
-                            {{ $area->name }} ({{ $area->router_ip }})
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
-            </form>
+            <div class="router-kanban">
+                @foreach($areas as $area)
+                @php $isActive = $selectedArea?->id == $area->id; @endphp
+                <a href="{{ route('admin.address-list.index', ['area_id' => $area->id]) }}"
+                   class="router-card {{ $isActive ? 'router-card--active' : '' }}">
+                    <div class="router-card-name">
+                        @if($isActive)
+                            <div class="router-card-active-dot"></div>
+                        @else
+                            <i class='bx bx-router' style="color:var(--txt-3);font-size:.95rem;flex-shrink:0;"></i>
+                        @endif
+                        {{ $area->name }}
+                    </div>
+                    <div class="router-card-ip">{{ $area->router_ip }}</div>
+                </a>
+                @endforeach
+            </div>
         </div>
     </div>
 

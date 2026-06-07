@@ -76,6 +76,7 @@
             <tr>
               <th style="min-width:160px;">Network</th>
               <th style="min-width:140px;">Nama</th>
+              <th style="min-width:180px;">Deskripsi</th>
               <th style="min-width:120px;">Lokasi</th>
               <th style="min-width:80px;">VLAN</th>
               <th style="min-width:200px;">Utilization</th>
@@ -97,6 +98,7 @@
                 <span style="font-weight:600;font-size:.85rem;">{{ $subnet->network_address }}/{{ $subnet->prefix_length }}</span>
               </td>
               <td>{{ $subnet->name ?? '-' }}</td>
+              <td style="color:var(--txt-3);font-size:.8rem;">{{ $subnet->description ?? '-' }}</td>
               <td style="color:var(--txt-3);">{{ $subnet->location ?? '-' }}</td>
               <td>
                 @if($subnet->vlan_id)
@@ -134,7 +136,7 @@
             </tr>
             @empty
             <tr>
-              <td colspan="6">
+              <td colspan="7">
                 <div class="text-center py-5" style="color:var(--txt-3);">
                   <i class='bx bx-sitemap fs-1 d-block mb-2'></i>
                   <div style="font-size:.9375rem;font-weight:500;">Belum ada subnet</div>
@@ -212,7 +214,7 @@
         zeroRecords: 'Tidak ditemukan',
         paginate: { previous: '&lsaquo;', next: '&rsaquo;' }
       },
-      columnDefs: [{ orderable: false, targets: [5] }]
+      columnDefs: [{ orderable: false, targets: [6] }]
     });
     $('#subnets-search').on('input', function() { table.search(this.value).draw(); });
     $('form[data-confirm]').on('submit', function(e) {
