@@ -3445,12 +3445,12 @@
     .form-control,
     .form-select,
     .input-group-text {
-      min-height: 38px;
+      min-height: 32px;
       font-size: .84rem;
     }
 
     .select2-container--bootstrap-5 .select2-selection {
-      min-height: 38px;
+      min-height: 32px;
       border-radius: 8px;
       font-size: .84rem;
     }
@@ -5470,6 +5470,37 @@
       opacity: .4 !important;
       background: transparent !important;
       box-shadow: none !important;
+    }
+
+    /* ── Global compact form fix ── */
+    .main .form-control,
+    .main .form-select,
+    .main select,
+    .main input[type="text"],
+    .main input[type="number"],
+    .main input[type="date"],
+    .main input[type="search"] {
+        font-size: .8125rem !important;
+        padding: .35rem .65rem !important;
+        min-height: 32px !important;
+        height: auto !important;
+        border-radius: 6px !important;
+    }
+    .main .form-select-sm,
+    .main .form-control-sm,
+    .main select.form-select-sm {
+        font-size: .75rem !important;
+        padding: .25rem .5rem !important;
+        min-height: 28px !important;
+    }
+    .main .btn {
+        font-size: .8125rem !important;
+        padding: .35rem .75rem !important;
+        border-radius: 6px !important;
+    }
+    .main .btn-sm {
+        font-size: .72rem !important;
+        padding: .2rem .5rem !important;
     }
   </style>
   @yield('styles')

@@ -93,22 +93,46 @@
         }
 
         /* ── Form elements compact styling ── */
-        .form-select, .form-control {
+        .page-body .form-select,
+        .page-body .form-control,
+        .page-body select,
+        .page-body input[type="text"],
+        .page-body input[type="number"],
+        .page-body input[type="date"],
+        .page-body input[type="search"] {
             font-size: .8125rem !important;
             padding: .375rem .75rem !important;
             border-radius: 6px !important;
             border: 1px solid var(--tblr-border-color, #e6e7e9) !important;
             height: auto !important;
+            min-height: 32px !important;
             line-height: 1.5 !important;
+            box-shadow: none !important;
         }
-        .form-select-sm, .form-control-sm {
+        .page-body .form-select-sm,
+        .page-body .form-control-sm {
             font-size: .75rem !important;
             padding: .25rem .5rem !important;
+            min-height: 28px !important;
         }
-        .form-select:focus, .form-control:focus {
+        .page-body .form-select:focus,
+        .page-body .form-control:focus {
             border-color: #2563eb !important;
             box-shadow: 0 0 0 2px rgba(37,99,235,.12) !important;
             outline: none !important;
+        }
+        .page-body .btn {
+            font-size: .8125rem !important;
+            border-radius: 6px !important;
+        }
+        .page-body .btn-sm {
+            font-size: .75rem !important;
+            padding: .25rem .5rem !important;
+        }
+        .page-body .form-label {
+            font-size: .8rem !important;
+            font-weight: 600 !important;
+            margin-bottom: .3rem !important;
         }
     </style>
 
