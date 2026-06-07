@@ -5481,26 +5481,35 @@
     .main input[type="date"],
     .main input[type="search"] {
         font-size: .8125rem !important;
-        padding: .35rem .65rem !important;
-        min-height: 32px !important;
-        height: auto !important;
+        padding: .4rem .65rem !important;
+        min-height: 34px !important;
+        height: 34px !important;
         border-radius: 6px !important;
+        line-height: 1.4 !important;
+        display: inline-flex !important;
+        align-items: center !important;
     }
     .main .form-select-sm,
     .main .form-control-sm,
     .main select.form-select-sm {
         font-size: .75rem !important;
-        padding: .25rem .5rem !important;
-        min-height: 28px !important;
+        padding: .3rem .5rem !important;
+        min-height: 30px !important;
+        height: 30px !important;
     }
     .main .btn {
         font-size: .8125rem !important;
-        padding: .35rem .75rem !important;
+        padding: .4rem .75rem !important;
         border-radius: 6px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: .3rem !important;
+        height: 34px !important;
     }
     .main .btn-sm {
         font-size: .72rem !important;
-        padding: .2rem .5rem !important;
+        padding: .25rem .5rem !important;
+        height: 30px !important;
     }
   </style>
   @yield('styles')

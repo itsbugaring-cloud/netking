@@ -101,19 +101,25 @@
         .page-body input[type="date"],
         .page-body input[type="search"] {
             font-size: .8125rem !important;
-            padding: .375rem .75rem !important;
+            padding: .4rem .75rem !important;
             border-radius: 6px !important;
             border: 1px solid var(--tblr-border-color, #e6e7e9) !important;
-            height: auto !important;
-            min-height: 32px !important;
-            line-height: 1.5 !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            line-height: 34px !important;
             box-shadow: none !important;
+            vertical-align: middle !important;
+        }
+        .page-body textarea.form-control {
+            height: auto !important;
+            line-height: 1.5 !important;
         }
         .page-body .form-select-sm,
         .page-body .form-control-sm {
             font-size: .75rem !important;
-            padding: .25rem .5rem !important;
-            min-height: 28px !important;
+            padding: .3rem .5rem !important;
+            height: 30px !important;
+            min-height: 30px !important;
         }
         .page-body .form-select:focus,
         .page-body .form-control:focus {
@@ -124,10 +130,15 @@
         .page-body .btn {
             font-size: .8125rem !important;
             border-radius: 6px !important;
+            height: 34px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: .3rem !important;
         }
         .page-body .btn-sm {
             font-size: .75rem !important;
             padding: .25rem .5rem !important;
+            height: 30px !important;
         }
         .page-body .form-label {
             font-size: .8rem !important;
