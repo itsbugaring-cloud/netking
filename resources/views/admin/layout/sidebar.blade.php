@@ -103,6 +103,33 @@
                 @endif
 
                 @if($role === 'admin')
+                <li class="nav-item {{ request()->routeIs('admin.system-dashboard*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.system-dashboard') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <i class="ti ti-server"></i>
+                        </span>
+                        <span class="nav-link-title">System Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {{ request()->routeIs('admin.queues.*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.queues.index') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <i class="ti ti-traffic-lights"></i>
+                        </span>
+                        <span class="nav-link-title">Simple Queue</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {{ request()->routeIs('admin.address-list.*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.address-list.index') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <i class="ti ti-shield-lock"></i>
+                        </span>
+                        <span class="nav-link-title">Isolir</span>
+                    </a>
+                </li>
+
                 <li class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.settings') }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">

@@ -28,6 +28,12 @@
           'icon' => 'bx bx-chip',
           'title' => 'MikroTik',
         ] : null,
+        $isAdmin ? [
+          'route' => route('admin.address-list.index'),
+          'active' => request()->routeIs('admin.address-list*'),
+          'icon' => 'bx bx-shield-quarter',
+          'title' => 'Isolir',
+        ] : null,
       ])),
     ],
     [

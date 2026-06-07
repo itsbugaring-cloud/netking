@@ -863,6 +863,199 @@ class MikroTikService
     }
 
     /**
+     * Get system resource data (CPU, RAM, disk, uptime, version, board)
+     */
+    public function getSystemResource(): array
+    {
+        if (!$this->connect()) {
+            return ['success' => false, 'error' => 'Not connected'];
+        }
+        try {
+            $query = new Query('/system/resource/print');
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp[0] ?? []];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get system health (temperature, voltage) — not all routers support this
+     */
+    public function getSystemHealth(): array
+    {
+        if (!$this->connect()) {
+            return ['success' => false, 'error' => 'Not connected'];
+        }
+        try {
+            $query = new Query('/system/health/print');
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get system license info
+     */
+    public function getSystemLicense(): array
+    {
+        if (!$this->connect()) {
+            return ['success' => false, 'error' => 'Not connected'];
+        }
+        try {
+            $query = new Query('/system/license/print');
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp[0] ?? []];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get all simple queues
+     */
+    public function getSimpleQueues(): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/queue/simple/print');
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Create a simple queue
+     */
+    public function createSimpleQueue(string $name, string $target, string $maxLimit, ?string $burstLimit = null, ?string $burstThreshold = null, ?string $burstTime = null, ?string $comment = null): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/queue/simple/add');
+            $query->equal('name', $name);
+            $query->equal('target', $target);
+            $query->equal('max-limit', $maxLimit);
+            if ($burstLimit) $query->equal('burst-limit', $burstLimit);
+            if ($burstThreshold) $query->equal('burst-threshold', $burstThreshold);
+            if ($burstTime) $query->equal('burst-time', $burstTime);
+            if ($comment) $query->equal('comment', $comment);
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Update a simple queue by .id
+     */
+    public function updateSimpleQueue(string $id, array $params): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/queue/simple/set');
+            $query->equal('.id', $id);
+            foreach ($params as $key => $value) {
+                $query->equal($key, $value);
+            }
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Delete a simple queue by .id
+     */
+    public function deleteSimpleQueue(string $id): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/queue/simple/remove');
+            $query->equal('.id', $id);
+            $this->client->query($query)->read();
+            return ['success' => true];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    // ─── Address List (Isolir) Methods ──────────────────────────────────
+
+    /**
+     * Get all entries from a specific address list
+     */
+    public function getAddressList(string $listName = 'isolir'): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/ip/firewall/address-list/print');
+            $query->where('list', $listName);
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Add IP to address list
+     */
+    public function addToAddressList(string $address, string $listName = 'isolir', ?string $timeout = null, ?string $comment = null): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/ip/firewall/address-list/add');
+            $query->equal('address', $address);
+            $query->equal('list', $listName);
+            if ($timeout) $query->equal('timeout', $timeout);
+            if ($comment) $query->equal('comment', $comment);
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Remove entry from address list by .id
+     */
+    public function removeFromAddressList(string $id): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/ip/firewall/address-list/remove');
+            $query->equal('.id', $id);
+            $this->client->query($query)->read();
+            return ['success' => true];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Find address in a specific list
+     */
+    public function findInAddressList(string $address, string $listName = 'isolir'): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/ip/firewall/address-list/print');
+            $query->where('list', $listName);
+            $query->where('address', $address);
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp, 'found' => !empty($resp)];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
      * Get BGP peer status from MikroTik.
      * Tries RouterOS 7 path (/routing/bgp/peer) first, falls back to RouterOS 6 (/routing/bgp/peer).
      *

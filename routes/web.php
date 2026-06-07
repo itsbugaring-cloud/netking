@@ -310,6 +310,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             return response()->json($data);
         })->name('api.dashboard-live');
 
+        // Simple Queue Management
+        Route::get('queues', [\App\Http\Controllers\Admin\QueueController::class, 'index'])->name('queues.index');
+        Route::get('queues/create', [\App\Http\Controllers\Admin\QueueController::class, 'create'])->name('queues.create');
+        Route::post('queues', [\App\Http\Controllers\Admin\QueueController::class, 'store'])->name('queues.store');
+        Route::put('queues', [\App\Http\Controllers\Admin\QueueController::class, 'update'])->name('queues.update');
+        Route::delete('queues', [\App\Http\Controllers\Admin\QueueController::class, 'destroy'])->name('queues.destroy');
+        Route::get('queues/sync', [\App\Http\Controllers\Admin\QueueController::class, 'sync'])->name('queues.sync');
+
         // MikroTik Management (scoped per role in controller)
         Route::prefix('pppoe')->name('pppoe.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\PppoeController::class, 'index'])->name('index');
@@ -320,6 +328,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/pools', [\App\Http\Controllers\Admin\PppoeController::class, 'pools'])->name('pools');
             Route::post('/ping', [\App\Http\Controllers\Admin\PppoeController::class, 'ping'])->name('ping');
         });
+
+        // Address List (Isolir) Management
+        Route::get('address-list', [\App\Http\Controllers\Admin\AddressListController::class, 'index'])->name('address-list.index');
+        Route::post('address-list/isolate', [\App\Http\Controllers\Admin\AddressListController::class, 'isolate'])->name('address-list.isolate');
+        Route::post('address-list/deisolate', [\App\Http\Controllers\Admin\AddressListController::class, 'deisolate'])->name('address-list.deisolate');
+        Route::post('address-list/bulk-isolate', [\App\Http\Controllers\Admin\AddressListController::class, 'bulkIsolate'])->name('address-list.bulk-isolate');
+        Route::post('address-list/sync', [\App\Http\Controllers\Admin\AddressListController::class, 'sync'])->name('address-list.sync');
 
         // ── Kalkulator Redaman (Fiber + Wireless) ─────────────────────────
         Route::prefix('redaman')->name('redaman.')->group(function () {
@@ -465,6 +480,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             // History / Transaction Log
             Route::get('history', [\App\Http\Controllers\Admin\Inventory\LogTransaksiController::class, 'index'])->name('history.index');
         });
+
+        // ── System Dashboard (MikroTik health monitoring) ───────────────────
+        Route::get('system-dashboard', [\App\Http\Controllers\Admin\SystemDashboardController::class, 'index'])->name('system-dashboard');
+        Route::get('system-dashboard/data', [\App\Http\Controllers\Admin\SystemDashboardController::class, 'data'])->name('system-dashboard.data');
 
         // ── IPAM Module ───────────────────────────────────────────────────────
         Route::prefix('ipam')->name('ipam.')->group(function () {
