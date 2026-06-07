@@ -1,75 +1,99 @@
 @extends('layouts.app')
-
 @section('title', 'PPPoE Profiles')
 
+@section('styles')
+<style>
+    .router-kanban { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .75rem; }
+    .router-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .9rem 1rem; display: flex; flex-direction: column; gap: .45rem; cursor: pointer; text-decoration: none; transition: box-shadow .15s, border-color .15s; }
+    .router-card:hover { border-color: color-mix(in srgb, var(--blue) 45%, var(--border)); box-shadow: 0 4px 16px rgba(0,0,0,.08); text-decoration: none; }
+    .router-card--active { border-color: var(--blue) !important; background: color-mix(in srgb, var(--blue) 6%, var(--surface)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 18%, transparent); }
+    .router-card-name { font-size: .875rem; font-weight: 700; color: var(--txt); display: flex; align-items: center; gap: .4rem; }
+    .router-card-ip { font-size: .7rem; font-family: monospace; background: color-mix(in srgb, var(--orange) 10%, var(--surface-2)); color: var(--orange); padding: .12rem .45rem; border-radius: 5px; border: 1px solid color-mix(in srgb, var(--orange) 20%, var(--border)); display: inline-block; width: fit-content; }
+    .router-card-active-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+    .profile-table th { font-size: .75rem; text-transform: uppercase; color: var(--txt-3); font-weight: 600; }
+    .profile-table td { font-size: .8125rem; vertical-align: middle; }
+    .profile-badge { display: inline-flex; align-items: center; gap: .2rem; font-size: .7rem; padding: .15rem .5rem; border-radius: 999px; font-weight: 600; background: color-mix(in srgb, var(--blue) 12%, var(--surface)); color: var(--blue); border: 1px solid color-mix(in srgb, var(--blue) 25%, var(--border)); }
+</style>
+@endsection
+
 @section('content')
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <h2 class="page-title">PPPoE Profiles</h2>
-                <div class="text-muted mt-1">Kelola profile PPPoE langsung di router MikroTik</div>
+<div class="ms-page">
+    <div class="ms-page-head">
+        <div>
+            <div class="ms-page-kicker"><i class='bx bx-user-circle'></i> MikroTik</div>
+            <h1 class="ms-page-title">PPPoE Profiles</h1>
+        </div>
+        @if($selectedArea)
+        <div class="ms-page-actions">
+            <button type="button" class="ms-btn" data-bs-toggle="modal" data-bs-target="#createModal">
+                <i class='bx bx-plus'></i> Buat Profile
+            </button>
+        </div>
+        @endif
+    </div>
+
+    {{-- Router / Area Selector --}}
+    <div class="ms-panel">
+        <div class="ms-panel-head">
+            <div>
+                <h5 class="ms-panel-title">Pilih Router / Area</h5>
+                <div class="ms-panel-subtitle">Klik kartu area untuk memuat profile PPPoE</div>
+            </div>
+        </div>
+        <div class="ms-panel-body">
+            <div class="router-kanban">
+                @foreach($areas as $area)
+                @php $isActive = $selectedArea?->id == $area->id; @endphp
+                <a href="{{ route('admin.ppp-profiles.index', ['area_id' => $area->id]) }}"
+                   class="router-card {{ $isActive ? 'router-card--active' : '' }}">
+                    <div class="router-card-name">
+                        @if($isActive)
+                            <div class="router-card-active-dot"></div>
+                        @else
+                            <i class='bx bx-router' style="color:var(--txt-3);font-size:.95rem;flex-shrink:0;"></i>
+                        @endif
+                        {{ $area->name }}
+                    </div>
+                    <div class="router-card-ip">{{ $area->router_ip }}</div>
+                </a>
+                @endforeach
             </div>
         </div>
     </div>
-</div>
 
-<div class="page-body">
-    <div class="container-xl">
-
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible" role="alert">
-                {{ session('success') }}
-                <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible" role="alert">
-                {{ session('error') }}
-                <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
-            </div>
-        @endif
-
-        {{-- Area Selector --}}
-        <div class="card mb-3">
-            <div class="card-body">
-                <form method="GET" action="{{ route('admin.ppp-profiles.index') }}" class="row g-2 align-items-end">
-                    <div class="col-auto">
-                        <label class="form-label">Pilih Area / Router</label>
-                        <select name="area_id" class="form-select" onchange="this.form.submit()">
-                            <option value="">-- Pilih Area --</option>
-                            @foreach($areas as $area)
-                                <option value="{{ $area->id }}" {{ ($selectedArea && $selectedArea->id == $area->id) ? 'selected' : '' }}>
-                                    {{ $area->name }} ({{ $area->router_ip }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @if($selectedArea)
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-                            <i class="ti ti-plus"></i> Buat Profile
-                        </button>
-                    </div>
-                    @endif
-                </form>
+    {{-- Error --}}
+    @if($error)
+    <div class="ms-panel" style="border-color:color-mix(in srgb,var(--red) 25%,var(--border));background:color-mix(in srgb,var(--red) 6%,var(--surface));">
+        <div class="ms-panel-body d-flex align-items-start gap-2" style="color:var(--red);">
+            <i class='bx bx-error-circle mt-1' style="font-size:1.1rem;"></i>
+            <div>
+                <strong>Tidak Dapat Terhubung ke Router</strong><br>
+                {{ $error }}<br>
+                <small>Pastikan router MikroTik aktif, API port 8728 terbuka, dan kredensial benar.</small>
             </div>
         </div>
+    </div>
+    @endif
 
-        @if($error)
-            <div class="alert alert-warning">
-                <i class="ti ti-alert-triangle"></i> {{ $error }}
+    {{-- Profiles Table --}}
+    @if($selectedArea && !$error)
+    <div class="ms-panel">
+        <div class="ms-panel-head">
+            <div>
+                <h5 class="ms-panel-title">Profiles pada {{ $selectedArea->name }}</h5>
+                <div class="ms-panel-subtitle">{{ count($profiles) }} profile ditemukan</div>
             </div>
-        @endif
-
-        @if($selectedArea && !$error)
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Profiles pada {{ $selectedArea->name }}</h3>
+        </div>
+        <div class="ms-panel-body p-0">
+            @if(count($profiles) === 0)
+            <div style="text-align:center;padding:3rem;color:var(--txt-3);">
+                <i class='bx bx-user-circle' style="font-size:2.5rem;opacity:.3;display:block;margin-bottom:.5rem;"></i>
+                <p class="mb-0 fw-semibold">Tidak ada profile ditemukan</p>
+                <p class="mb-0 mt-1" style="font-size:.8rem;">Klik "Buat Profile" untuk menambahkan profile baru.</p>
             </div>
+            @else
             <div class="table-responsive">
-                <table class="table table-vcenter card-table">
+                <table class="table table-hover profile-table mb-0">
                     <thead>
                         <tr>
                             <th>Nama</th>
@@ -77,20 +101,20 @@
                             <th>Local Address</th>
                             <th>Remote Address</th>
                             <th>Subscribers</th>
-                            <th>Aksi</th>
+                            <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($profiles as $profile)
                         <tr>
                             <td><strong>{{ $profile['name'] }}</strong></td>
-                            <td><code>{{ $profile['rate-limit'] ?: '-' }}</code></td>
+                            <td><code style="font-size:.75rem;">{{ $profile['rate-limit'] ?: '-' }}</code></td>
                             <td>{{ $profile['local-address'] ?: '-' }}</td>
                             <td>{{ $profile['remote-address'] ?: '-' }}</td>
                             <td>
-                                <span class="badge bg-blue-lt">{{ $profile['subscribers'] }}</span>
+                                <span class="profile-badge">{{ $profile['subscribers'] }}</span>
                             </td>
-                            <td>
+                            <td class="text-end">
                                 @if(!in_array($profile['name'], ['default', 'default-encryption']))
                                 <button class="btn btn-sm btn-outline-primary me-1"
                                     data-bs-toggle="modal"
@@ -103,7 +127,7 @@
                                     data-dns-server="{{ $profile['dns-server'] }}"
                                     data-change-tcp-mss="{{ $profile['change-tcp-mss'] }}"
                                     data-only-one="{{ $profile['only-one'] }}">
-                                    <i class="ti ti-pencil"></i>
+                                    <i class='bx bx-edit-alt'></i>
                                 </button>
                                 <form method="POST" action="{{ route('admin.ppp-profiles.destroy') }}" class="d-inline"
                                     onsubmit="return confirm('Hapus profile {{ $profile['name'] }}?')">
@@ -112,24 +136,25 @@
                                     <input type="hidden" name="area_id" value="{{ $selectedArea->id }}">
                                     <input type="hidden" name="profile_id" value="{{ $profile['id'] }}">
                                     <input type="hidden" name="profile_name" value="{{ $profile['name'] }}">
-                                    <button class="btn btn-sm btn-outline-danger"><i class="ti ti-trash"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger"><i class='bx bx-trash'></i></button>
                                 </form>
                                 @else
-                                <span class="text-muted">System</span>
+                                <span style="font-size:.72rem;color:var(--txt-3);">System</span>
                                 @endif
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">Tidak ada profile ditemukan.</td>
+                            <td colspan="6" class="text-center" style="color:var(--txt-3);">Tidak ada profile ditemukan.</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+            @endif
         </div>
-        @endif
     </div>
+    @endif
 </div>
 
 {{-- Create Modal --}}
