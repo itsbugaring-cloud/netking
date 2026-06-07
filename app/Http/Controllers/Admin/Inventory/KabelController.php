@@ -97,9 +97,8 @@ class KabelController extends Controller
             'created_at'       => now(),
         ]);
 
-        session()->flash('success', 'Haspel kabel berhasil ditambahkan.');
-
-        return redirect()->route('admin.inventory.kabel.show', $kabel);
+        return redirect()->route('admin.inventory.kabel.show', $kabel)
+            ->with('success', 'Haspel kabel berhasil ditambahkan.');
     }
 
     // ── show ──────────────────────────────────────────────────────────
@@ -127,9 +126,8 @@ class KabelController extends Controller
         ]);
 
         if ($validated['panjang_potong'] > $invKabel->sisa_panjang) {
-            session()->flash('error', 'Panjang potong melebihi sisa panjang kabel yang tersedia (' . $invKabel->sisa_panjang . ' m).');
-
-            return redirect()->back();
+            return redirect()->back()
+                ->with('error', 'Panjang potong melebihi sisa panjang kabel yang tersedia (' . $invKabel->sisa_panjang . ' m).');
         }
 
         $invKabel->decrement('sisa_panjang', $validated['panjang_potong']);
@@ -145,9 +143,8 @@ class KabelController extends Controller
             'created_at'      => now(),
         ]);
 
-        session()->flash('success', 'Potong kabel berhasil dicatat. Sisa: ' . ($invKabel->sisa_panjang - $validated['panjang_potong']) . ' m.');
-
-        return redirect()->route('admin.inventory.kabel.show', $invKabel);
+        return redirect()->route('admin.inventory.kabel.show', $invKabel)
+            ->with('success', 'Potong kabel berhasil dicatat. Sisa: ' . ($invKabel->sisa_panjang - $validated['panjang_potong']) . ' m.');
     }
 
     // ── edit ──────────────────────────────────────────────────────────
@@ -199,9 +196,8 @@ class KabelController extends Controller
             'created_at'      => now(),
         ]);
 
-        session()->flash('success', 'Data haspel kabel berhasil diperbarui.');
-
-        return redirect()->route('admin.inventory.kabel.show', $invKabel);
+        return redirect()->route('admin.inventory.kabel.show', $invKabel)
+            ->with('success', 'Data haspel kabel berhasil diperbarui.');
     }
 
     // ── destroy ───────────────────────────────────────────────────────
@@ -209,15 +205,13 @@ class KabelController extends Controller
     public function destroy(InvKabel $invKabel)
     {
         if ((float) $invKabel->sisa_panjang < (float) $invKabel->panjang_awal) {
-            session()->flash('error', 'Kabel sudah pernah digunakan dan tidak dapat dihapus.');
-
-            return redirect()->back();
+            return redirect()->back()
+                ->with('error', 'Kabel sudah pernah digunakan dan tidak dapat dihapus.');
         }
 
         $invKabel->delete();
 
-        session()->flash('success', 'Haspel kabel berhasil dihapus.');
-
-        return redirect()->route('admin.inventory.kabel.index');
+        return redirect()->route('admin.inventory.kabel.index')
+            ->with('success', 'Haspel kabel berhasil dihapus.');
     }
 }

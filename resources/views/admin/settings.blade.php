@@ -2,13 +2,6 @@
 @section('title', 'Pengaturan')
 
 @section('content')
-@if(session('success'))
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    toastr.success('{{ session("success") }}');
-  });
-</script>
-@endif
 
 <div class="ms-page">
   <div class="ms-page-head">

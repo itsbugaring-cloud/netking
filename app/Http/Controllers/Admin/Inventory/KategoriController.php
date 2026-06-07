@@ -29,9 +29,8 @@ class KategoriController extends Controller
 
         InvKategori::create(['nama_kategori' => $request->nama_kategori]);
 
-        session()->flash('success', 'Kategori berhasil ditambahkan.');
-
-        return redirect()->back();
+        return redirect()->back()
+            ->with('success', 'Kategori berhasil ditambahkan.');
     }
 
     // ── update ────────────────────────────────────────────────────────
@@ -44,9 +43,8 @@ class KategoriController extends Controller
 
         $invKategori->update(['nama_kategori' => $request->nama_kategori]);
 
-        session()->flash('success', 'Kategori berhasil diperbarui.');
-
-        return redirect()->back();
+        return redirect()->back()
+            ->with('success', 'Kategori berhasil diperbarui.');
     }
 
     // ── destroy ───────────────────────────────────────────────────────
@@ -54,15 +52,13 @@ class KategoriController extends Controller
     public function destroy(InvKategori $invKategori)
     {
         if ($invKategori->masterBarangs()->count() > 0) {
-            session()->flash('error', 'Kategori masih digunakan oleh master barang dan tidak dapat dihapus.');
-
-            return redirect()->back();
+            return redirect()->back()
+                ->with('error', 'Kategori masih digunakan oleh master barang dan tidak dapat dihapus.');
         }
 
         $invKategori->delete();
 
-        session()->flash('success', 'Kategori berhasil dihapus.');
-
-        return redirect()->back();
+        return redirect()->back()
+            ->with('success', 'Kategori berhasil dihapus.');
     }
 }

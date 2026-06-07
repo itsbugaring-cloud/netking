@@ -10,17 +10,6 @@
     </div>
   </div>
 
-  @if (session('success'))
-  <div class="alert alert-success mb-3" style="border-radius:.5rem;font-size:.875rem;">
-    <i class='bx bx-check-circle me-2'></i>{{ session('success') }}
-  </div>
-  @endif
-  @if (session('error'))
-  <div class="alert mb-3" style="background:color-mix(in srgb,var(--red) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--red) 25%,var(--border));color:var(--red);border-radius:.5rem;font-size:.875rem;">
-    <i class='bx bx-error-circle me-2'></i>{{ session('error') }}
-  </div>
-  @endif
-
   <div class="ms-stat-grid mb-4">
     <div class="ms-stat-card" style="--stat-accent:var(--blue);--stat-bg:color-mix(in srgb,var(--blue) 8%,var(--surface));">
       <div class="ms-stat-icon"><i class='bx bx-server'></i></div>

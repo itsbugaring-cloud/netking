@@ -5553,24 +5553,6 @@
   <!-- MAIN CONTENT -->
   <main class="main">
 
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show mb-3">
-      <i class='bx bx-check-circle me-1'></i>{{ session('success') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
-    @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show mb-3">
-      <i class='bx bx-error-circle me-1'></i>{{ session('error') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
-    @if(session('warning'))
-    <div class="alert alert-warning alert-dismissible fade show mb-3">
-      <i class='bx bx-info-circle me-1'></i>{{ session('warning') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
     @if($errors->any())
     <div class="alert alert-danger alert-dismissible fade show mb-3">
       <strong><i class='bx bx-error-circle me-1'></i>Harap perbaiki:</strong>
@@ -5578,6 +5560,8 @@
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
+
+    <x-admin-flash icon-set="boxicons" />
 
     @yield('content')
 
@@ -5724,20 +5708,6 @@
       showMethod: 'fadeIn',
       hideMethod: 'fadeOut'
     };
-
-    // Laravel flash → Toastr
-    @if(session('success'))
-    toastr.success(@json(session('success')));
-    @endif
-    @if(session('error'))
-    toastr.error(@json(session('error')));
-    @endif
-    @if(session('warning'))
-    toastr.warning(@json(session('warning')));
-    @endif
-    @if(session('info'))
-    toastr.info(@json(session('info')));
-    @endif
 
     // NProgress
     NProgress.configure({

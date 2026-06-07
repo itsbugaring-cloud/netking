@@ -421,21 +421,6 @@
         border-radius: 0 4px 4px 0;
     }
     .nk-pass-toggle:hover { color: #e2e8f0; }
-    /* ── Flash notification banner ────────────────────────────────────── */
-    .nk-flash {
-        display: flex; align-items: center; gap: .6rem;
-        padding: .65rem 1rem; border-radius: .5rem;
-        margin-bottom: .75rem; font-size: .84rem; font-weight: 500;
-        animation: nkFlashIn .25s ease;
-    }
-    @keyframes nkFlashIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
-    .nk-flash i { font-size: 1.1rem; flex-shrink: 0; }
-    .nk-flash span { flex: 1; }
-    .nk-flash button { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; opacity: .7; }
-    .nk-flash button:hover { opacity: 1; }
-    .nk-flash-success { background: rgba(22,163,74,.12); border: 1px solid rgba(22,163,74,.35); color: #15803d; }
-    .nk-flash-error   { background: rgba(220,38,38,.10); border: 1px solid rgba(220,38,38,.35); color: #b91c1c; }
-    .nk-flash-info    { background: rgba(37,99,235,.08); border: 1px solid rgba(37,99,235,.25); color: #1e40af; }
 
     /* Link + Actions buttons — compact xs */
     .ont-action-btn {
@@ -552,25 +537,7 @@
     </a>
 </div>
 
-@if(session('success'))
-<div class="nk-flash nk-flash-success" id="nk-flash-msg">
-    <i class='bx bx-check-circle'></i>
-    <span>{{ session('success') }}</span>
-    <button type="button" onclick="this.parentElement.remove()"><i class='bx bx-x'></i></button>
-</div>
-@elseif(session('error'))
-<div class="nk-flash nk-flash-error" id="nk-flash-msg">
-    <i class='bx bx-error-circle'></i>
-    <span>{{ session('error') }}</span>
-    <button type="button" onclick="this.parentElement.remove()"><i class='bx bx-x'></i></button>
-</div>
-@elseif(session('info'))
-<div class="nk-flash nk-flash-info" id="nk-flash-msg">
-    <i class='bx bx-info-circle'></i>
-    <span>{{ session('info') }}</span>
-    <button type="button" onclick="this.parentElement.remove()"><i class='bx bx-x'></i></button>
-</div>
-@endif
+
 
 <div class="alert alert-info py-2 px-3 mb-3" style="font-size:.82rem;border:1px solid rgba(37,99,235,.16);background:rgba(37,99,235,.06);color:#1e3a8a;">
     <i class='bx bx-info-circle me-1'></i>
@@ -1330,15 +1297,6 @@
             });
         });
 
-        // Auto-dismiss flash message after 6s
-        var flashMsg = document.getElementById('nk-flash-msg');
-        if (flashMsg) {
-            setTimeout(function() {
-                flashMsg.style.transition = 'opacity .4s';
-                flashMsg.style.opacity = '0';
-                setTimeout(function() { flashMsg.remove(); }, 420);
-            }, 6000);
-        }
 
         // Auto-dismiss sync toast after 5s
         var toast = document.getElementById('sync-toast');

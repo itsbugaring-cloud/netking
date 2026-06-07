@@ -15,12 +15,7 @@
     </div>
   </div>
 
-  @if(session('success'))
-  <div class="alert alert-success alert-dismissible fade show"><i class='bx bx-check me-1'></i>{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-  @endif
-  @if(session('error'))
-  <div class="alert alert-danger alert-dismissible fade show"><i class='bx bx-x me-1'></i>{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-  @endif
+
 
   <div class="ms-panel">
     <div class="ms-table-shell">

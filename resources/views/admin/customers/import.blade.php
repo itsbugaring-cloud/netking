@@ -16,17 +16,7 @@
     </div>
   </div>
 
-@if(session('success'))
-<div class="alert alert-success mb-3">
-  <i class='bx bx-check-circle me-1'></i>{{ session('success') }}
-</div>
-@endif
 
-@if(session('error'))
-<div class="alert alert-danger mb-3">
-  <i class='bx bx-error-circle me-1'></i>{{ session('error') }}
-</div>
-@endif
 
 <div class="row" style="gap:1rem 0;">
   <div class="col-md-8">

@@ -106,36 +106,7 @@
 
             <div class="page-body">
                 <div class="container-xl">
-                    @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <div class="d-flex">
-                            <div>
-                                <i class="ti ti-check icon alert-icon"></i>
-                            </div>
-                            <div>
-                                <h4 class="alert-title">Berhasil!</h4>
-                                <div class="text-muted">{{ session('success') }}</div>
-                            </div>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    @endif
-
-                    @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <div class="d-flex">
-                            <div>
-                                <i class="ti ti-alert-circle icon alert-icon"></i>
-                            </div>
-                            <div>
-                                <h4 class="alert-title">Error!</h4>
-                                <div class="text-muted">{{ session('error') }}</div>
-                            </div>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    @endif
-
+                    <x-admin-flash />
                     @yield('content')
                 </div>
             </div>

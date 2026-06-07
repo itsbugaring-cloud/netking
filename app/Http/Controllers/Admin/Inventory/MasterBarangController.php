@@ -75,9 +75,8 @@ class MasterBarangController extends Controller
 
         InvMasterBarang::create($validated);
 
-        session()->flash('success', 'Master barang berhasil ditambahkan.');
-
-        return redirect()->route('admin.inventory.master-barang.index');
+        return redirect()->route('admin.inventory.master-barang.index')
+            ->with('success', 'Master barang berhasil ditambahkan.');
     }
 
     // ── edit ──────────────────────────────────────────────────────────
@@ -109,9 +108,8 @@ class MasterBarangController extends Controller
 
         $invMasterBarang->update($validated);
 
-        session()->flash('success', 'Master barang berhasil diperbarui.');
-
-        return redirect()->route('admin.inventory.master-barang.index');
+        return redirect()->route('admin.inventory.master-barang.index')
+            ->with('success', 'Master barang berhasil diperbarui.');
     }
 
     // ── destroy ───────────────────────────────────────────────────────
@@ -123,15 +121,13 @@ class MasterBarangController extends Controller
             || $invMasterBarang->qtys()->count() > 0;
 
         if ($hasRefs) {
-            session()->flash('error', 'Master barang masih direferensi oleh data inventory dan tidak dapat dihapus.');
-
-            return redirect()->back();
+            return redirect()->back()
+                ->with('error', 'Master barang masih direferensi oleh data inventory dan tidak dapat dihapus.');
         }
 
         $invMasterBarang->delete();
 
-        session()->flash('success', 'Master barang berhasil dihapus.');
-
-        return redirect()->route('admin.inventory.master-barang.index');
+        return redirect()->route('admin.inventory.master-barang.index')
+            ->with('success', 'Master barang berhasil dihapus.');
     }
 }

@@ -57,9 +57,8 @@ class LokasiController extends Controller
 
         InvLokasi::create($validated);
 
-        session()->flash('success', 'Lokasi berhasil ditambahkan.');
-
-        return redirect()->route('admin.inventory.lokasi.index');
+        return redirect()->route('admin.inventory.lokasi.index')
+            ->with('success', 'Lokasi berhasil ditambahkan.');
     }
 
     // ── edit ──────────────────────────────────────────────────────────
@@ -91,9 +90,8 @@ class LokasiController extends Controller
 
         $lokasi->update($validated);
 
-        session()->flash('success', 'Lokasi berhasil diperbarui.');
-
-        return redirect()->route('admin.inventory.lokasi.index');
+        return redirect()->route('admin.inventory.lokasi.index')
+            ->with('success', 'Lokasi berhasil diperbarui.');
     }
 
     // ── destroy ───────────────────────────────────────────────────────
@@ -105,15 +103,13 @@ class LokasiController extends Controller
             || $lokasi->qtys()->count() > 0;
 
         if ($hasItems) {
-            session()->flash('error', 'Lokasi masih memiliki item inventory dan tidak dapat dihapus.');
-
-            return redirect()->back();
+            return redirect()->back()
+                ->with('error', 'Lokasi masih memiliki item inventory dan tidak dapat dihapus.');
         }
 
         $lokasi->delete();
 
-        session()->flash('success', 'Lokasi berhasil dihapus.');
-
-        return redirect()->route('admin.inventory.lokasi.index');
+        return redirect()->route('admin.inventory.lokasi.index')
+            ->with('success', 'Lokasi berhasil dihapus.');
     }
 }

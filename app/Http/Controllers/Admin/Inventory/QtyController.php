@@ -78,9 +78,8 @@ class QtyController extends Controller
             'created_at'       => now(),
         ]);
 
-        session()->flash('success', 'Stok qty berhasil ditambahkan.');
-
-        return redirect()->route('admin.inventory.qty.index');
+        return redirect()->route('admin.inventory.qty.index')
+            ->with('success', 'Stok qty berhasil ditambahkan.');
     }
 
     // ── tambah ────────────────────────────────────────────────────────
@@ -105,9 +104,8 @@ class QtyController extends Controller
             'created_at'       => now(),
         ]);
 
-        session()->flash('success', 'Stok berhasil ditambah sebanyak ' . $validated['jumlah'] . ' pcs.');
-
-        return redirect()->route('admin.inventory.qty.index');
+        return redirect()->route('admin.inventory.qty.index')
+            ->with('success', 'Stok berhasil ditambah sebanyak ' . $validated['jumlah'] . ' pcs.');
     }
 
     // ── kurangi ───────────────────────────────────────────────────────
@@ -120,9 +118,8 @@ class QtyController extends Controller
         ]);
 
         if ($validated['jumlah'] > $invQty->jumlah) {
-            session()->flash('error', 'Jumlah pengurangan melebihi stok yang tersedia (' . $invQty->jumlah . ').');
-
-            return redirect()->back();
+            return redirect()->back()
+                ->with('error', 'Jumlah pengurangan melebihi stok yang tersedia (' . $invQty->jumlah . ').');
         }
 
         $invQty->decrement('jumlah', $validated['jumlah']);
@@ -138,9 +135,8 @@ class QtyController extends Controller
             'created_at'      => now(),
         ]);
 
-        session()->flash('success', 'Stok berhasil dikurangi sebanyak ' . $validated['jumlah'] . ' pcs.');
-
-        return redirect()->route('admin.inventory.qty.index');
+        return redirect()->route('admin.inventory.qty.index')
+            ->with('success', 'Stok berhasil dikurangi sebanyak ' . $validated['jumlah'] . ' pcs.');
     }
 
     // ── adjust (±1 quick button) ──────────────────────────────────────
@@ -163,8 +159,8 @@ class QtyController extends Controller
             ]);
         } elseif ($action === 'minus') {
             if ($invQty->jumlah < 1) {
-                session()->flash('error', 'Stok sudah 0, tidak bisa dikurangi.');
-                return redirect()->back();
+                return redirect()->back()
+                    ->with('error', 'Stok sudah 0, tidak bisa dikurangi.');
             }
             $invQty->decrement('jumlah', 1);
             InvLogTransaksi::create([
@@ -187,15 +183,13 @@ class QtyController extends Controller
     public function destroy(InvQty $invQty)
     {
         if ($invQty->jumlah > 0) {
-            session()->flash('error', 'Stok masih ada (' . $invQty->jumlah . ' pcs). Kosongkan stok terlebih dahulu sebelum menghapus.');
-
-            return redirect()->back();
+            return redirect()->back()
+                ->with('error', 'Stok masih ada (' . $invQty->jumlah . ' pcs). Kosongkan stok terlebih dahulu sebelum menghapus.');
         }
 
         $invQty->delete();
 
-        session()->flash('success', 'Record stok qty berhasil dihapus.');
-
-        return redirect()->route('admin.inventory.qty.index');
+        return redirect()->route('admin.inventory.qty.index')
+            ->with('success', 'Record stok qty berhasil dihapus.');
     }
 }

@@ -100,9 +100,8 @@ class UnitController extends Controller
             'created_at'       => now(),
         ]);
 
-        session()->flash('success', 'Unit berhasil ditambahkan.');
-
-        return redirect()->route('admin.inventory.units.show', $unit);
+        return redirect()->route('admin.inventory.units.show', $unit)
+            ->with('success', 'Unit berhasil ditambahkan.');
     }
 
     // ── show ──────────────────────────────────────────────────────────
@@ -172,9 +171,8 @@ class UnitController extends Controller
             'created_at'      => now(),
         ]);
 
-        session()->flash('success', 'Unit berhasil diperbarui.');
-
-        return redirect()->route('admin.inventory.units.show', $invUnit);
+        return redirect()->route('admin.inventory.units.show', $invUnit)
+            ->with('success', 'Unit berhasil diperbarui.');
     }
 
     // ── destroy ───────────────────────────────────────────────────────
@@ -184,16 +182,14 @@ class UnitController extends Controller
         $allowedStatuses = ['rusak', 'terjual', 'hilang'];
 
         if (! in_array($invUnit->status, $allowedStatuses)) {
-            session()->flash('error', 'Unit hanya bisa dihapus jika status rusak/terjual/hilang.');
-
-            return redirect()->back();
+            return redirect()->back()
+                ->with('error', 'Unit hanya bisa dihapus jika status rusak/terjual/hilang.');
         }
 
         $invUnit->delete();
 
-        session()->flash('success', 'Unit berhasil dihapus.');
-
-        return redirect()->route('admin.inventory.units.index');
+        return redirect()->route('admin.inventory.units.index')
+            ->with('success', 'Unit berhasil dihapus.');
     }
 
     // ── mutasi ────────────────────────────────────────────────────────
@@ -220,9 +216,8 @@ class UnitController extends Controller
             'created_at'       => now(),
         ]);
 
-        session()->flash('success', 'Mutasi unit berhasil dicatat.');
-
-        return redirect()->route('admin.inventory.units.show', $invUnit);
+        return redirect()->route('admin.inventory.units.show', $invUnit)
+            ->with('success', 'Mutasi unit berhasil dicatat.');
     }
 
     // ── pasang ────────────────────────────────────────────────────────
@@ -254,9 +249,8 @@ class UnitController extends Controller
             'created_at'       => now(),
         ]);
 
-        session()->flash('success', 'Unit berhasil ditandai sebagai terpasang.');
-
-        return redirect()->route('admin.inventory.units.show', $invUnit);
+        return redirect()->route('admin.inventory.units.show', $invUnit)
+            ->with('success', 'Unit berhasil ditandai sebagai terpasang.');
     }
 
     // ── retur ─────────────────────────────────────────────────────────
@@ -281,8 +275,7 @@ class UnitController extends Controller
             'created_at'      => now(),
         ]);
 
-        session()->flash('success', 'Unit berhasil diretur dan ditandai rusak.');
-
-        return redirect()->route('admin.inventory.units.show', $invUnit);
+        return redirect()->route('admin.inventory.units.show', $invUnit)
+            ->with('success', 'Unit berhasil diretur dan ditandai rusak.');
     }
 }

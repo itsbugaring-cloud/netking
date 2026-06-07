@@ -112,16 +112,7 @@
         </div>
     </div>
 
-    @if(session('success'))
-    <div class="alert alert-success mb-3" style="border-radius:.5rem;">
-        <i class='bx bx-check-circle me-2'></i>{{ session('success') }}
-    </div>
-    @endif
-    @if(session('error'))
-    <div class="alert alert-danger mb-3" style="border-radius:.5rem;">
-        <i class='bx bx-error-circle me-2'></i>{{ session('error') }}
-    </div>
-    @endif
+
 
     @php
         $totalOnts  = $olts->sum(fn($o) => $o->onts->count());

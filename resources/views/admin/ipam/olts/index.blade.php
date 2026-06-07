@@ -15,17 +15,6 @@
     </div>
   </div>
 
-  @if (session('success'))
-  <div class="alert alert-success mb-3" style="border-radius:.5rem;font-size:.875rem;">
-    <i class='bx bx-check-circle me-2'></i>{{ session('success') }}
-  </div>
-  @endif
-  @if (session('error'))
-  <div class="alert mb-3" style="background:color-mix(in srgb,var(--red) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--red) 25%,var(--border));color:var(--red);border-radius:.5rem;font-size:.875rem;">
-    <i class='bx bx-error-circle me-2'></i>{{ session('error') }}
-  </div>
-  @endif
-
   {{-- Bookmark Import Form --}}
   <div id="import-section" class="ms-panel mb-3 d-none">
     <div class="ms-panel-head">
