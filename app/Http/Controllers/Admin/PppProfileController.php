@@ -24,29 +24,39 @@ class PppProfileController extends Controller
         if ($request->filled('area_id')) {
             $selectedArea = Area::findOrFail($request->area_id);
             $mikrotik = MikroTikService::forArea($selectedArea);
-            $result = $mikrotik->getPppoeProfiles();
 
-            if (!$result['success']) {
-                $error = 'Gagal terhubung ke router: ' . ($result['error'] ?? 'Unknown');
-            } else {
-                foreach ($result['data'] as $profile) {
-                    $name = $profile['name'] ?? '';
-                    if (!$name) continue;
+            try {
+                $result = $mikrotik->getPppoeProfiles();
 
-                    $subscriberCount = $mikrotik->countSecretsForProfile($name);
+                if (!$result['success']) {
+                    $error = 'Gagal terhubung ke router: ' . ($result['error'] ?? 'Unknown');
+                } else {
+                    foreach ($result['data'] as $profile) {
+                        $name = $profile['name'] ?? '';
+                        if (!$name) continue;
 
-                    $profiles[] = [
-                        'id' => $profile['.id'] ?? '',
-                        'name' => $name,
-                        'rate-limit' => $profile['rate-limit'] ?? '',
-                        'local-address' => $profile['local-address'] ?? '',
-                        'remote-address' => $profile['remote-address'] ?? '',
-                        'dns-server' => $profile['dns-server'] ?? '',
-                        'change-tcp-mss' => $profile['change-tcp-mss'] ?? '',
-                        'only-one' => $profile['only-one'] ?? '',
-                        'subscribers' => $subscriberCount,
-                    ];
+                        $subscriberCount = 0;
+                        try {
+                            $subscriberCount = $mikrotik->countSecretsForProfile($name);
+                        } catch (\Throwable $e) {
+                            // Skip counting if connection lost
+                        }
+
+                        $profiles[] = [
+                            'id' => $profile['.id'] ?? '',
+                            'name' => $name,
+                            'rate-limit' => $profile['rate-limit'] ?? '',
+                            'local-address' => $profile['local-address'] ?? '',
+                            'remote-address' => $profile['remote-address'] ?? '',
+                            'dns-server' => $profile['dns-server'] ?? '',
+                            'change-tcp-mss' => $profile['change-tcp-mss'] ?? '',
+                            'only-one' => $profile['only-one'] ?? '',
+                            'subscribers' => $subscriberCount,
+                        ];
+                    }
                 }
+            } catch (\Throwable $e) {
+                $error = 'Gagal terhubung ke router: ' . $e->getMessage();
             }
         }
 
