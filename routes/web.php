@@ -485,6 +485,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('system-dashboard', [\App\Http\Controllers\Admin\SystemDashboardController::class, 'index'])->name('system-dashboard');
         Route::get('system-dashboard/data', [\App\Http\Controllers\Admin\SystemDashboardController::class, 'data'])->name('system-dashboard.data');
 
+        // ── PPPoE Profile CRUD ────────────────────────────────────────────────
+        Route::get('ppp-profiles', [\App\Http\Controllers\Admin\PppProfileController::class, 'index'])->name('ppp-profiles.index');
+        Route::post('ppp-profiles', [\App\Http\Controllers\Admin\PppProfileController::class, 'store'])->name('ppp-profiles.store');
+        Route::put('ppp-profiles', [\App\Http\Controllers\Admin\PppProfileController::class, 'update'])->name('ppp-profiles.update');
+        Route::delete('ppp-profiles', [\App\Http\Controllers\Admin\PppProfileController::class, 'destroy'])->name('ppp-profiles.destroy');
+
+        // ── Router Backups ────────────────────────────────────────────────────
+        Route::get('backups', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('backups.index');
+        Route::post('backups', [\App\Http\Controllers\Admin\BackupController::class, 'store'])->name('backups.store');
+        Route::get('backups/{backup}/download', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('backups.download');
+        Route::delete('backups/{backup}', [\App\Http\Controllers\Admin\BackupController::class, 'destroy'])->name('backups.destroy');
+
         // ── IPAM Module ───────────────────────────────────────────────────────
         Route::prefix('ipam')->name('ipam.')->group(function () {
             Route::get('/', [IpamController::class, 'dashboard'])->name('dashboard');

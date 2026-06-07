@@ -1100,4 +1100,147 @@ class MikroTikService
             return [];
         }
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // PPPoE Profile CRUD
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Create a new PPP profile on the router
+     */
+    public function createPppProfile(string $name, string $rateLimit, array $options = []): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/ppp/profile/add');
+            $query->equal('name', $name);
+            $query->equal('rate-limit', $rateLimit);
+            foreach ($options as $k => $v) {
+                if ($v !== null && $v !== '') $query->equal($k, $v);
+            }
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Update an existing PPP profile on the router
+     */
+    public function updatePppProfile(string $id, array $params): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/ppp/profile/set');
+            $query->equal('.id', $id);
+            foreach ($params as $k => $v) {
+                $query->equal($k, $v ?? '');
+            }
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Delete a PPP profile from the router
+     */
+    public function deletePppProfile(string $id): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/ppp/profile/remove');
+            $query->equal('.id', $id);
+            $this->client->query($query)->read();
+            return ['success' => true];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Count PPPoE secrets referencing a given profile name
+     */
+    public function countSecretsForProfile(string $profileName): int
+    {
+        if (!$this->connect()) return 0;
+        try {
+            $query = new Query('/ppp/secret/print');
+            $query->where('profile', $profileName);
+            $query->equal('.proplist', '.id');
+            return count($this->client->query($query)->read());
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Router Backup
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Create a binary backup on the router
+     */
+    public function createBackup(string $name = ''): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/system/backup/save');
+            if ($name) $query->equal('name', $name);
+            $this->client->query($query)->read();
+            return ['success' => true, 'filename' => $name ? $name . '.backup' : 'backup.backup'];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Create a text export of the router configuration
+     */
+    public function createExport(): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/export');
+            $resp = $this->client->query($query)->read();
+            return ['success' => true, 'data' => $resp];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get file info from the router filesystem
+     */
+    public function getFileContents(string $filename): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/file/print');
+            $query->where('name', $filename);
+            $files = $this->client->query($query)->read();
+            if (empty($files)) return ['success' => false, 'error' => 'File not found'];
+            return ['success' => true, 'data' => $files[0]];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Delete a file from the router filesystem
+     */
+    public function deleteFile(string $filename): array
+    {
+        if (!$this->connect()) return ['success' => false, 'error' => 'Not connected'];
+        try {
+            $query = new Query('/file/remove');
+            $query->equal('.id', $filename);
+            $this->client->query($query)->read();
+            return ['success' => true];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

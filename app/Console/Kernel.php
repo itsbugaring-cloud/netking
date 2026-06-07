@@ -28,6 +28,23 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->appendOutputTo(storage_path('logs/invoice-generate.log'));
 
+        // Collect traffic data from all routers every 5 minutes
+        $schedule->command('traffic:collect')
+                 ->everyFiveMinutes()
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/traffic-collect.log'));
+
+        // Aggregate daily traffic into monthly and clean old records
+        $schedule->command('traffic:aggregate')
+                 ->dailyAt('01:00')
+                 ->appendOutputTo(storage_path('logs/traffic-aggregate.log'));
+
+        // Scheduled router backup (text export) every Sunday at 02:00
+        $schedule->command('backup:routers --type=text')
+                 ->weeklyOn(0, '02:00')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/router-backup.log'));
+
         // Suspend otomatis pelanggan yang invoice-nya jatuh tempo + 7 hari (tiap hari pukul 08:00)
         // DINONAKTIFKAN SEMENTARA - 2026-04-16
         // $schedule->command('customers:suspend-overdue', ['--days=7'])
