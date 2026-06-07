@@ -34,6 +34,30 @@
           'icon' => 'bx bx-shield-quarter',
           'title' => 'Isolir',
         ] : null,
+        $isAdmin ? [
+          'route' => route('admin.queues.index'),
+          'active' => request()->routeIs('admin.queues*'),
+          'icon' => 'bx bx-tachometer',
+          'title' => 'Simple Queue',
+        ] : null,
+        $isAdmin ? [
+          'route' => route('admin.ppp-profiles.index'),
+          'active' => request()->routeIs('admin.ppp-profiles*'),
+          'icon' => 'bx bx-slider-alt',
+          'title' => 'PPPoE Profiles',
+        ] : null,
+        $isAdmin ? [
+          'route' => route('admin.system-dashboard'),
+          'active' => request()->routeIs('admin.system-dashboard*'),
+          'icon' => 'bx bx-desktop',
+          'title' => 'System Dashboard',
+        ] : null,
+        $isAdmin ? [
+          'route' => route('admin.backups.index'),
+          'active' => request()->routeIs('admin.backups*'),
+          'icon' => 'bx bx-data',
+          'title' => 'Router Backup',
+        ] : null,
       ])),
     ],
     [

@@ -327,14 +327,16 @@
             <div class="pppoe-kanban" id="pppoe-kanban">
                 @foreach($secrets as $secret)
                 @php
-                    $session    = $activeSessions->get($secret['name']);
+                    $secretName = $secret['name'] ?? '';
+                    if (!$secretName) continue;
+                    $session    = $activeSessions->get($secretName);
                     $isActive   = !is_null($session);
                     $isDisabled = ($secret['disabled'] ?? 'false') === 'true';
                     $cardState  = $isDisabled ? 'disabled' : ($isActive ? 'online' : 'offline');
                 @endphp
                 <div class="pppoe-card pppoe-card--{{ $cardState }}"
                      data-state="{{ $cardState }}"
-                     data-search="{{ strtolower($secret['name'] . ' ' . ($secret['profile'] ?? '') . ' ' . ($secret['comment'] ?? '') . ' ' . ($session['address'] ?? '') . ' ' . ($session['caller-id'] ?? '')) }}">
+                     data-search="{{ strtolower($secretName . ' ' . ($secret['profile'] ?? '') . ' ' . ($secret['comment'] ?? '') . ' ' . ($session['address'] ?? '') . ' ' . ($session['caller-id'] ?? '')) }}">
 
                     <div class="pppoe-card-name">
                         @if($isActive)
@@ -344,7 +346,7 @@
                         @else
                             <i class='bx bx-circle' style="color:var(--txt-3);font-size:.6rem;flex-shrink:0;margin-top:2px;"></i>
                         @endif
-                        {{ $secret['name'] }}
+                        {{ $secretName }}
                     </div>
 
                     @if($secret['comment'] ?? '')
@@ -401,7 +403,7 @@
                         <form method="POST" action="{{ route('admin.pppoe.toggle') }}" style="flex:1;display:contents;">
                             @csrf
                             <input type="hidden" name="area_id" value="{{ $selectedArea->id }}">
-                            <input type="hidden" name="username" value="{{ $secret['name'] }}">
+                            <input type="hidden" name="username" value="{{ $secretName }}">
                             <input type="hidden" name="enable" value="{{ $isDisabled ? '1' : '0' }}">
                             <button type="submit"
                                 class="pppoe-card-btn {{ $isDisabled ? 'pppoe-card-btn--enable' : '' }}"
@@ -413,10 +415,10 @@
                         </form>
                         @if($isActive)
                         <form method="POST" action="{{ route('admin.pppoe.disconnect') }}" style="flex:1;display:contents;"
-                            data-confirm="Putuskan sesi PPPoE {{ $secret['name'] }}?">
+                            data-confirm="Putuskan sesi PPPoE {{ $secretName }}?">
                             @csrf
                             <input type="hidden" name="area_id" value="{{ $selectedArea->id }}">
-                            <input type="hidden" name="username" value="{{ $secret['name'] }}">
+                            <input type="hidden" name="username" value="{{ $secretName }}">
                             <button type="submit" class="pppoe-card-btn pppoe-card-btn--danger" title="Putuskan" style="flex:1;">
                                 <i class='bx bx-link-alt'></i>
                                 <span style="font-size:.7rem;">Putus</span>
