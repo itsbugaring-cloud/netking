@@ -91,6 +91,25 @@
             cursor: not-allowed !important;
             background: var(--tblr-bg-surface, #fff) !important;
         }
+
+        /* ── Form elements compact styling ── */
+        .form-select, .form-control {
+            font-size: .8125rem !important;
+            padding: .375rem .75rem !important;
+            border-radius: 6px !important;
+            border: 1px solid var(--tblr-border-color, #e6e7e9) !important;
+            height: auto !important;
+            line-height: 1.5 !important;
+        }
+        .form-select-sm, .form-control-sm {
+            font-size: .75rem !important;
+            padding: .25rem .5rem !important;
+        }
+        .form-select:focus, .form-control:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 2px rgba(37,99,235,.12) !important;
+            outline: none !important;
+        }
     </style>
 
     @stack('styles')
