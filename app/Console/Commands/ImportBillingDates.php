@@ -212,11 +212,11 @@ class ImportBillingDates extends Command
         $rows = collect();
         $maxRow = $sheet->getHighestRow();
 
-        for ($row = 2; $row <= $maxRow; $row++) {
-            $name = trim((string) ($sheet->getCell("C{$row}")->getValue() ?? ''));
-            $area = trim((string) ($sheet->getCell("E{$row}")->getValue() ?? ''));
-            $dateRaw = $sheet->getCell("F{$row}")->getValue();
-            $priceRaw = $sheet->getCell("I{$row}")->getValue();
+        for ($row = 3; $row <= $maxRow; $row++) {
+            $name = trim((string) ($sheet->getCell("B{$row}")->getValue() ?? ''));
+            $area = trim((string) ($sheet->getCell("D{$row}")->getValue() ?? ''));
+            $dateRaw = $sheet->getCell("E{$row}")->getValue();
+            $priceRaw = $sheet->getCell("H{$row}")->getValue();
 
             if (!$name || !$area) continue;
 
@@ -243,8 +243,21 @@ class ImportBillingDates extends Command
         $raw = trim((string) $raw);
 
         // Skip non-date values
-        if (str_contains(strtolower($raw), 'existing') || str_contains(strtolower($raw), 'pelanggan') || str_contains(strtolower($raw), 'gratis') || str_contains(strtolower($raw), 'bayar') || str_contains(strtolower($raw), 'belum') || str_contains(strtolower($raw), 'bundling')) {
+        if (str_contains(strtolower($raw), 'existing') || str_contains(strtolower($raw), 'pelanggan') || str_contains(strtolower($raw), 'gratis') || str_contains(strtolower($raw), 'bayar') || str_contains(strtolower($raw), 'belum') || str_contains(strtolower($raw), 'bundling') || str_contains(strtolower($raw), 'migrasi')) {
             return null;
+        }
+
+        // Excel serial date number (e.g. 46037 = 15 Jan 2026)
+        if (is_numeric($raw) && (int) $raw > 40000 && (int) $raw < 50000) {
+            try {
+                $unix = ((int) $raw - 25569) * 86400;
+                $date = Carbon::createFromTimestamp($unix);
+                if ($date->year >= 2024 && $date->year <= 2027) {
+                    return $date->format('Y-m-d');
+                }
+            } catch (\Exception $e) {
+                // fall through
+            }
         }
 
         // Clean up: remove extra quotes and whitespace
