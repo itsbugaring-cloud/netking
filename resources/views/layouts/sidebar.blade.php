@@ -41,12 +41,6 @@
           'title' => 'Simple Queue',
         ] : null,
         $isAdmin ? [
-          'route' => route('admin.ppp-profiles.index'),
-          'active' => request()->routeIs('admin.ppp-profiles*'),
-          'icon' => 'bx bx-slider-alt',
-          'title' => 'PPPoE Profiles',
-        ] : null,
-        $isAdmin ? [
           'route' => route('admin.system-dashboard'),
           'active' => request()->routeIs('admin.system-dashboard*'),
           'icon' => 'bx bx-desktop',

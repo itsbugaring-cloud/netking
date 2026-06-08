@@ -130,15 +130,6 @@
                     </a>
                 </li>
 
-                <li class="nav-item {{ request()->routeIs('admin.ppp-profiles.*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.ppp-profiles.index') }}">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <i class="ti ti-adjustments-horizontal"></i>
-                        </span>
-                        <span class="nav-link-title">PPPoE Profiles</span>
-                    </a>
-                </li>
-
                 <li class="nav-item {{ request()->routeIs('admin.backups.*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.backups.index') }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
