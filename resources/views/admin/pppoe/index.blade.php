@@ -203,7 +203,7 @@
                         @else
                             <i class='bx bx-router' style="color:var(--txt-3);font-size:.95rem;flex-shrink:0;"></i>
                         @endif
-                        {{ $area->name }}
+                        {{ $area->router_identity ?: $area->name }}
                     </div>
                     <div class="router-card-ip">{{ $area->router_ip }}</div>
                 </a>
@@ -444,22 +444,7 @@
 @section('scripts')
 <script>
     $(function() {
-        $('form[data-confirm]').on('submit', function(e) {
-            e.preventDefault();
-            var form = this;
-            Swal.fire({
-                title: $(form).data('confirm'),
-                text: 'Tindakan ini tidak dapat dibatalkan.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Ya, lanjutkan',
-                cancelButtonText: 'Batal'
-            }).then(function(result) {
-                if (result.isConfirmed) form.submit();
-            });
-        });
+        // data-confirm handled by global layout script
     });
 
     // ── Search + Filter ────────────────────────────────────────────────────
