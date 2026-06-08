@@ -35,13 +35,6 @@ class PppProfileController extends Controller
                         $name = $profile['name'] ?? '';
                         if (!$name) continue;
 
-                        $subscriberCount = 0;
-                        try {
-                            $subscriberCount = $mikrotik->countSecretsForProfile($name);
-                        } catch (\Throwable $e) {
-                            // Skip counting if connection lost
-                        }
-
                         $profiles[] = [
                             'id' => $profile['.id'] ?? '',
                             'name' => $name,
@@ -51,7 +44,7 @@ class PppProfileController extends Controller
                             'dns-server' => $profile['dns-server'] ?? '',
                             'change-tcp-mss' => $profile['change-tcp-mss'] ?? '',
                             'only-one' => $profile['only-one'] ?? '',
-                            'subscribers' => $subscriberCount,
+                            'subscribers' => 0, // Skip counting to prevent memory overflow
                         ];
                     }
                 }
