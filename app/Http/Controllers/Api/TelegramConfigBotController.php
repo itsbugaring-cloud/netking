@@ -771,6 +771,19 @@ class TelegramConfigBotController extends Controller
                 'by' => 'bot',
                 'note' => 'PPPoE secret berhasil masuk ke MikroTik (auto)',
             ];
+
+            // Auto-create customer in database
+            $customer = $this->autoCreateCustomer($payload);
+            if ($customer) {
+                $payload['customer_id'] = $customer->id;
+                $payload['customer_created_at'] = now()->toDateTimeString();
+                $payload['history'][] = [
+                    'at' => now()->toDateTimeString(),
+                    'status' => self::STATUS_MENUNGGU_PPPOE_UP,
+                    'by' => 'bot',
+                    'note' => "Customer auto-created (ID {$customer->id})",
+                ];
+            }
         } else {
             $payload['status'] = self::STATUS_FAILED_MIKROTIK;
             $payload['history'][] = [
@@ -910,6 +923,80 @@ class TelegramConfigBotController extends Controller
 
         $this->sendMessage($adminChatId, "❌ Request ditolak.");
         $this->notifyRequesterStatus($request, "❌ Request ditolak admin. Silakan revisi dan submit ulang.");
+    }
+
+    private function autoCreateCustomer(array $payload): ?Customer
+    {
+        try {
+            $draft = (array) ($payload['draft'] ?? []);
+            $areaId = (int) ($draft['area_id'] ?? 0);
+            $name = trim((string) ($draft['nama'] ?? ''));
+            $pppoeUser = trim((string) ($draft['pppoe_user'] ?? ''));
+            $pppoePass = trim((string) ($draft['pppoe_pass'] ?? 'netking'));
+            $phone = trim((string) ($draft['no_hp'] ?? ''));
+            $sn = strtoupper(str_replace('-', '', trim((string) ($draft['sn_ont'] ?? ''))));
+            $packageId = (int) ($draft['paket_id'] ?? 0);
+            $packagePrice = (float) ($draft['harga'] ?? 0);
+            $billingStart = (string) ($draft['tanggal_pasang'] ?? now()->toDateString());
+
+            if ($areaId <= 0 || $name === '' || $pppoeUser === '') {
+                return null;
+            }
+
+            // Check duplicate
+            if (Customer::forAreaPppoe($areaId, $pppoeUser)->exists()) {
+                return null;
+            }
+
+            // Resolve partner
+            $partnerId = null;
+            $fromUsername = trim((string) data_get($payload, 'from.username', ''));
+            if ($fromUsername !== '') {
+                $partner = User::where('role', 'partner')
+                    ->whereRaw('LOWER(telegram_username) = ?', [mb_strtolower($fromUsername)])
+                    ->first();
+                if ($partner) $partnerId = $partner->id;
+            }
+            if (!$partnerId) {
+                $single = User::where('role', 'partner')->where('area_id', $areaId)->count();
+                if ($single === 1) {
+                    $partnerId = User::where('role', 'partner')->where('area_id', $areaId)->value('id');
+                }
+            }
+
+            $portalRaw = preg_replace('/[^0-9]/', '', $phone);
+            if (strlen($portalRaw) < 6) $portalRaw = '12345678';
+
+            $customer = Customer::create([
+                'partner_id' => $partnerId,
+                'area_id' => $areaId,
+                'package_id' => $packageId > 0 ? $packageId : null,
+                'name' => $name,
+                'pppoe_user' => $pppoeUser,
+                'pppoe_pass' => $pppoePass,
+                'portal_password' => \Illuminate\Support\Facades\Hash::make($portalRaw),
+                'ont_sn' => $sn !== '' ? $sn : null,
+                'package_price' => $packagePrice,
+                'billing_start_date' => $billingStart,
+                'phone' => $phone !== '' ? $phone : null,
+                'status' => 'active',
+            ]);
+
+            // Link ONT if SN matches
+            if ($sn !== '') {
+                $ont = \App\Models\Ont::where('serial_number', 'LIKE', '%' . $sn . '%')
+                    ->first();
+                if ($ont) {
+                    $ont->update(['customer_id' => $customer->id]);
+                    $customer->update(['ont_sn' => $ont->serial_number]);
+                }
+            }
+
+            return $customer;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('autoCreateCustomer failed', ['error' => $e->getMessage()]);
+            return null;
+        }
     }
 
     private function pushSecretToMikrotik(array $request): array
