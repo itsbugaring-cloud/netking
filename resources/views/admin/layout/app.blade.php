@@ -207,6 +207,7 @@
 
     <!-- Tabler Core -->
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
     @livewireScripts
 
@@ -224,6 +225,22 @@
             modal.addEventListener('shown.bs.modal', function() {
                 $(modal).find('.form-select').not('.no-select2').not('[data-select2-id]').select2({ theme: 'bootstrap-5', width: '100%', dropdownParent: $(modal) });
             });
+        });
+
+        // Global confirm handler
+        $('form[data-confirm]').on('submit', function(e) {
+            e.preventDefault();
+            var form = this;
+            if (typeof Swal === 'undefined') { form.submit(); return; }
+            Swal.fire({
+                title: $(form).data('confirm'),
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, lanjutkan',
+                cancelButtonText: 'Batal'
+            }).then(function(r) { if (r.isConfirmed) form.submit(); });
         });
     });
     </script>

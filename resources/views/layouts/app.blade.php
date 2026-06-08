@@ -5693,6 +5693,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
   <script>
     var _sb = document.getElementById('sb');
@@ -5749,7 +5750,51 @@
   <!-- DataTables -->
   <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
-  <!-- SweetAlert2 -->
+
+  <!-- Global Confirm Dialog (SweetAlert2) -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Override native confirm() globally
+    window._nkConfirm = function(msg, callback) {
+      if (typeof Swal === 'undefined') { if (confirm(msg)) callback(); return; }
+      Swal.fire({
+        title: msg,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2563eb',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, lanjutkan',
+        cancelButtonText: 'Batal',
+        customClass: { popup: 'nk-swal-popup' }
+      }).then(function(r) { if (r.isConfirmed) callback(); });
+    };
+
+    // Auto-attach to all forms with data-confirm
+    document.querySelectorAll('form[data-confirm]').forEach(function(form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var f = this;
+        window._nkConfirm(f.dataset.confirm, function() { f.submit(); });
+      });
+    });
+
+    // Override onsubmit="return confirm(...)" pattern
+    document.querySelectorAll('[onclick*="confirm("]').forEach(function(el) {
+      var origOnclick = el.getAttribute('onclick');
+      var match = origOnclick.match(/confirm\(['"](.+?)['"]\)/);
+      if (match) {
+        el.removeAttribute('onclick');
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          window._nkConfirm(match[1], function() {
+            if (el.tagName === 'A') window.location = el.href;
+            else if (el.closest('form')) el.closest('form').submit();
+          });
+        });
+      }
+    });
+  });
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
