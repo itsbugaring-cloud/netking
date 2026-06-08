@@ -337,6 +337,7 @@ class MikroTikService
 
     /**
      * Get all PPPoE Secrets
+     * Uses .proplist to limit fields — dramatically faster on slow routers.
      */
     public function getAllSecrets(): array
     {
@@ -346,11 +347,12 @@ class MikroTikService
 
         try {
             $query = new Query('/ppp/secret/print');
+            $query->equal('.proplist', '.id,name,password,service,profile,remote-address,local-address,disabled,comment');
             $secrets = $this->client->query($query)->read();
 
             return ['success' => true, 'data' => $secrets];
         } catch (Exception $e) {
-            Log::error('MikroTik Get All Secrets Failed', ['error' => $e->getMessage()]);
+            Log::error('MikroTik Get All Secrets Failed', ['error' => $e->getMessage(), 'host' => $this->host]);
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
