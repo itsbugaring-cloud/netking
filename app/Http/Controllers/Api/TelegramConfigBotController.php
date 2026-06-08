@@ -549,8 +549,16 @@ class TelegramConfigBotController extends Controller
                 ->get(['id', 'name']);
 
             $buttons = [];
-            foreach ($areas as $area) {
-                $buttons[] = [['text' => '📍 ' . $area->name, 'callback_data' => 'cfg:area:' . $area->id]];
+            $row = [];
+            foreach ($areas as $i => $area) {
+                $row[] = ['text' => '📍 ' . $area->name, 'callback_data' => 'cfg:area:' . $area->id];
+                if (count($row) === 2) {
+                    $buttons[] = $row;
+                    $row = [];
+                }
+            }
+            if (!empty($row)) {
+                $buttons[] = $row;
             }
 
             $msgId = $this->sendMessage(
