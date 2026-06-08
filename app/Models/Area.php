@@ -16,6 +16,7 @@ class Area extends Model
         'router_ip',
         'router_user',
         'router_pass',
+        'router_identity',
         'ip_pool_start',
         'ip_pool_end',
     ];
