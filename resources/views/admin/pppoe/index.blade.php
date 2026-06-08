@@ -445,7 +445,20 @@
 <script>
     $(function() {
         $('form[data-confirm]').on('submit', function(e) {
-            if (!confirm($(this).data('confirm'))) e.preventDefault();
+            e.preventDefault();
+            var form = this;
+            Swal.fire({
+                title: $(form).data('confirm'),
+                text: 'Tindakan ini tidak dapat dibatalkan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, lanjutkan',
+                cancelButtonText: 'Batal'
+            }).then(function(result) {
+                if (result.isConfirmed) form.submit();
+            });
         });
     });
 
