@@ -5472,7 +5472,94 @@
       box-shadow: none !important;
     }
 
-    /* ── Global compact form fix ── */
+    /* ── Design Tokens ── */
+    :root {
+        --nk-primary: #2563eb;
+        --nk-height: 34px;
+        --nk-height-sm: 30px;
+        --nk-radius: 6px;
+    }
+
+    /* ── Select2 Unified ── */
+    .select2-container--bootstrap-5 .select2-selection {
+        min-height: var(--nk-height) !important;
+        height: var(--nk-height) !important;
+        border-radius: var(--nk-radius) !important;
+        font-size: .8125rem !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .select2-container--bootstrap-5.select2-container--focus .select2-selection,
+    .select2-container--bootstrap-5.select2-container--open .select2-selection {
+        border-color: var(--nk-primary) !important;
+        box-shadow: 0 0 0 2px rgba(37,99,235,.12) !important;
+    }
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+        font-size: .8125rem !important;
+        line-height: var(--nk-height) !important;
+    }
+    .select2-container--bootstrap-5 .select2-dropdown {
+        border-radius: var(--nk-radius) !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,.1) !important;
+    }
+    .select2-container--bootstrap-5 .select2-results__option--highlighted:not(.select2-results__option--selected) {
+        background: rgba(37,99,235,.1) !important;
+        color: var(--nk-primary) !important;
+    }
+    .select2-container--bootstrap-5 .select2-results__option--selected {
+        background: var(--nk-primary) !important;
+        color: #fff !important;
+    }
+    [data-theme="dark"] .select2-container--bootstrap-5 .select2-selection {
+        background: var(--surface) !important;
+        border-color: var(--border) !important;
+        color: var(--txt) !important;
+    }
+    [data-theme="dark"] .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+        color: var(--txt) !important;
+    }
+    [data-theme="dark"] .select2-dropdown {
+        background: var(--surface) !important;
+        border-color: var(--border) !important;
+    }
+    [data-theme="dark"] .select2-search__field {
+        background: var(--bg) !important;
+        color: var(--txt) !important;
+        border-color: var(--border) !important;
+    }
+    [data-theme="dark"] .select2-results__option {
+        color: var(--txt) !important;
+    }
+
+    /* ── Buttons Unified ── */
+    .main .btn {
+        height: var(--nk-height) !important;
+        border-radius: var(--nk-radius) !important;
+        font-size: .8125rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: .3rem !important;
+    }
+    .main .btn-sm {
+        height: var(--nk-height-sm) !important;
+        font-size: .72rem !important;
+        padding: .25rem .5rem !important;
+    }
+    .main .btn-primary { background-color: var(--nk-primary) !important; border-color: var(--nk-primary) !important; color: #fff !important; }
+    .main .btn-primary:hover { background-color: #1d4ed8 !important; border-color: #1d4ed8 !important; }
+
+    /* ── Modal Unified ── */
+    .modal-content {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,.18) !important;
+        border: none !important;
+    }
+    .modal-header { padding: 1rem !important; border-bottom: 1px solid var(--border) !important; }
+    .modal-body { padding: 1.25rem !important; }
+    .modal-footer { padding: .75rem 1rem !important; border-top: 1px solid var(--border) !important; }
+    [data-theme="dark"] .modal-content { background: var(--surface) !important; }
+
+    /* ── Form Inputs Unified ── */
     .main .form-control,
     .main .form-select,
     .main select,
@@ -5481,35 +5568,28 @@
     .main input[type="date"],
     .main input[type="search"] {
         font-size: .8125rem !important;
-        padding: .4rem .65rem !important;
-        min-height: 34px !important;
-        height: 34px !important;
-        border-radius: 6px !important;
-        line-height: 1.4 !important;
-        display: inline-flex !important;
-        align-items: center !important;
+        height: var(--nk-height) !important;
+        min-height: var(--nk-height) !important;
+        border-radius: var(--nk-radius) !important;
+        line-height: var(--nk-height) !important;
+        padding: 0 .65rem !important;
+    }
+    .main textarea.form-control {
+        height: auto !important;
+        line-height: 1.5 !important;
+        padding: .5rem .65rem !important;
     }
     .main .form-select-sm,
-    .main .form-control-sm,
-    .main select.form-select-sm {
+    .main .form-control-sm {
+        height: var(--nk-height-sm) !important;
+        min-height: var(--nk-height-sm) !important;
         font-size: .75rem !important;
-        padding: .3rem .5rem !important;
-        min-height: 30px !important;
-        height: 30px !important;
+        line-height: var(--nk-height-sm) !important;
     }
-    .main .btn {
-        font-size: .8125rem !important;
-        padding: .4rem .75rem !important;
-        border-radius: 6px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: .3rem !important;
-        height: 34px !important;
-    }
-    .main .btn-sm {
-        font-size: .72rem !important;
-        padding: .25rem .5rem !important;
-        height: 30px !important;
+    .main .form-control:focus,
+    .main .form-select:focus {
+        border-color: var(--nk-primary) !important;
+        box-shadow: 0 0 0 2px rgba(37,99,235,.12) !important;
     }
   </style>
   @yield('styles')
@@ -5641,19 +5721,21 @@
 
     // Select2 init
     $(function() {
-      $('select:not(.no-select2)').each(function() {
-        var placeholder = $(this).data('placeholder') ||
-          $(this).find('option[value=""]').first().text() || 'Pilih...';
-        $(this).select2({
+      if (typeof $.fn.select2 === 'undefined') return;
+      $('.form-select').not('.no-select2').not('[data-select2-id]').each(function() {
+        var $el = $(this);
+        var placeholder = $el.data('placeholder') ||
+          $el.find('option[value=""]').first().text() || 'Pilih...';
+        $el.select2({
           theme: 'bootstrap-5',
           width: '100%',
           placeholder: placeholder,
-          allowClear: $(this).find('option[value=""]').length > 0
+          allowClear: $el.find('option[value=""]').length > 0
         });
       });
       document.querySelectorAll('.modal').forEach(function(modal) {
         modal.addEventListener('shown.bs.modal', function() {
-          $(modal).find('select:not(.no-select2):not([data-select2-id])').select2({
+          $(modal).find('.form-select').not('.no-select2').not('[data-select2-id]').select2({
             theme: 'bootstrap-5',
             width: '100%',
             dropdownParent: $(modal)
