@@ -13,6 +13,8 @@ class PppProfileController extends Controller
 {
     public function index(Request $request)
     {
+        ini_set('max_execution_time', 10); // Kill request after 10s to prevent memory overflow
+
         $areas = Area::whereNotNull('router_ip')
             ->where('router_ip', '!=', '')
             ->get();
