@@ -47,7 +47,7 @@ class ImportBillingDates extends Command
 
         // Parse Excel rows
         $excelRows = $this->parseExcelRows($sheet);
-        $this->info("Parsed {$excelRows->count()} rows with name + area + date from Excel.");
+        $this->info("Parsed {$excelRows->count()} rows with name + area from Excel.");
         $this->newLine();
 
         // Load all customers from DB
