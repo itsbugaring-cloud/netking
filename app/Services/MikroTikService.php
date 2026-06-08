@@ -88,11 +88,12 @@ class MikroTikService
 
         try {
             $config = new Config([
-                'host'    => $this->host,
-                'user'    => $this->user,
-                'pass'    => $this->pass,
-                'port'    => $this->port,
-                'timeout' => 5,
+                'host'           => $this->host,
+                'user'           => $this->user,
+                'pass'           => $this->pass,
+                'port'           => $this->port,
+                'timeout'        => 5,   // connection timeout (TCP handshake)
+                'socket_timeout' => 30,  // read/write timeout (waiting for response)
             ]);
 
             $this->client = new Client($config);
