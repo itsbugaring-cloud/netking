@@ -39,6 +39,7 @@
             <tr>
               <th style="width:50px;">#</th>
               <th>Nama Area</th>
+              <th>MikroTik Identity</th>
               <th>Router IP</th>
               <th style="width:120px;">Pelanggan</th>
               <th style="width:90px;">Aksi</th>
@@ -49,6 +50,13 @@
             <tr>
               <td style="color:var(--txt-3);">{{ $index + 1 }}</td>
               <td><span style="font-weight:500;">{{ $area->name }}</span></td>
+              <td>
+                @if($area->router_identity)
+                <span style="font-weight:600;font-size:.8rem;color:var(--orange,#f97316);">{{ $area->router_identity }}</span>
+                @else
+                <span style="color:var(--txt-3);font-size:.75rem;">—</span>
+                @endif
+              </td>
               <td style="color:var(--txt-3);"><code>{{ $area->router_ip }}</code></td>
               <td>
                 <span style="background:color-mix(in srgb,var(--blue) 10%,var(--surface));color:var(--blue);font-size:.75rem;font-weight:600;padding:3px 8px;border-radius:20px;">
@@ -71,7 +79,7 @@
             </tr>
             @empty
             <tr>
-              <td colspan="5">
+              <td colspan="6">
                 <div class="text-center py-5" style="color:var(--txt-3);">
                   <i class='bx bx-map-pin fs-1 d-block mb-2'></i>
                   <div style="font-size:.9375rem;font-weight:500;">Belum ada area</div>

@@ -5758,14 +5758,19 @@
     window._nkConfirm = function(msg, callback) {
       if (typeof Swal === 'undefined') { if (confirm(msg)) callback(); return; }
       Swal.fire({
-        title: msg,
-        icon: 'question',
+        text: msg,
         showCancelButton: true,
         confirmButtonColor: '#2563eb',
-        cancelButtonColor: '#6b7280',
+        cancelButtonColor: '#e5e7eb',
         confirmButtonText: 'Ya, lanjutkan',
         cancelButtonText: 'Batal',
-        customClass: { popup: 'nk-swal-popup' }
+        showClass: { popup: 'animate__animated animate__fadeIn animate__faster' },
+        hideClass: { popup: 'animate__animated animate__fadeOut animate__faster' },
+        customClass: {
+          popup: 'nk-confirm-popup',
+          confirmButton: 'nk-confirm-btn',
+          cancelButton: 'nk-cancel-btn'
+        }
       }).then(function(r) { if (r.isConfirmed) callback(); });
     };
 
@@ -5795,6 +5800,17 @@
     });
   });
   </script>
+
+  <style>
+  .nk-confirm-popup { border-radius: 12px !important; padding: 1.5rem !important; font-family: 'Inter', sans-serif !important; max-width: 340px !important; }
+  .nk-confirm-popup .swal2-icon { display: none !important; }
+  .nk-confirm-popup .swal2-title { display: none !important; }
+  .nk-confirm-popup .swal2-html-container { font-size: .9rem !important; font-weight: 500 !important; color: #1f2937 !important; margin: 0 !important; padding: 0 !important; }
+  .nk-confirm-popup .swal2-actions { margin-top: 1.25rem !important; gap: .5rem !important; }
+  .nk-confirm-btn { font-size: .8125rem !important; padding: .5rem 1.25rem !important; border-radius: 8px !important; font-weight: 600 !important; }
+  .nk-cancel-btn { font-size: .8125rem !important; padding: .5rem 1.25rem !important; border-radius: 8px !important; font-weight: 500 !important; color: #374151 !important; background: #f3f4f6 !important; border: 1px solid #e5e7eb !important; }
+  .nk-cancel-btn:hover { background: #e5e7eb !important; }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

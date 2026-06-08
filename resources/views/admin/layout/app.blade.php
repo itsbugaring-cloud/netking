@@ -233,13 +233,17 @@
             var form = this;
             if (typeof Swal === 'undefined') { form.submit(); return; }
             Swal.fire({
-                title: $(form).data('confirm'),
-                icon: 'question',
+                text: $(form).data('confirm'),
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#6b7280',
+                cancelButtonColor: '#e5e7eb',
                 confirmButtonText: 'Ya, lanjutkan',
-                cancelButtonText: 'Batal'
+                cancelButtonText: 'Batal',
+                customClass: {
+                    popup: 'nk-confirm-popup',
+                    confirmButton: 'nk-confirm-btn',
+                    cancelButton: 'nk-cancel-btn'
+                }
             }).then(function(r) { if (r.isConfirmed) form.submit(); });
         });
     });
