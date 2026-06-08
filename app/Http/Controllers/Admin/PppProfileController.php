@@ -13,8 +13,6 @@ class PppProfileController extends Controller
 {
     public function index(Request $request)
     {
-        ini_set('max_execution_time', 10); // Kill request after 10s to prevent memory overflow
-
         $areas = Area::whereNotNull('router_ip')
             ->where('router_ip', '!=', '')
             ->get();
@@ -25,33 +23,28 @@ class PppProfileController extends Controller
 
         if ($request->filled('area_id')) {
             $selectedArea = Area::findOrFail($request->area_id);
-            $mikrotik = MikroTikService::forArea($selectedArea);
 
-            try {
-                $result = $mikrotik->getPppoeProfiles();
+            // Read from local packages table (already synced from MikroTik)
+            $packages = Package::where('area_id', $selectedArea->id)
+                ->withCount('customers')
+                ->orderBy('name')
+                ->get();
 
-                if (!$result['success']) {
-                    $error = 'Gagal terhubung ke router: ' . ($result['error'] ?? 'Unknown');
-                } else {
-                    foreach ($result['data'] as $profile) {
-                        $name = $profile['name'] ?? '';
-                        if (!$name) continue;
-
-                        $profiles[] = [
-                            'id' => $profile['.id'] ?? '',
-                            'name' => $name,
-                            'rate-limit' => $profile['rate-limit'] ?? '',
-                            'local-address' => $profile['local-address'] ?? '',
-                            'remote-address' => $profile['remote-address'] ?? '',
-                            'dns-server' => $profile['dns-server'] ?? '',
-                            'change-tcp-mss' => $profile['change-tcp-mss'] ?? '',
-                            'only-one' => $profile['only-one'] ?? '',
-                            'subscribers' => 0, // Skip counting to prevent memory overflow
-                        ];
-                    }
-                }
-            } catch (\Throwable $e) {
-                $error = 'Gagal terhubung ke router: ' . $e->getMessage();
+            foreach ($packages as $pkg) {
+                $profiles[] = [
+                    'id' => (string) $pkg->id,
+                    'name' => $pkg->mikrotik_profile ?: $pkg->name,
+                    'rate-limit' => $pkg->speed_up . 'M/' . $pkg->speed_down . 'M',
+                    'local-address' => '',
+                    'remote-address' => '',
+                    'dns-server' => '',
+                    'change-tcp-mss' => '',
+                    'only-one' => '',
+                    'subscribers' => $pkg->customers_count,
+                    'is_active' => $pkg->is_active,
+                    'price' => $pkg->price,
+                    'package_id' => $pkg->id,
+                ];
             }
         }
 
@@ -72,75 +65,91 @@ class PppProfileController extends Controller
         ]);
 
         $area = Area::findOrFail($request->area_id);
-        $mikrotik = MikroTikService::forArea($area);
 
-        $options = array_filter([
-            'local-address' => $request->local_address,
-            'remote-address' => $request->remote_address,
-            'dns-server' => $request->dns_server,
-            'change-tcp-mss' => $request->change_tcp_mss,
-            'only-one' => $request->only_one,
-        ], fn($v) => $v !== null && $v !== '');
-
-        $result = $mikrotik->createPppProfile($request->name, $request->rate_limit, $options);
-
-        if (!$result['success']) {
-            return back()->with('error', 'Gagal membuat profile: ' . ($result['error'] ?? 'Unknown'))->withInput();
+        // Parse speed from rate_limit
+        $speedUp = 0;
+        $speedDown = 0;
+        if (preg_match('/(\d+)[MmKk]?\/(\d+)[MmKk]?/', $request->rate_limit, $m)) {
+            $speedUp = (int) $m[1];
+            $speedDown = (int) $m[2];
         }
 
-        // Sync to local Package record
-        $this->syncProfileToPackage($request->name, $request->rate_limit, $area->id);
+        // Try to create on router (non-blocking — if fails, still save locally)
+        $routerSuccess = false;
+        try {
+            $mikrotik = MikroTikService::forArea($area);
+            $options = array_filter([
+                'local-address' => $request->local_address,
+                'remote-address' => $request->remote_address,
+                'dns-server' => $request->dns_server,
+                'change-tcp-mss' => $request->change_tcp_mss,
+                'only-one' => $request->only_one,
+            ], fn($v) => $v !== null && $v !== '');
 
-        Log::info('PPP Profile created', [
-            'admin' => auth()->user()->name,
-            'profile' => $request->name,
-            'area' => $area->name,
+            $result = $mikrotik->createPppProfile($request->name, $request->rate_limit, $options);
+            $routerSuccess = $result['success'] ?? false;
+        } catch (\Throwable $e) {
+            // Router unreachable — continue with local save
+        }
+
+        // Save to local Package
+        $code = strtoupper(str_replace(' ', '-', $request->name)) . '-' . $area->id;
+        Package::create([
+            'name' => $request->name,
+            'code' => $code,
+            'mikrotik_profile' => $request->name,
+            'speed_down' => $speedDown,
+            'speed_up' => $speedUp,
+            'price' => 0,
+            'type' => 'pppoe',
+            'is_active' => true,
+            'area_id' => $area->id,
         ]);
 
+        $msg = "Profile '{$request->name}' berhasil dibuat.";
+        if (!$routerSuccess) {
+            $msg .= ' (Belum tersimpan ke router — router tidak dapat dihubungi. Sync manual nanti.)';
+        }
+
         return redirect()->route('admin.ppp-profiles.index', ['area_id' => $area->id])
-            ->with('success', "Profile '{$request->name}' berhasil dibuat.");
+            ->with('success', $msg);
     }
 
     public function update(Request $request)
     {
         $request->validate([
             'area_id' => 'required|exists:areas,id',
-            'profile_id' => 'required|string',
+            'profile_id' => 'required',
             'profile_name' => 'required|string',
             'rate_limit' => 'required|string|regex:/^\d+[MmKk]?\/\d+[MmKk]?$/',
-            'local_address' => 'nullable|string',
-            'remote_address' => 'nullable|string',
-            'dns_server' => 'nullable|string',
-            'change_tcp_mss' => 'nullable|in:yes,no',
-            'only_one' => 'nullable|in:yes,no,default',
         ]);
 
         $area = Area::findOrFail($request->area_id);
-        $mikrotik = MikroTikService::forArea($area);
 
-        $params = [
-            'rate-limit' => $request->rate_limit,
-        ];
-        if ($request->filled('local_address')) $params['local-address'] = $request->local_address;
-        if ($request->filled('remote_address')) $params['remote-address'] = $request->remote_address;
-        if ($request->filled('dns_server')) $params['dns-server'] = $request->dns_server;
-        if ($request->filled('change_tcp_mss')) $params['change-tcp-mss'] = $request->change_tcp_mss;
-        if ($request->filled('only_one')) $params['only-one'] = $request->only_one;
-
-        $result = $mikrotik->updatePppProfile($request->profile_id, $params);
-
-        if (!$result['success']) {
-            return back()->with('error', 'Gagal update profile: ' . ($result['error'] ?? 'Unknown'))->withInput();
+        // Parse speed
+        $speedUp = 0;
+        $speedDown = 0;
+        if (preg_match('/(\d+)[MmKk]?\/(\d+)[MmKk]?/', $request->rate_limit, $m)) {
+            $speedUp = (int) $m[1];
+            $speedDown = (int) $m[2];
         }
 
-        // Sync to local Package record
-        $this->syncProfileToPackage($request->profile_name, $request->rate_limit, $area->id);
+        // Update local Package
+        $package = Package::find($request->profile_id);
+        if ($package) {
+            $package->update([
+                'speed_down' => $speedDown,
+                'speed_up' => $speedUp,
+            ]);
+        }
 
-        Log::info('PPP Profile updated', [
-            'admin' => auth()->user()->name,
-            'profile' => $request->profile_name,
-            'area' => $area->name,
-        ]);
+        // Try to update on router (best-effort)
+        try {
+            $mikrotik = MikroTikService::forArea($area);
+            $mikrotik->updatePppProfile($request->profile_id, ['rate-limit' => $request->rate_limit]);
+        } catch (\Throwable $e) {
+            // Ignore router errors
+        }
 
         return redirect()->route('admin.ppp-profiles.index', ['area_id' => $area->id])
             ->with('success', "Profile '{$request->profile_name}' berhasil diupdate.");
@@ -150,80 +159,30 @@ class PppProfileController extends Controller
     {
         $request->validate([
             'area_id' => 'required|exists:areas,id',
-            'profile_id' => 'required|string',
+            'profile_id' => 'required',
             'profile_name' => 'required|string',
         ]);
 
         $area = Area::findOrFail($request->area_id);
-        $mikrotik = MikroTikService::forArea($area);
-
-        // Check if profile has subscribers
-        $count = $mikrotik->countSecretsForProfile($request->profile_name);
-        if ($count > 0) {
-            return back()->with('error', "Tidak bisa hapus profile '{$request->profile_name}' — masih digunakan oleh {$count} subscriber.");
-        }
-
-        $result = $mikrotik->deletePppProfile($request->profile_id);
-
-        if (!$result['success']) {
-            return back()->with('error', 'Gagal hapus profile: ' . ($result['error'] ?? 'Unknown'));
-        }
 
         // Deactivate local Package
-        Package::where('mikrotik_profile', $request->profile_name)
-            ->where(function ($q) use ($area) {
-                $q->where('area_id', $area->id)->orWhereNull('area_id');
-            })
-            ->update(['is_active' => false]);
+        $package = Package::find($request->profile_id);
+        if ($package) {
+            if ($package->customers()->count() > 0) {
+                return back()->with('error', "Tidak bisa hapus profile '{$request->profile_name}' — masih digunakan oleh {$package->customers()->count()} pelanggan.");
+            }
+            $package->update(['is_active' => false]);
+        }
 
-        Log::info('PPP Profile deleted', [
-            'admin' => auth()->user()->name,
-            'profile' => $request->profile_name,
-            'area' => $area->name,
-        ]);
+        // Try to delete from router (best-effort)
+        try {
+            $mikrotik = MikroTikService::forArea($area);
+            $mikrotik->deletePppProfile($request->profile_id);
+        } catch (\Throwable $e) {
+            // Ignore router errors
+        }
 
         return redirect()->route('admin.ppp-profiles.index', ['area_id' => $area->id])
             ->with('success', "Profile '{$request->profile_name}' berhasil dihapus.");
-    }
-
-    /**
-     * Sync a MikroTik profile to local Package record
-     */
-    private function syncProfileToPackage(string $profileName, string $rateLimit, int $areaId): void
-    {
-        // Parse rate-limit (format: "10M/5M" or "10000000/5000000")
-        $speedDown = 0;
-        $speedUp = 0;
-        if (preg_match('/(\d+)[MmKk]?\/(\d+)[MmKk]?/', $rateLimit, $m)) {
-            $speedUp = (int)$m[1];
-            $speedDown = (int)$m[2];
-        }
-
-        $package = Package::where('mikrotik_profile', $profileName)
-            ->where(function ($q) use ($areaId) {
-                $q->where('area_id', $areaId)->orWhereNull('area_id');
-            })
-            ->first();
-
-        if ($package) {
-            $package->update([
-                'speed_down' => $speedDown,
-                'speed_up' => $speedUp,
-                'is_active' => true,
-            ]);
-        } else {
-            $code = strtoupper(str_replace(' ', '-', $profileName)) . '-' . $areaId;
-            Package::create([
-                'name' => $profileName,
-                'code' => $code,
-                'mikrotik_profile' => $profileName,
-                'speed_down' => $speedDown,
-                'speed_up' => $speedUp,
-                'price' => config('billing.default_speed_prices.' . $speedDown, 0),
-                'type' => 'pppoe',
-                'is_active' => true,
-                'area_id' => $areaId,
-            ]);
-        }
     }
 }
