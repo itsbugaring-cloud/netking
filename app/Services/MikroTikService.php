@@ -74,6 +74,7 @@ class MikroTikService
     /**
      * Lazily establish connection to the router.
      * Called automatically before any API operation.
+     * Retries once on failure (handles stale WireGuard connections).
      */
     protected function connect(): bool
     {
@@ -86,29 +87,43 @@ class MikroTikService
             return false;
         }
 
-        try {
-            $config = new Config([
-                'host'           => $this->host,
-                'user'           => $this->user,
-                'pass'           => $this->pass,
-                'port'           => $this->port,
-                'timeout'        => 5,   // connection timeout (TCP handshake)
-                'socket_timeout' => 30,  // read/write timeout (waiting for response)
-            ]);
+        $attempts = 2; // try twice: first attempt + 1 retry
+        $lastError = '';
 
-            $this->client = new Client($config);
-            $this->connected = true;
+        for ($i = 1; $i <= $attempts; $i++) {
+            try {
+                $config = new Config([
+                    'host'           => $this->host,
+                    'user'           => $this->user,
+                    'pass'           => $this->pass,
+                    'port'           => $this->port,
+                    'timeout'        => 5,   // connection timeout (TCP handshake)
+                    'socket_timeout' => 15,  // read/write timeout (waiting for response)
+                ]);
 
-            Log::info('MikroTik connection established', ['host' => $this->host]);
-            return true;
-        } catch (Exception $e) {
-            Log::error('MikroTik connection failed', [
-                'error' => $e->getMessage(),
-                'host' => $this->host,
-            ]);
-            $this->connected = false;
-            return false;
+                $this->client = new Client($config);
+                $this->connected = true;
+
+                if ($i > 1) {
+                    Log::info('MikroTik connection established on retry', ['host' => $this->host, 'attempt' => $i]);
+                }
+                return true;
+            } catch (Exception $e) {
+                $lastError = $e->getMessage();
+                $this->connected = false;
+                $this->client = null;
+
+                if ($i < $attempts) {
+                    usleep(500000); // 500ms before retry
+                }
+            }
         }
+
+        Log::error('MikroTik connection failed after retries', [
+            'error' => $lastError,
+            'host' => $this->host,
+        ]);
+        return false;
     }
 
     /**
