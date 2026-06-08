@@ -552,7 +552,7 @@ class TelegramConfigBotController extends Controller
             $row = [];
             foreach ($areas as $i => $area) {
                 $label = $area->router_identity ?: $area->name;
-                $row[] = ['text' => '📍 ' . $label, 'callback_data' => 'cfg:area:' . $area->id];
+                $row[] = ['text' => '🔹 ' . $label, 'callback_data' => 'cfg:area:' . $area->id];
                 if (count($row) === 2) {
                     $buttons[] = $row;
                     $row = [];
