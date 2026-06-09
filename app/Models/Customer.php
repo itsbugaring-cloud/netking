@@ -94,9 +94,14 @@ class Customer extends Authenticatable
         return $this->belongsTo(Package::class);
     }
 
-    public function invoices()
+    public function payments()
     {
-        return $this->hasMany(Invoice::class);
+        return $this->hasMany(Payment::class);
+    }
+
+    public function latestPayment()
+    {
+        return $this->hasOne(Payment::class)->latestOfMany('approved_at')->where('status', 'approved');
     }
 
     public function odp()
