@@ -14,6 +14,8 @@ return [
     // Default pricing fallback based on package download speed (Mbps).
     // These are used only when customer/package price is empty or zero.
     'default_speed_prices' => [
+        20 => env('BILLING_PRICE_20MBPS', 200000),
+        15 => env('BILLING_PRICE_15MBPS', 175000),
         10 => env('BILLING_PRICE_10MBPS', 150000),
         8 => env('BILLING_PRICE_8MBPS', 125000),
         6 => env('BILLING_PRICE_6MBPS', 100000),
