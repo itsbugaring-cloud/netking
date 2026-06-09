@@ -92,10 +92,20 @@ class ImportBillingDates extends Command
                 $dbName = $this->normName($c->name);
                 $pppoeUser = $this->normName($c->pppoe_user);
 
+                // Remove common prefixes/noise from both sides for better matching
+                $excelClean = preg_replace('/^(ibu|bu|bapak|pak|teh|mang|ceu|bi|ma|ust)\s+/i', '', $excelName);
+                $dbClean = preg_replace('/^(ibu|bu|bapak|pak|teh|mang|ceu|bi|ma|ust)\s+/i', '', $dbName);
+                $pppoeClean = str_replace(['-', '_', ' '], '', $pppoeUser);
+                $excelCompact = str_replace(['-', '_', ' ', '/'], '', $excelName);
+
                 return $dbName === $excelName
                     || str_contains($dbName, $excelName)
                     || str_contains($excelName, $dbName)
-                    || str_contains($pppoeUser, $excelName);
+                    || str_contains($pppoeUser, $excelName)
+                    || str_contains($pppoeClean, str_replace(' ', '', $excelName))
+                    || str_contains(str_replace(' ', '', $excelName), $pppoeClean)
+                    || ($excelClean && $dbClean && ($dbClean === $excelClean || str_contains($dbClean, $excelClean) || str_contains($excelClean, $dbClean)))
+                    || ($excelClean && str_contains($pppoeClean, str_replace(' ', '', $excelClean)));
             });
 
             if ($candidates->count() === 1) {
@@ -353,7 +363,7 @@ class ImportBillingDates extends Command
         // Manual mappings for known mismatches
         $manual = [
             'cikalong wetan' => 'cikalong wetan',
-            'cicadas' => 'cicadas',
+            'cicadas' => 'cicaheum',
             'sumedang' => 'sumedang',
             'tasikmalaya' => 'tasikmalaya',
             'padalarang' => 'padalarang',
