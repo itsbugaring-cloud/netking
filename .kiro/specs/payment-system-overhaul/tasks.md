@@ -31,32 +31,32 @@ Replace the invoice-based payment system with a new `payments` table and flow. R
   - [x] 2.4 Remove all invoice-related routes from `routes/web.php` (the `invoices` prefix group, billing calendar routes, and any invoice-related API routes like `api/dashboard-live` unpaid/overdue stats)
     - _Requirements: 1.3_
 
-- [~] 3. Checkpoint - Verify migrations and model
+- [x] 3. Checkpoint - Verify migrations and model
   - Run migrations, ensure payments table is created and invoices table is dropped. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Refactor public payment page (PaymentPageController)
-  - [~] 4.1 Refactor `app/Http/Controllers/PaymentPageController.php` — remove all invoice logic, remove auto-approve. The `show()` method loads customer by code, displays info + payment accounts. The `submit()` method validates upload, creates Payment record with status=pending, periode=current month/year, jumlah=customer package_price, redirects with "Pembayaran sedang diproses"
+- [x] 4. Refactor public payment page (PaymentPageController)
+  - [x] 4.1 Refactor `app/Http/Controllers/PaymentPageController.php` — remove all invoice logic, remove auto-approve. The `show()` method loads customer by code, displays info + payment accounts. The `submit()` method validates upload, creates Payment record with status=pending, periode=current month/year, jumlah=customer package_price, redirects with "Pembayaran sedang diproses"
     - _Requirements: 1.2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 8.1_
-  - [~] 4.2 Refactor `resources/views/payments/public.blade.php` — remove invoice selection dropdown, show customer info/package/amount, keep payment account display, show upload form with rekening_tujuan selector (BRI/BNI/Mandiri/BCA/QRIS), show success message "Pembayaran sedang diproses" after upload
+  - [x] 4.2 Refactor `resources/views/payments/public.blade.php` — remove invoice selection dropdown, show customer info/package/amount, keep payment account display, show upload form with rekening_tujuan selector (BRI/BNI/Mandiri/BCA/QRIS), show success message "Pembayaran sedang diproses" after upload
     - _Requirements: 2.1, 2.2, 2.3, 2.6_
   - [ ]* 4.3 Write property test for payment upload creating pending record
     - **Property 1: Payment upload always creates pending record with current period**
     - **Validates: Requirements 1.2, 2.2, 8.1**
 
-- [ ] 5. Build admin payment review page
-  - [~] 5.1 Create `app/Http/Controllers/Admin/PaymentController.php` with methods: reviewIndex (list pending payments), approve (validate pending status, update to approved with user/timestamp, allow period override), reject (validate pending status, record reason)
+- [x] 5. Build admin payment review page
+  - [x] 5.1 Create `app/Http/Controllers/Admin/PaymentController.php` with methods: reviewIndex (list pending payments), approve (validate pending status, update to approved with user/timestamp, allow period override), reject (validate pending status, record reason)
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 8.2_
-  - [~] 5.2 Create `resources/views/admin/payments/review.blade.php` — display pending payments queue with: customer name, area, PIC, period, amount, payment method, rekening, proof image preview (clickable for full view), approve button (with optional period override fields), reject button with reason input
+  - [x] 5.2 Create `resources/views/admin/payments/review.blade.php` — display pending payments queue with: customer name, area, PIC, period, amount, payment method, rekening, proof image preview (clickable for full view), approve button (with optional period override fields), reject button with reason input
     - _Requirements: 3.1, 3.2, 8.2_
-  - [~] 5.3 Register admin payment routes in `routes/web.php` under the admin middleware group: GET /payments/review, POST /payments/{payment}/approve, POST /payments/{payment}/reject
+  - [x] 5.3 Register admin payment routes in `routes/web.php` under the admin middleware group: GET /payments/review, POST /payments/{payment}/approve, POST /payments/{payment}/reject
     - _Requirements: 3.1, 3.3, 3.4_
 
-- [ ] 6. Build manual payment feature
-  - [~] 6.1 Add `manualPaymentForm()` and `manualPaymentStore()` methods to PaymentController — form shows period picker (month/year), amount (default customer package_price), method (transfer/cash), rekening_tujuan (BRI/BNI/Mandiri/BCA/QRIS/Cash), notes. Store creates Payment with status=approved, approved_by=auth user, approved_at=now, created_by=auth user
+- [x] 6. Build manual payment feature
+  - [x] 6.1 Add `manualPaymentForm()` and `manualPaymentStore()` methods to PaymentController — form shows period picker (month/year), amount (default customer package_price), method (transfer/cash), rekening_tujuan (BRI/BNI/Mandiri/BCA/QRIS/Cash), notes. Store creates Payment with status=approved, approved_by=auth user, approved_at=now, created_by=auth user
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
-  - [~] 6.2 Create `resources/views/admin/payments/manual.blade.php` — form with customer info header, period month/year dropdowns, amount input (pre-filled), method radio (transfer/cash), rekening dropdown, notes textarea
+  - [x] 6.2 Create `resources/views/admin/payments/manual.blade.php` — form with customer info header, period month/year dropdowns, amount input (pre-filled), method radio (transfer/cash), rekening dropdown, notes textarea
     - _Requirements: 4.1, 8.3_
-  - [~] 6.3 Register manual payment routes: GET /payments/manual/{customer}, POST /payments/manual/{customer}
+  - [x] 6.3 Register manual payment routes: GET /payments/manual/{customer}, POST /payments/manual/{customer}
     - _Requirements: 4.1_
   - [ ]* 6.4 Write property test for manual payment creation
     - **Property 5: Manual payment creates immediately approved record**

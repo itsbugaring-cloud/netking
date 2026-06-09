@@ -65,41 +65,18 @@
     .accordion-button:not(.collapsed) {
       background: #eef2ff;
     }
-    /* Skeleton loading */
-    .skeleton {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: skeleton-pulse 1.5s infinite;
-      border-radius: 4px;
+    /* Drop zone */
+    #dropZone.drag-over {
+      border-color: #2563eb !important;
+      background: #eef2ff;
     }
-    @keyframes skeleton-pulse {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+    /* Footer */
+    .pay-footer {
+      text-align: center;
+      padding: 2rem 0 1rem;
+      color: #94a3b8;
+      font-size: 0.8rem;
     }
-    /* Status timeline */
-    .status-timeline {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin-top: 0.5rem;
-    }
-    .status-timeline .step {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-size: 0.7rem;
-      font-weight: 500;
-    }
-    .status-timeline .step.active { color: #2563eb; }
-    .status-timeline .step.done { color: #16a34a; }
-    .status-timeline .step.pending { color: #94a3b8; }
-    .status-timeline .line {
-      width: 20px;
-      height: 2px;
-      background: #e2e8f0;
-      margin: 0 4px;
-    }
-    .status-timeline .line.done { background: #16a34a; }
     /* Confetti */
     .confetti-piece {
       position: fixed;
@@ -114,27 +91,6 @@
     @keyframes confetti-fall {
       0% { opacity: 1; top: -10px; transform: rotate(0deg); }
       100% { opacity: 0; top: 100vh; transform: rotate(720deg); }
-    }
-    /* Footer */
-    .pay-footer {
-      text-align: center;
-      padding: 2rem 0 1rem;
-      color: #94a3b8;
-      font-size: 0.8rem;
-    }
-    /* Pulse animation */
-    .btn-pulse {
-      animation: pulse-ring 2s infinite;
-    }
-    @keyframes pulse-ring {
-      0% { box-shadow: 0 0 0 0 rgba(37,99,235,.4); }
-      70% { box-shadow: 0 0 0 8px rgba(37,99,235,0); }
-      100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
-    }
-    /* Drop zone */
-    #dropZone.drag-over {
-      border-color: #2563eb !important;
-      background: #eef2ff;
     }
     @media (max-width: 767.98px) {
       .bento-grid {
@@ -179,13 +135,18 @@
           {{-- Search Card --}}
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Cek Tagihan Pelanggan</h3>
+              <h3 class="card-title">Pembayaran Pelanggan</h3>
             </div>
             <div class="card-body">
-              <p class="text-secondary mb-3">Masukkan ID pelanggan untuk melihat tagihan.</p>
+              <p class="text-secondary mb-3">Masukkan ID pelanggan untuk melakukan pembayaran.</p>
 
               @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+                <div class="alert alert-success">
+                  <div class="d-flex align-items-center">
+                    <i class="ti ti-circle-check me-2"></i>
+                    <div>{{ session('success') }}</div>
+                  </div>
+                </div>
               @endif
               @if(session('error'))
                 <div class="alert alert-danger">{{ session('error') }}</div>
@@ -200,7 +161,7 @@
                     <input type="text" class="form-control" name="customer_code" value="{{ old('customer_code', $customerCode) }}" placeholder="Masukkan ID pelanggan" maxlength="32">
                   </div>
                   <div class="col-auto">
-                    <button class="btn btn-primary" type="submit" id="btnCekTagihan"><i class="ti ti-search"></i> Cek Tagihan</button>
+                    <button class="btn btn-primary" type="submit" id="btnCekTagihan"><i class="ti ti-search"></i> Cek</button>
                   </div>
                 </div>
               </form>
@@ -209,8 +170,8 @@
                 <div class="col-md-4">
                   <div class="p-3 rounded border">
                     <span class="avatar avatar-sm bg-primary-lt mb-2"><i class="ti ti-search"></i></span>
-                    <div class="fw-medium mb-1">1. Cek tagihan</div>
-                    <div class="text-secondary small">Ketik ID pelanggan lalu klik Cek Tagihan.</div>
+                    <div class="fw-medium mb-1">1. Cek pelanggan</div>
+                    <div class="text-secondary small">Ketik ID pelanggan lalu klik Cek.</div>
                   </div>
                 </div>
                 <div class="col-md-4">
@@ -231,11 +192,11 @@
             </div>
           </div>
 
-          {{-- Customer Data & Invoice List --}}
+          {{-- Customer Info & Upload Form --}}
           @if($customer)
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Data Pelanggan & Tagihan Aktif</h3>
+              <h3 class="card-title">Data Pelanggan</h3>
             </div>
             <div class="card-body">
               <div class="row g-3 mb-4">
@@ -265,88 +226,35 @@
                 </div>
               </div>
 
-              @if($invoices->isEmpty())
-                <div class="alert alert-success">Tidak ada tagihan aktif untuk ID pelanggan ini.</div>
-              @else
-                @if($invoices->count() > 1)
-                  <div class="alert alert-warning">Ada lebih dari satu tagihan aktif. Pilih tagihan yang ingin dibayar.</div>
-                @endif
-
-                <div class="list-group list-group-flush">
-                  @foreach($invoices as $invoice)
-                    @php
-                      $isSelected = $selectedInvoice && $selectedInvoice->id === $invoice->id;
-                      $badgeClass = $invoice->payment_review_status === 'submitted'
-                        ? 'bg-yellow-lt'
-                        : ($invoice->due_date->isPast() ? 'bg-orange-lt' : 'bg-blue-lt');
-                      $statusLabel = $invoice->payment_review_status === 'submitted'
-                        ? 'Menunggu Review'
-                        : ($invoice->due_date->isPast() ? 'Jatuh Tempo' : 'Belum Lunas');
-                    @endphp
-                    <div class="list-group-item py-3">
-                      <div class="row align-items-center">
-                        <div class="col">
-                          <div class="fw-bold">{{ $invoice->invoice_number }}</div>
-                          <div class="text-secondary small">
-                            Jatuh tempo {{ $invoice->due_date->format('d M Y') }}
-                            @if($invoice->is_prorated)
-                              <span class="badge bg-muted-lt ms-1">Prorata</span>
-                            @endif
-                          </div>
-                          @if($invoice->payment_review_status === 'rejected' && $invoice->payment_reject_reason)
-                            <div class="text-danger small mt-1">Bukti bayar ditolak: {{ $invoice->payment_reject_reason }}</div>
-                          @endif
-                          @if($invoice->payment_review_status === 'submitted')
-                            <div class="status-timeline">
-                              <span class="step done"><i class="ti ti-check"></i> Dikirim</span>
-                              <span class="line done"></span>
-                              <span class="step active"><i class="ti ti-clock"></i> Ditinjau</span>
-                              <span class="line"></span>
-                              <span class="step pending"><i class="ti ti-circle-check"></i> Selesai</span>
-                            </div>
-                          @endif
-                        </div>
-                        <div class="col-auto d-flex align-items-center gap-2 flex-wrap">
-                          <span class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
-                          <span class="fs-3 fw-bold">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
-                          @if(!$isSelected)
-                            <a class="btn btn-outline-secondary btn-sm btn-pulse" href="{{ route('payment.public', ['customerCode' => $customer->customer_code, 'invoice' => $invoice->id]) }}">Pilih</a>
-                          @else
-                            <span class="btn btn-primary btn-sm disabled">Dipilih</span>
-                          @endif
-                        </div>
-                      </div>
-                    </div>
-                  @endforeach
+              <div class="alert alert-info mb-4">
+                <div class="d-flex align-items-center">
+                  <i class="ti ti-info-circle me-2"></i>
+                  <div>
+                    Tagihan bulanan: <strong>Rp {{ number_format($customer->package_price, 0, ',', '.') }}</strong>
+                    — Periode: <strong>{{ now()->translatedFormat('F Y') }}</strong>
+                  </div>
                 </div>
-              @endif
-            </div>
-          </div>
-          @endif
+              </div>
 
-          {{-- Upload Form (when invoice selected) --}}
-          @if($customer && $selectedInvoice)
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Upload Bukti Pembayaran</h3>
-              <div class="card-subtitle">{{ $selectedInvoice->invoice_number }} — Rp {{ number_format($selectedInvoice->amount, 0, ',', '.') }}</div>
-            </div>
-            <div class="card-body">
-              @if($selectedInvoice->payment_review_status === 'submitted')
-                <div class="alert alert-warning mb-3">Bukti pembayaran untuk tagihan ini sudah pernah dikirim dan sedang menunggu review. Jika perlu, Anda bisa ganti file bukti di bawah.</div>
-              @endif
+              @if(!session('success'))
+              {{-- Upload Form --}}
+              <h4 class="mb-3">Upload Bukti Pembayaran</h4>
               <form method="POST" action="{{ route('payment.public.submit') }}" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="customer_code" value="{{ $customer->customer_code }}">
-                <input type="hidden" name="invoice_id" value="{{ $selectedInvoice->id }}">
 
                 <div class="mb-3">
-                  <label class="form-label">Metode Pembayaran</label>
-                  <select name="payment_method" class="form-select" required>
-                    <option value="">Pilih metode</option>
-                    <option value="transfer_bank" @selected(old('payment_method', $selectedInvoice->payment_method) === 'transfer_bank')>Transfer Bank</option>
-                    <option value="qris" @selected(old('payment_method', $selectedInvoice->payment_method) === 'qris')>QRIS</option>
-                    <option value="cash" @selected(old('payment_method', $selectedInvoice->payment_method) === 'cash')>Cash</option>
+                  <label class="form-label">Rekening Tujuan</label>
+                  <select name="rekening_tujuan" class="form-select" required>
+                    <option value="">Pilih rekening tujuan</option>
+                    @foreach($paymentSettings['accounts'] as $account)
+                      <option value="{{ $account['bank_name'] }}" @selected(old('rekening_tujuan') === $account['bank_name'])>
+                        {{ $account['bank_name'] }} — {{ $account['account_number'] }} ({{ $account['account_holder'] }})
+                      </option>
+                    @endforeach
+                    @if(!empty($paymentSettings['qris']))
+                      <option value="QRIS" @selected(old('rekening_tujuan') === 'QRIS')>QRIS</option>
+                    @endif
                   </select>
                 </div>
 
@@ -360,28 +268,22 @@
                       <div class="text-secondary small mt-1">JPG, PNG, atau WEBP. Maks 5 MB.</div>
                     </div>
                     <div id="filePreview" class="d-none">
-                      <img id="previewImg" class="rounded shadow-sm" style="max-height: 150px; max-width: 100%;">
+                      <img id="previewImg" class="rounded shadow-sm" style="max-height: 150px; max-width: 100%;" alt="Preview">
                       <div id="fileName" class="text-secondary small mt-2"></div>
                     </div>
                   </div>
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label">Catatan</label>
-                  <textarea name="notes" class="form-control" rows="3" placeholder="Contoh: transfer dari rekening BRI a.n. Andi">{{ old('notes', $selectedInvoice->payment_proof_notes) }}</textarea>
+                  <label class="form-label">Catatan <span class="text-secondary">(opsional)</span></label>
+                  <textarea name="catatan" class="form-control" rows="3" placeholder="Contoh: transfer dari rekening BRI a.n. Andi">{{ old('catatan') }}</textarea>
                 </div>
 
-                @if($selectedInvoice->payment_proof_url)
-                  <div class="mb-3">
-                    <a class="btn btn-outline-secondary btn-sm" href="{{ $selectedInvoice->payment_proof_url }}" target="_blank" rel="noopener"><i class="ti ti-eye me-1"></i>Lihat Bukti Sebelumnya</a>
-                  </div>
-                @endif
-
                 <button class="btn btn-primary w-100" type="submit">
-                  <i class="ti ti-upload me-1"></i>
-                  {{ $selectedInvoice->payment_review_status === 'submitted' ? 'Ganti Bukti Pembayaran' : 'Kirim Bukti Pembayaran' }}
+                  <i class="ti ti-upload me-1"></i> Kirim Bukti Pembayaran
                 </button>
               </form>
+              @endif
             </div>
           </div>
           @endif
@@ -401,7 +303,7 @@
 
               <div class="text-secondary small mb-3">Pilih rekening tujuan:</div>
 
-              {{-- Custom Accordion Payment Methods --}}
+              {{-- Accordion Payment Methods --}}
               <div class="accordion" id="paymentAccordion">
 
                 @if(!empty($paymentSettings['accounts']) && count($paymentSettings['accounts']))
@@ -489,7 +391,7 @@
     <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body"><i class="ti ti-check me-1"></i> Nomor rekening berhasil disalin!</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
     </div>
   </div>
@@ -505,7 +407,7 @@
       });
     }
 
-    // Loading state with skeleton on search form submit
+    // Loading state on search form submit
     document.querySelector('form[action]').addEventListener('submit', function() {
       const btn = document.getElementById('btnCekTagihan');
       btn.disabled = true;

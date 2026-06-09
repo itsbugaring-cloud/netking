@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AreaController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\IpamController;
@@ -124,6 +125,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Billing Calendar
         Route::get('billing/calendar', [DashboardController::class, 'billingCalendar'])->name('billing.calendar');
         Route::get('billing/calendar/view', fn() => view('admin.billing.calendar'))->name('billing.calendar.view');
+
+        // Payment Management
+        Route::prefix('payments')->name('payments.')->group(function () {
+            Route::get('/review', [PaymentController::class, 'reviewIndex'])->name('review');
+            Route::post('/{payment}/approve', [PaymentController::class, 'approve'])->name('approve');
+            Route::post('/{payment}/reject', [PaymentController::class, 'reject'])->name('reject');
+            Route::get('/manual/{customer}', [PaymentController::class, 'manualPaymentForm'])->name('manual');
+            Route::post('/manual/{customer}', [PaymentController::class, 'manualPaymentStore'])->name('manual.store');
+        });
     });
 
     // ── Admin operational routes (customer provisioning) ───────────────────
