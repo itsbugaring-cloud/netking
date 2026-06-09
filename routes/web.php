@@ -392,6 +392,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('customers/import-billing-start', [CustomerController::class, 'importBillingStartDates'])
             ->name('customers.import-billing-start');
 
+        // Export customers to Excel
+        Route::get('customers/export-excel', [CustomerController::class, 'exportExcel'])
+            ->name('customers.export-excel');
+
         // [REMOVED] Commission Management — feature removed
 
         // Package Management

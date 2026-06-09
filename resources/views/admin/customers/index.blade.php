@@ -104,6 +104,9 @@
       <h1 class="ms-page-title">Pelanggan</h1>
     </div>
     <div class="ms-page-actions">
+      <a href="{{ route('admin.customers.export-excel', request()->query()) }}" class="ms-btn-secondary">
+        <i class='bx bx-spreadsheet'></i> Ekspor Excel
+      </a>
       <a href="{{ route('admin.customers.index', array_merge(request()->query(), ['export' => 'csv'])) }}" class="ms-btn-secondary">
         <i class='bx bx-download'></i> Ekspor CSV
       </a>

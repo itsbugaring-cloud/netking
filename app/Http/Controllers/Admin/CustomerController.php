@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\CustomersExport;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Customer;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerController extends Controller
 {
@@ -908,6 +910,16 @@ class CustomerController extends Controller
     /**
      * Build minimal XLSX template without external package.
      */
+    /**
+     * Export all customers to Excel (.xlsx) with styling
+     */
+    public function exportExcel(Request $request)
+    {
+        $filename = 'data_pelanggan_netking_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new CustomersExport($request), $filename);
+    }
+
     private function buildBillingStartTemplateXlsx(string $targetPath): void
     {
         $rows = [
