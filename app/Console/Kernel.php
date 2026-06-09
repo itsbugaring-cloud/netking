@@ -22,11 +22,11 @@ class Kernel extends ConsoleKernel
 
         // [REMOVED] ACS/GenieACS refresh — feature removed
 
-        // Generate invoice bulanan untuk semua pelanggan aktif (tiap tgl 1 pukul 07:00)
-        $schedule->command('invoices:generate')
-                 ->monthlyOn(1, '07:00')
-                 ->withoutOverlapping()
-                 ->appendOutputTo(storage_path('logs/invoice-generate.log'));
+        // [REMOVED] Invoice system replaced by payments
+        // $schedule->command('invoices:generate')
+        //          ->monthlyOn(1, '07:00')
+        //          ->withoutOverlapping()
+        //          ->appendOutputTo(storage_path('logs/invoice-generate.log'));
 
         // Collect traffic data from all routers every 5 minutes
         $schedule->command('traffic:collect')

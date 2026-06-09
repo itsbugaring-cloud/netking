@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AreaController;
 use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SearchController;
@@ -120,17 +119,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // ── Routes accessible by BOTH Admin and Finance ────────────────────────
     Route::middleware(['auth', 'role:admin,finance'])->group(function () {
-        // Invoice Management
-        Route::prefix('invoices')->name('invoices.')->group(function () {
-            Route::get('/', [InvoiceController::class, 'index'])->name('index');
-            Route::get('/payment-queue', [InvoiceController::class, 'paymentQueue'])->name('paymentQueue');
-            Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
-            Route::get('/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('pdf');
-            Route::post('/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('markAsPaid');
-            Route::post('/{invoice}/approve-proof', [InvoiceController::class, 'approvePaymentProof'])->name('approveProof');
-            Route::post('/{invoice}/reject-proof', [InvoiceController::class, 'rejectPaymentProof'])->name('rejectProof');
-            Route::post('/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('cancel');
-        });
+        // [REMOVED] Invoice Management — replaced by Payment system
 
         // Billing Calendar
         Route::get('billing/calendar', [DashboardController::class, 'billingCalendar'])->name('billing.calendar');
@@ -298,9 +287,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             $data = [
                 'active_customers' => \App\Models\Customer::where('status', 'active')->count(),
                 'total_customers'  => \App\Models\Customer::count(),
-                'unpaid_invoices'  => \App\Models\Invoice::where('status', 'unpaid')->count(),
-                'overdue_invoices' => \App\Models\Invoice::where('status', 'unpaid')
-                    ->where('due_date', '<', now())->count(),
+                'pending_payments' => \App\Models\Payment::where('status', 'pending')->count(),
             ];
 
             // OLT ONT stats
@@ -417,7 +404,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/revenue', [\App\Http\Controllers\Admin\ReportController::class, 'revenue'])->name('revenue');
             Route::get('/billing', [\App\Http\Controllers\Admin\ReportController::class, 'billing'])->name('billing');
-            Route::get('/export-invoices', [\App\Http\Controllers\Admin\ReportController::class, 'exportInvoices'])->name('export-invoices');
             Route::get('/export-revenue', [\App\Http\Controllers\Admin\ReportController::class, 'exportRevenue'])->name('export-revenue');
             Route::get('/export-billing', [\App\Http\Controllers\Admin\ReportController::class, 'exportBilling'])->name('export-billing');
         });
@@ -541,10 +527,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::middleware('auth:customer')->group(function () {
         Route::post('/logout', [\App\Http\Controllers\Customer\AuthController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [\App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/invoices', [\App\Http\Controllers\Customer\InvoiceController::class, 'index'])->name('invoices.index');
-        Route::get('/invoices/{invoice}', [\App\Http\Controllers\Customer\InvoiceController::class, 'show'])->name('invoices.show');
-        Route::post('/invoices/{invoice}/payment-proof', [\App\Http\Controllers\Customer\InvoiceController::class, 'submitPaymentProof'])->name('invoices.payment-proof');
-        Route::get('/invoices/{invoice}/pdf', [\App\Http\Controllers\Customer\InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
+        // [REMOVED] Customer invoice routes — replaced by Payment system
         Route::get('/profile', [\App\Http\Controllers\Customer\ProfileController::class, 'index'])->name('profile.index');
         Route::put('/profile/password', [\App\Http\Controllers\Customer\ProfileController::class, 'updatePassword'])->name('profile.password');
         Route::put('/profile/contact', [\App\Http\Controllers\Customer\ProfileController::class, 'updateContact'])->name('profile.contact');

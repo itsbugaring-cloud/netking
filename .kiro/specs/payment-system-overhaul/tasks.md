@@ -21,14 +21,14 @@ Replace the invoice-based payment system with a new `payments` table and flow. R
     - **Property 4: Only pending payments can be transitioned**
     - **Validates: Requirements 3.3, 3.4, 3.5**
 
-- [ ] 2. Disable invoice auto-generation and remove old invoice system
-  - [~] 2.1 Comment out `invoices:generate` scheduler entry in `app/Console/Kernel.php`
+- [x] 2. Disable invoice auto-generation and remove old invoice system
+  - [x] 2.1 Comment out `invoices:generate` scheduler entry in `app/Console/Kernel.php`
     - _Requirements: 1.1_
-  - [~] 2.2 Create migration `drop_invoices_table` to drop the invoices table
+  - [x] 2.2 Create migration `drop_invoices_table` to drop the invoices table
     - _Requirements: 5.3, 1.3_
-  - [~] 2.3 Delete `app/Models/Invoice.php`, `app/Http/Controllers/Admin/InvoiceController.php`, and `app/Console/Commands/GenerateMonthlyInvoices.php`
+  - [x] 2.3 Delete `app/Models/Invoice.php`, `app/Http/Controllers/Admin/InvoiceController.php`, and `app/Console/Commands/GenerateMonthlyInvoices.php`
     - _Requirements: 1.3_
-  - [~] 2.4 Remove all invoice-related routes from `routes/web.php` (the `invoices` prefix group, billing calendar routes, and any invoice-related API routes like `api/dashboard-live` unpaid/overdue stats)
+  - [x] 2.4 Remove all invoice-related routes from `routes/web.php` (the `invoices` prefix group, billing calendar routes, and any invoice-related API routes like `api/dashboard-live` unpaid/overdue stats)
     - _Requirements: 1.3_
 
 - [~] 3. Checkpoint - Verify migrations and model
