@@ -60,14 +60,21 @@
         <div class="ms-panel mb-3">
           <div class="ms-panel-head d-flex justify-content-between align-items-center">
             <h5 class="ms-panel-title"><i class='bx bx-network-chart me-2' style="color:#2563eb;"></i>IP Pool MikroTik</h5>
-            <button type="button" id="btn-add-pool" class="ms-btn-secondary">
-              <i class='bx bx-plus'></i> Tambah Pool
-            </button>
+            <div>
+              <button type="button" id="btn-fetch-pools" class="ms-btn-secondary me-1">
+                <i class='bx bx-download'></i> Ambil dari Router
+              </button>
+              <button type="button" id="btn-add-pool" class="ms-btn-secondary">
+                <i class='bx bx-plus'></i> Tambah Pool
+              </button>
+            </div>
           </div>
           <div class="ms-panel-body pb-1">
             <div class="mb-2" style="font-size:.8rem;color:#64748b;">
-              Pool pertama tidak bisa dihapus. Tambah pool jika router area ini memakai lebih dari satu range.
+              Kosongkan jika ingin otomatis diambil dari router saat simpan. Atau klik "Ambil dari Router" untuk preview.
             </div>
+
+            <div id="fetch-status" class="mb-2" style="display:none;"></div>
 
             @error('pools') <div class="alert alert-danger py-2 mb-3">{{ $message }}</div> @enderror
 
@@ -82,13 +89,13 @@
                     <input type="text" name="pools[0][pool_name]" class="form-control form-control-sm" value="{{ old('pools.0.pool_name') }}" placeholder="cth. pool-internet-1">
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label" style="font-size:.8rem;">IP Pool Awal <span class="text-danger">*</span></label>
-                    <input type="text" name="pools[0][ip_pool_start]" class="form-control form-control-sm @error('pools.0.ip_pool_start') is-invalid @enderror" value="{{ old('pools.0.ip_pool_start') }}" placeholder="e.g. 10.10.1.10" required>
+                    <label class="form-label" style="font-size:.8rem;">IP Pool Awal</label>
+                    <input type="text" name="pools[0][ip_pool_start]" class="form-control form-control-sm @error('pools.0.ip_pool_start') is-invalid @enderror" value="{{ old('pools.0.ip_pool_start') }}" placeholder="otomatis dari router">
                     @error('pools.0.ip_pool_start')<div class="invalid-feedback">{{ $message }}</div>@enderror
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label" style="font-size:.8rem;">IP Pool Akhir <span class="text-danger">*</span></label>
-                    <input type="text" name="pools[0][ip_pool_end]" class="form-control form-control-sm @error('pools.0.ip_pool_end') is-invalid @enderror" value="{{ old('pools.0.ip_pool_end') }}" placeholder="e.g. 10.10.1.254" required>
+                    <label class="form-label" style="font-size:.8rem;">IP Pool Akhir</label>
+                    <input type="text" name="pools[0][ip_pool_end]" class="form-control form-control-sm @error('pools.0.ip_pool_end') is-invalid @enderror" value="{{ old('pools.0.ip_pool_end') }}" placeholder="otomatis dari router">
                     @error('pools.0.ip_pool_end')<div class="invalid-feedback">{{ $message }}</div>@enderror
                   </div>
                 </div>
@@ -136,6 +143,75 @@
 <script>
 (function() {
   let poolCount = {{ old('pools') ? count(old('pools')) : 1 }};
+
+  // Auto-fetch pools from router
+  document.getElementById('btn-fetch-pools').addEventListener('click', function() {
+    var btn = this;
+    var ip = document.querySelector('[name="router_ip"]').value;
+    var user = document.querySelector('[name="router_user"]').value;
+    var pass = document.querySelector('[name="router_pass"]').value;
+    var status = document.getElementById('fetch-status');
+
+    if (!ip || !user || !pass) {
+      status.style.display = 'block';
+      status.innerHTML = '<span class="text-danger" style="font-size:.8rem;">Isi IP, Username, dan Password router dulu.</span>';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Mengambil...';
+    status.style.display = 'block';
+    status.innerHTML = '<span style="font-size:.8rem;color:#64748b;">Menghubungi router...</span>';
+
+    fetch('{{ route("admin.areas.test-router") }}', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
+      body: JSON.stringify({router_ip: ip, router_user: user, router_pass: pass})
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bx bx-download"></i> Ambil dari Router';
+
+      if (!data.success) {
+        status.innerHTML = '<span class="text-danger" style="font-size:.8rem;">Gagal: ' + (data.error || 'Unknown') + '</span>';
+        return;
+      }
+
+      status.innerHTML = '<span class="text-success" style="font-size:.8rem;">✓ Terhubung! Identity: <strong>' + data.identity + '</strong></span>';
+
+      if (data.pools && data.pools.length > 0) {
+        // Clear existing pools and fill with fetched data
+        document.getElementById('pool-container').innerHTML = '';
+        poolCount = 0;
+
+        data.pools.forEach(function(pool, idx) {
+          var html = '<div class="pool-row border rounded p-3 mb-3' + (idx > 0 ? ' pool-removable' : '') + '" data-index="' + idx + '" style="background:rgba(37,99,235,.03);">' +
+            '<div class="d-flex justify-content-between align-items-center mb-2">' +
+              '<span class="fw-semibold" style="font-size:.85rem;color:#2563eb;"><i class="bx bx-server me-1"></i>Pool #' + (idx+1) + '</span>' +
+              (idx > 0 ? '<button type="button" class="btn btn-sm btn-outline-danger btn-remove-pool"><i class="bx bx-trash"></i></button>' : '') +
+            '</div>' +
+            '<div class="row g-2">' +
+              '<div class="col-md-4"><label class="form-label" style="font-size:.8rem;">Nama Pool</label><input type="text" name="pools[' + idx + '][pool_name]" class="form-control form-control-sm" value="' + (pool.pool_name||'') + '"></div>' +
+              '<div class="col-md-4"><label class="form-label" style="font-size:.8rem;">IP Pool Awal</label><input type="text" name="pools[' + idx + '][ip_pool_start]" class="form-control form-control-sm" value="' + pool.ip_pool_start + '"></div>' +
+              '<div class="col-md-4"><label class="form-label" style="font-size:.8rem;">IP Pool Akhir</label><input type="text" name="pools[' + idx + '][ip_pool_end]" class="form-control form-control-sm" value="' + pool.ip_pool_end + '"></div>' +
+            '</div></div>';
+          document.getElementById('pool-container').insertAdjacentHTML('beforeend', html);
+          poolCount++;
+        });
+
+        bindRemoveButtons();
+        status.innerHTML += ' — <strong>' + data.pools.length + ' pool</strong> ditemukan.';
+      } else {
+        status.innerHTML += ' — Tidak ada IP pool di router.';
+      }
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bx bx-download"></i> Ambil dari Router';
+      status.innerHTML = '<span class="text-danger" style="font-size:.8rem;">Error: ' + err.message + '</span>';
+    });
+  });
 
   document.getElementById('btn-add-pool').addEventListener('click', function() {
     const i = poolCount;
