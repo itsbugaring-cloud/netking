@@ -439,6 +439,7 @@ class MikroTikService
 
     /**
      * Get all PPPoE Profiles (for package sync)
+     * Uses .proplist to limit fields — prevents memory explosion on large routers.
      */
     public function getPppoeProfiles(): array
     {
@@ -448,11 +449,12 @@ class MikroTikService
 
         try {
             $query = new Query('/ppp/profile/print');
+            $query->equal('.proplist', 'name,rate-limit,local-address,remote-address');
             $profiles = $this->client->query($query)->read();
 
             return ['success' => true, 'data' => $profiles];
         } catch (Exception $e) {
-            Log::error('MikroTik Get PPPoE Profiles Failed', ['error' => $e->getMessage()]);
+            Log::error('MikroTik Get PPPoE Profiles Failed', ['error' => $e->getMessage(), 'host' => $this->host]);
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
