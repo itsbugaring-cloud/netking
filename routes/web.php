@@ -373,6 +373,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Areas Management
         Route::resource('areas', AreaController::class);
+        Route::post('areas/test-router', [AreaController::class, 'testRouter'])->name('areas.test-router');
 
         // Admin User Management
         Route::prefix('users')->name('users.')->group(function () {

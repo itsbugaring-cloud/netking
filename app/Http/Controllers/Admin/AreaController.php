@@ -32,13 +32,41 @@ class AreaController extends Controller
             'router_ip'              => 'required|ip|unique:areas,router_ip',
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'required|string|max:255',
-            'pools'                  => 'required|array|min:1',
-            'pools.*.ip_pool_start'  => 'required|ip',
-            'pools.*.ip_pool_end'    => 'required|ip',
+            'pools'                  => 'nullable|array',
+            'pools.*.ip_pool_start'  => 'required_with:pools|ip',
+            'pools.*.ip_pool_end'    => 'required_with:pools|ip',
             'pools.*.pool_name'      => 'nullable|string|max:100',
         ]);
 
-        $firstPool = $request->pools[0];
+        // If no pools provided, try to fetch from router
+        $pools = $request->pools;
+        if (empty($pools)) {
+            $mikrotik = new MikroTikService($request->router_ip, $request->router_user, $request->router_pass, 8728);
+            $test = $mikrotik->testConnection();
+            if ($test['success'] ?? false) {
+                try {
+                    $routerPools = $mikrotik->getIpPools();
+                    foreach ($routerPools as $rp) {
+                        if (!empty($rp['ranges']) && str_contains($rp['ranges'], '-')) {
+                            [$start, $end] = explode('-', $rp['ranges'], 2);
+                            $pools[] = [
+                                'pool_name' => $rp['name'] ?? null,
+                                'ip_pool_start' => trim($start),
+                                'ip_pool_end' => trim($end),
+                            ];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // ignore
+                }
+            }
+        }
+
+        if (empty($pools)) {
+            return back()->withInput()->with('error', 'Tidak bisa mengambil IP Pool dari router. Isi manual atau cek koneksi router.');
+        }
+
+        $firstPool = $pools[0];
 
         $area = Area::create([
             'name'          => $request->name,
@@ -49,7 +77,7 @@ class AreaController extends Controller
             'ip_pool_end'   => $firstPool['ip_pool_end'],
         ]);
 
-        foreach ($request->pools as $i => $pool) {
+        foreach ($pools as $i => $pool) {
             AreaIpPool::create([
                 'area_id'       => $area->id,
                 'pool_name'     => $pool['pool_name'] ?? null,
@@ -57,6 +85,13 @@ class AreaController extends Controller
                 'ip_pool_end'   => $pool['ip_pool_end'],
                 'sort_order'    => $i,
             ]);
+        }
+
+        // Save router identity
+        $mikrotik = MikroTikService::forArea($area);
+        $test = $mikrotik->testConnection();
+        if ($test['success'] ?? false) {
+            $area->update(['router_identity' => $test['identity'] ?? null]);
         }
 
         $syncMsg = $this->autoSyncPppoe($area);
@@ -136,6 +171,60 @@ class AreaController extends Controller
 
         return redirect()->route('admin.areas.index')
             ->with('success', 'Area deleted successfully');
+    }
+
+    /**
+     * AJAX: Test router connection and fetch identity + IP pools
+     */
+    public function testRouter(Request $request)
+    {
+        $request->validate([
+            'router_ip' => 'required|ip',
+            'router_user' => 'required|string',
+            'router_pass' => 'required|string',
+        ]);
+
+        $mikrotik = new MikroTikService(
+            $request->router_ip,
+            $request->router_user,
+            $request->router_pass,
+            8728
+        );
+
+        $test = $mikrotik->testConnection();
+        if (!$test['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $test['error'] ?? 'Connection failed',
+            ]);
+        }
+
+        // Fetch IP pools from router
+        $pools = [];
+        try {
+            $poolsData = $mikrotik->getIpPools();
+            foreach ($poolsData as $pool) {
+                if (!empty($pool['ranges'])) {
+                    $ranges = $pool['ranges'];
+                    if (str_contains($ranges, '-')) {
+                        [$start, $end] = explode('-', $ranges, 2);
+                        $pools[] = [
+                            'pool_name' => $pool['name'] ?? '',
+                            'ip_pool_start' => trim($start),
+                            'ip_pool_end' => trim($end),
+                        ];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Pools fetch failed — not critical
+        }
+
+        return response()->json([
+            'success' => true,
+            'identity' => $test['identity'] ?? 'Unknown',
+            'pools' => $pools,
+        ]);
     }
 
     /**
