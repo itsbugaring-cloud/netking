@@ -60,15 +60,21 @@ class MikroTikService
     /**
      * Create a MikroTikService instance for a specific area's router.
      * This is the preferred way to use MikroTikService in a multi-area ISP.
+     * Supports hostname:port format in router_ip field.
      */
     public static function forArea(Area $area): self
     {
-        return new self(
-            $area->router_ip,
-            $area->router_user,
-            $area->router_pass,
-            8728
-        );
+        $host = $area->router_ip;
+        $port = 8728;
+
+        // Support host:port format (e.g. "id-7.hostddns.us:49298")
+        if (str_contains($host, ':') && !filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $parts = explode(':', $host, 2);
+            $host = $parts[0];
+            $port = (int) $parts[1];
+        }
+
+        return new self($host, $area->router_user, $area->router_pass, $port);
     }
 
     /**

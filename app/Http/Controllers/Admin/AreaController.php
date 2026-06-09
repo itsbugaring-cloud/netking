@@ -29,19 +29,28 @@ class AreaController extends Controller
     {
         $request->validate([
             'name'                   => 'required|string|max:255',
-            'router_ip'              => 'required|ip|unique:areas,router_ip',
+            'router_ip'              => 'required|string|max:255|unique:areas,router_ip',
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'required|string|max:255',
             'pools'                  => 'nullable|array',
-            'pools.*.ip_pool_start'  => 'required_with:pools|ip',
-            'pools.*.ip_pool_end'    => 'required_with:pools|ip',
+            'pools.*.ip_pool_start'  => 'nullable|ip',
+            'pools.*.ip_pool_end'    => 'nullable|ip',
             'pools.*.pool_name'      => 'nullable|string|max:100',
         ]);
 
+        // Parse host:port for router connection
+        $routerHost = $request->router_ip;
+        $routerPort = 8728;
+        if (str_contains($routerHost, ':') && !filter_var($routerHost, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $parts = explode(':', $routerHost, 2);
+            $routerHost = $parts[0];
+            $routerPort = (int) $parts[1];
+        }
+
         // If no pools provided, try to fetch from router
         $pools = $request->pools;
-        if (empty($pools)) {
-            $mikrotik = new MikroTikService($request->router_ip, $request->router_user, $request->router_pass, 8728);
+        if (empty($pools) || !isset($pools[0]['ip_pool_start']) || !$pools[0]['ip_pool_start']) {
+            $mikrotik = new MikroTikService($routerHost, $request->router_user, $request->router_pass, $routerPort);
             $test = $mikrotik->testConnection();
             if ($test['success'] ?? false) {
                 try {
@@ -179,17 +188,20 @@ class AreaController extends Controller
     public function testRouter(Request $request)
     {
         $request->validate([
-            'router_ip' => 'required|ip',
+            'router_ip' => 'required|string',
             'router_user' => 'required|string',
             'router_pass' => 'required|string',
         ]);
 
-        $mikrotik = new MikroTikService(
-            $request->router_ip,
-            $request->router_user,
-            $request->router_pass,
-            8728
-        );
+        // Parse host:port if present
+        $host = $request->router_ip;
+        $port = 8728;
+        if (str_contains($host, ':')) {
+            [$host, $port] = explode(':', $host, 2);
+            $port = (int) $port;
+        }
+
+        $mikrotik = new MikroTikService($host, $request->router_user, $request->router_pass, $port);
 
         $test = $mikrotik->testConnection();
         if (!$test['success']) {
