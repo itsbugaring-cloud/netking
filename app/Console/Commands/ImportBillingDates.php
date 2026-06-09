@@ -88,24 +88,31 @@ class ImportBillingDates extends Command
             $candidates = $customers->filter(function ($c) use ($excelName, $dbAreaIds) {
                 if (!in_array($c->area_id, $dbAreaIds)) return false;
 
-                // Match: customer name contains excel name, or excel name contains customer name
                 $dbName = $this->normName($c->name);
                 $pppoeUser = $this->normName($c->pppoe_user);
 
-                // Remove common prefixes/noise from both sides for better matching
+                // Remove common prefixes
                 $excelClean = preg_replace('/^(ibu|bu|bapak|pak|teh|mang|ceu|bi|ma|ust)\s+/i', '', $excelName);
                 $dbClean = preg_replace('/^(ibu|bu|bapak|pak|teh|mang|ceu|bi|ma|ust)\s+/i', '', $dbName);
-                $pppoeClean = str_replace(['-', '_', ' '], '', $pppoeUser);
-                $excelCompact = str_replace(['-', '_', ' ', '/'], '', $excelName);
 
-                return $dbName === $excelName
-                    || str_contains($dbName, $excelName)
-                    || str_contains($excelName, $dbName)
-                    || str_contains($pppoeUser, $excelName)
-                    || str_contains($pppoeClean, str_replace(' ', '', $excelName))
-                    || str_contains(str_replace(' ', '', $excelName), $pppoeClean)
-                    || ($excelClean && $dbClean && ($dbClean === $excelClean || str_contains($dbClean, $excelClean) || str_contains($excelClean, $dbClean)))
-                    || ($excelClean && str_contains($pppoeClean, str_replace(' ', '', $excelClean)));
+                // Compact versions (no spaces/dashes)
+                $pppoeCompact = str_replace(['-', '_', ' '], '', $pppoeUser);
+                $excelCompact = str_replace(['-', '_', ' ', '/'], '', $excelName);
+                $excelCleanCompact = str_replace(['-', '_', ' ', '/'], '', $excelClean);
+
+                // Exact or contains match on name
+                if ($dbName === $excelName || $dbName === $excelClean) return true;
+                if (strlen($excelName) >= 4 && str_contains($dbName, $excelName)) return true;
+                if (strlen($dbName) >= 4 && str_contains($excelName, $dbName)) return true;
+
+                // Match on PPPoE username (compact)
+                if (strlen($excelCompact) >= 4 && str_contains($pppoeCompact, $excelCompact)) return true;
+                if (strlen($excelCleanCompact) >= 4 && str_contains($pppoeCompact, $excelCleanCompact)) return true;
+
+                // Clean name match
+                if ($excelClean && $dbClean && strlen($excelClean) >= 4 && ($dbClean === $excelClean || str_contains($dbClean, $excelClean))) return true;
+
+                return false;
             });
 
             if ($candidates->count() === 1) {
@@ -352,15 +359,8 @@ class ImportBillingDates extends Command
     private function resolveAreaIds(string $excelArea): array
     {
         $norm = $this->normName($excelArea);
-        $ids = [];
 
-        foreach ($this->areaMapping as $dbName => $areaId) {
-            if ($dbName === $norm || str_contains($dbName, $norm) || str_contains($norm, $dbName)) {
-                $ids[] = $areaId;
-            }
-        }
-
-        // Manual mappings for known mismatches
+        // Manual mappings take PRIORITY — check first
         $manual = [
             'cikalong wetan' => 'cikalong wetan',
             'cicadas' => 'cicaheum',
@@ -382,33 +382,43 @@ class ImportBillingDates extends Command
             'situ cileunca' => 'situ cileunca',
             'mekar cangkring' => 'cangkring',
             'tasikmalaya / mangunreja' => 'tasikmalaya - mangunreja',
-            'tasikmalaya / cibeureum' => 'tasikmalaya - cintaraja',
+            'tasikmalaya / cibeureum' => 'tasikmalaya - cibereum',
             'tasikmalaya / indihiang' => 'tasikmalaya - indihiang',
-            'tasikmalaya / singaparna' => 'tasikmalaya',
-            'tasikmalaya / tamansari' => 'tasikmalaya',
+            'tasikmalaya / singaparna' => 'tasikmalaya - singaparna',
+            'tasikmalaya / tamansari' => 'tasikmalaya - tamansari',
             'sipur' => 'pangalengan - sipur',
             'cikolotok' => 'pangalengan - sipur',
             'babakan cieurih' => 'pangalengan - sipur',
             'rusun baleendah' => 'baleendah',
             'bojongasih' => 'majalaya',
             'limbangan garut' => 'garut',
-            'ciganitri' => 'cicadas',
+            'ciganitri' => 'ciganitri',
             'cimahi' => 'cimahi',
             'subang' => 'subang',
             'margahayu' => 'margahayu',
             'kasepen' => 'kasepen',
-            'negla tasikmalaya' => 'tasikmalaya',
+            'negla tasikmalaya' => 'tasikmalaya - negla',
             'bojong blokraton' => 'sukabumi',
             'warudoyong' => 'sukabumi',
             'blokraton' => 'sukabumi',
         ];
 
-        if (empty($ids) && isset($manual[$norm])) {
+        if (isset($manual[$norm])) {
             $target = $this->normName($manual[$norm]);
+            $ids = [];
             foreach ($this->areaMapping as $dbName => $areaId) {
-                if (str_contains($dbName, $target) || str_contains($target, $dbName)) {
+                if ($dbName === $target || str_contains($dbName, $target) || str_contains($target, $dbName)) {
                     $ids[] = $areaId;
                 }
+            }
+            if (!empty($ids)) return array_unique($ids);
+        }
+
+        // Fallback: auto-match by name
+        $ids = [];
+        foreach ($this->areaMapping as $dbName => $areaId) {
+            if ($dbName === $norm || str_contains($dbName, $norm) || str_contains($norm, $dbName)) {
+                $ids[] = $areaId;
             }
         }
 
