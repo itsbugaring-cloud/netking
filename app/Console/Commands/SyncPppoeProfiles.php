@@ -58,21 +58,28 @@ class SyncPppoeProfiles extends Command
         foreach ($areas as $area) {
             $this->line("━━━ Area #{$area->id} — {$area->name} ({$area->router_ip})");
 
-            $mikrotik = MikroTikService::forArea($area);
-            $test = $mikrotik->testConnection();
+            try {
+                $mikrotik = MikroTikService::forArea($area);
+                $test = $mikrotik->testConnection();
 
-            if (!($test['success'] ?? false)) {
-                $failedAreas++;
-                $this->error("  ✗ Gagal konek: " . ($test['error'] ?? 'Unknown'));
-                $this->newLine();
-                continue;
-            }
+                if (!($test['success'] ?? false)) {
+                    $failedAreas++;
+                    $this->error("  ✗ Gagal konek: " . ($test['error'] ?? 'Unknown'));
+                    $this->newLine();
+                    continue;
+                }
 
-            // 1. Get PPPoE profiles from router
-            $profilesResult = $mikrotik->getPppoeProfiles();
-            if (!($profilesResult['success'] ?? false)) {
+                // 1. Get PPPoE profiles from router
+                $profilesResult = $mikrotik->getPppoeProfiles();
+                if (!($profilesResult['success'] ?? false)) {
+                    $failedAreas++;
+                    $this->error("  ✗ Gagal ambil profiles: " . ($profilesResult['error'] ?? 'Unknown'));
+                    $this->newLine();
+                    continue;
+                }
+            } catch (\Throwable $e) {
                 $failedAreas++;
-                $this->error("  ✗ Gagal ambil profiles: " . ($profilesResult['error'] ?? 'Unknown'));
+                $this->error("  ✗ Exception: " . $e->getMessage());
                 $this->newLine();
                 continue;
             }
@@ -154,10 +161,14 @@ class SyncPppoeProfiles extends Command
 
             // 2. Reconcile customers without package_id
             if ($reconcile) {
-                $reconCount = $this->reconcileArea($area, $apply);
-                $totalReconciled += $reconCount;
-                if ($reconCount > 0) {
-                    $this->line("  → Reconciled: {$reconCount} customers assigned package_id");
+                try {
+                    $reconCount = $this->reconcileArea($area, $apply);
+                    $totalReconciled += $reconCount;
+                    if ($reconCount > 0) {
+                        $this->line("  → Reconciled: {$reconCount} customers assigned package_id");
+                    }
+                } catch (\Throwable $e) {
+                    $this->warn("  ⚠ Reconcile gagal: " . $e->getMessage());
                 }
             }
 
