@@ -171,6 +171,47 @@ class PaymentController extends Controller
     }
 
     /**
+     * Bulk update transfer/payment dates for manual/admin-created payment entries.
+     */
+    public function bulkUpdateManualDates(Request $request)
+    {
+        $validated = $request->validate([
+            'payment_dates' => 'required|array|min:1',
+            'payment_dates.*' => 'nullable|date',
+        ]);
+
+        $paymentIds = array_keys($validated['payment_dates']);
+        $payments = Payment::whereIn('id', $paymentIds)->get()->keyBy('id');
+
+        $updated = 0;
+        foreach ($validated['payment_dates'] as $paymentId => $tanggalBayar) {
+            if (!$tanggalBayar) {
+                continue;
+            }
+
+            $payment = $payments->get((int) $paymentId);
+            if (!$payment) {
+                continue;
+            }
+
+            $isManualEntry = $payment->created_by_user_id !== null && empty($payment->bukti_path);
+            if (!$isManualEntry) {
+                continue;
+            }
+
+            $payment->update([
+                'approved_at' => Carbon::parse($tanggalBayar)->startOfDay(),
+                'approved_by_user_id' => auth()->id(),
+            ]);
+            $updated++;
+        }
+
+        return back()->with('success', $updated > 0
+            ? $updated . ' tanggal bayar pembayaran manual berhasil diperbarui.'
+            : 'Tidak ada tanggal bayar yang diubah.');
+    }
+
+    /**
      * Delete a manual/admin-created payment entry.
      */
     public function destroy(Payment $payment)

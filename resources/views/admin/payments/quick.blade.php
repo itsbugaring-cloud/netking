@@ -333,12 +333,19 @@
         @csrf
         @method('DELETE')
       </form>
+      <form id="bulk-update-manual-payment-dates-form" action="{{ route('admin.payments.manual-dates.bulk') }}" method="POST" class="d-none">
+        @csrf
+        @method('PATCH')
+      </form>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <label class="d-flex align-items-center gap-2 mb-0" style="font-size:.8rem;color:var(--txt-3);">
           <input type="checkbox" id="select-all-global-manual-payments">
           Pilih semua
         </label>
-        <button type="submit" form="bulk-delete-manual-payments-global-form" class="btn btn-sm btn-outline-danger">Hapus yang dipilih</button>
+        <div class="d-flex align-items-center gap-2">
+          <button type="submit" form="bulk-update-manual-payment-dates-form" class="btn btn-sm btn-outline-primary">Simpan Semua Tanggal</button>
+          <button type="submit" form="bulk-delete-manual-payments-global-form" class="btn btn-sm btn-outline-danger">Hapus yang dipilih</button>
+        </div>
       </div>
 
       <div class="table-responsive">
@@ -372,12 +379,15 @@
               <td>Rp {{ number_format($payment->jumlah, 0, ',', '.') }}</td>
               <td>{{ $payment->rekening_tujuan }}</td>
               <td>
-                <form action="{{ route('admin.payments.manual-date', $payment) }}" method="POST" class="d-flex align-items-center gap-2">
-                  @csrf
-                  @method('PATCH')
-                  <input type="date" name="tanggal_bayar" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" class="form-control form-control-sm" style="min-width:145px;">
-                  <button type="submit" class="btn btn-sm btn-outline-primary">Simpan</button>
-                </form>
+                <div class="d-flex align-items-center gap-2">
+                  <input type="date" name="payment_dates[{{ $payment->id }}]" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" form="bulk-update-manual-payment-dates-form" class="form-control form-control-sm" style="min-width:145px;">
+                  <form action="{{ route('admin.payments.manual-date', $payment) }}" method="POST" class="m-0">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="tanggal_bayar" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" class="single-date-mirror">
+                    <button type="submit" class="btn btn-sm btn-outline-primary single-date-save">Simpan</button>
+                  </form>
+                </div>
               </td>
               <td>{{ $payment->created_at?->format('d M Y H:i') ?? '—' }}</td>
             </tr>
@@ -398,11 +408,23 @@
 <script>
   (function() {
     var selectAll = document.getElementById('select-all-global-manual-payments');
-    if (!selectAll) return;
+    if (selectAll) {
+      selectAll.addEventListener('change', function() {
+        document.querySelectorAll('.global-manual-payment-checkbox').forEach(function(cb) {
+          cb.checked = selectAll.checked;
+        });
+      });
+    }
 
-    selectAll.addEventListener('change', function() {
-      document.querySelectorAll('.global-manual-payment-checkbox').forEach(function(cb) {
-        cb.checked = selectAll.checked;
+    document.querySelectorAll('.single-date-save').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var wrap = btn.closest('td');
+        if (!wrap) return;
+        var dateInput = wrap.querySelector('input[type="date"][name^="payment_dates["]');
+        var hiddenInput = wrap.querySelector('.single-date-mirror');
+        if (dateInput && hiddenInput) {
+          hiddenInput.value = dateInput.value;
+        }
       });
     });
   })();
