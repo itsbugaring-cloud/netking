@@ -179,6 +179,14 @@
                    min="0" step="1000" required>
           </div>
 
+          {{-- Tanggal Bayar --}}
+          <div class="form-group">
+            <label for="tanggal_bayar">Tanggal Bayar</label>
+            <input type="date" name="tanggal_bayar" id="tanggal_bayar"
+                   value="{{ old('tanggal_bayar', date('Y-m-d')) }}"
+                   required>
+          </div>
+
           {{-- Rekening Tujuan --}}
           <div class="form-group">
             <label for="rekening_tujuan">Rekening</label>

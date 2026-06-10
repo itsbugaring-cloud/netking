@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Payment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -102,6 +103,7 @@ class PaymentController extends Controller
             'periode_bulan' => 'required|integer|min:1|max:12',
             'periode_tahun' => 'required|integer|min:2020|max:2030',
             'jumlah' => 'required|numeric|min:0',
+            'tanggal_bayar' => 'required|date',
             'metode' => 'required|in:transfer,cash',
             'rekening_tujuan' => 'required|string|max:50',
             'catatan' => 'nullable|string|max:1000',
@@ -116,7 +118,7 @@ class PaymentController extends Controller
             'rekening_tujuan' => $validated['rekening_tujuan'],
             'status' => 'approved',
             'approved_by_user_id' => auth()->id(),
-            'approved_at' => now(),
+            'approved_at' => Carbon::parse($validated['tanggal_bayar'])->startOfDay(),
             'catatan' => $validated['catatan'] ?? null,
             'created_by_user_id' => auth()->id(),
         ]);
