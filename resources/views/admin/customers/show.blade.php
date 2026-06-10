@@ -518,12 +518,24 @@
                     </div>
                     <div class="card-body p-0">
                         @php
-                            $logs = \App\Models\ActivityLog::where('subject_type', 'App\\Models\\Customer')
-                                ->where('subject_id', $customer->id)
-                                ->with('user')
-                                ->orderBy('created_at', 'desc')
-                                ->limit(30)
-                                ->get();
+                            try {
+                                $logs = \App\Models\ActivityLog::where('subject_type', 'App\\Models\\Customer')
+                                    ->where('subject_id', $customer->id)
+                                    ->with('user')
+                                    ->orderBy('created_at', 'desc')
+                                    ->limit(30)
+                                    ->get();
+                            } catch (\Exception $e) {
+                                // Fallback: table might not have subject_type/subject_id columns yet
+                                try {
+                                    $logs = \App\Models\ActivityLog::where('customer_id', $customer->id)
+                                        ->orderBy('created_at', 'desc')
+                                        ->limit(30)
+                                        ->get();
+                                } catch (\Exception $e2) {
+                                    $logs = collect();
+                                }
+                            }
 
                             $paymentLogs = $customer->payments()->where('status', 'approved')->orderBy('approved_at', 'desc')->take(10)->get();
                         @endphp
