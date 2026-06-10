@@ -126,6 +126,21 @@
     margin-bottom: .5rem;
     opacity: .5;
   }
+  .manual-list-table th,
+  .manual-list-table td {
+    font-size: .8rem;
+    vertical-align: middle;
+  }
+  .manual-toolbar {
+    display: flex;
+    gap: .75rem;
+    align-items: end;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .manual-toolbar .field {
+    min-width: 140px;
+  }
 </style>
 @endsection
 
@@ -141,6 +156,8 @@
   {{-- Search bar --}}
   <form method="GET" action="{{ route('admin.payments.quick') }}" class="search-bar">
     <input type="text" name="q" value="{{ $search ?? '' }}" placeholder="Cari kode pelanggan, nama, PPPoE user, atau no. HP..." autofocus>
+    <input type="hidden" name="manual_month" value="{{ $manualMonth ?? now()->month }}">
+    <input type="hidden" name="manual_year" value="{{ $manualYear ?? now()->year }}">
     <button type="submit" class="ms-btn">
       <i class='bx bx-search'></i> Cari
     </button>
@@ -277,5 +294,105 @@
       </div>
     </div>
   @endif
+
+  <div class="ms-panel mt-4">
+    <div class="ms-panel-head">
+      <span class="ms-panel-title">
+        <i class='bx bx-trash me-2' style="color:#dc2626;"></i>Bulk Hapus Pembayaran Manual
+      </span>
+    </div>
+    <div class="ms-panel-body">
+      <form method="GET" action="{{ route('admin.payments.quick') }}" class="manual-toolbar">
+        <div class="field">
+          <label class="form-label">Bulan</label>
+          <select name="manual_month" class="form-select">
+            @php $months = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; @endphp
+            @for($m = 1; $m <= 12; $m++)
+            <option value="{{ $m }}" {{ (int) ($manualMonth ?? now()->month) === $m ? 'selected' : '' }}>{{ $months[$m] }}</option>
+            @endfor
+          </select>
+        </div>
+        <div class="field">
+          <label class="form-label">Tahun</label>
+          <select name="manual_year" class="form-select">
+            @for($y = 2024; $y <= 2027; $y++)
+            <option value="{{ $y }}" {{ (int) ($manualYear ?? now()->year) === $y ? 'selected' : '' }}>{{ $y }}</option>
+            @endfor
+          </select>
+        </div>
+        <div>
+          <button type="submit" class="ms-btn-secondary">Tampilkan</button>
+        </div>
+      </form>
+
+      @if(($manualPayments ?? collect())->isNotEmpty())
+      <form id="bulk-delete-manual-payments-global-form" action="{{ route('admin.payments.bulk-destroy') }}" method="POST" onsubmit="return confirm('Hapus semua pembayaran manual yang dipilih?');">
+        @csrf
+        @method('DELETE')
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <label class="d-flex align-items-center gap-2 mb-0" style="font-size:.8rem;color:var(--txt-3);">
+            <input type="checkbox" id="select-all-global-manual-payments">
+            Pilih semua
+          </label>
+          <button type="submit" class="btn btn-sm btn-outline-danger">Hapus yang dipilih</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-flat manual-list-table mb-0">
+            <thead>
+              <tr>
+                <th style="width:40px;">#</th>
+                <th>Pelanggan</th>
+                <th>Area</th>
+                <th>Periode</th>
+                <th>Jumlah</th>
+                <th>Rekening</th>
+                <th>Dibuat</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach($manualPayments as $payment)
+              <tr>
+                <td>
+                  <input type="checkbox" name="payment_ids[]" value="{{ $payment->id }}" class="global-manual-payment-checkbox" style="width:16px;height:16px;">
+                </td>
+                <td>
+                  <div style="font-weight:600;color:var(--txt);">{{ $payment->customer?->name ?? '—' }}</div>
+                  <div style="color:var(--txt-3);font-size:.74rem;">
+                    {{ $payment->customer?->customer_code ?? '—' }} · {{ $payment->customer?->pppoe_user ?? '—' }}
+                  </div>
+                </td>
+                <td>{{ $payment->customer?->area?->name ?? '—' }}</td>
+                <td>{{ \Carbon\Carbon::createFromDate($payment->periode_tahun, $payment->periode_bulan, 1)->translatedFormat('M Y') }}</td>
+                <td>Rp {{ number_format($payment->jumlah, 0, ',', '.') }}</td>
+                <td>{{ $payment->rekening_tujuan }}</td>
+                <td>{{ $payment->created_at?->format('d M Y H:i') ?? '—' }}</td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </form>
+      @else
+      <div class="not-found-msg" style="padding:1rem 0 0;">
+        <i class='bx bx-check-shield'></i>
+        Tidak ada pembayaran manual untuk periode ini.
+      </div>
+      @endif
+    </div>
+  </div>
 </div>
+
+<script>
+  (function() {
+    var selectAll = document.getElementById('select-all-global-manual-payments');
+    if (!selectAll) return;
+
+    selectAll.addEventListener('change', function() {
+      document.querySelectorAll('.global-manual-payment-checkbox').forEach(function(cb) {
+        cb.checked = selectAll.checked;
+      });
+    });
+  })();
+</script>
 @endsection

@@ -71,6 +71,8 @@ class PaymentController extends Controller
     {
         $search = $request->input('q');
         $customer = null;
+        $manualMonth = (int) ($request->input('manual_month', now()->month));
+        $manualYear = (int) ($request->input('manual_year', now()->year));
 
         if ($search) {
             $customer = \App\Models\Customer::where('customer_code', $search)
@@ -81,7 +83,18 @@ class PaymentController extends Controller
                 ->first();
         }
 
-        return view('admin.payments.quick', compact('customer', 'search'));
+        $manualPayments = Payment::with(['customer.area'])
+            ->whereNotNull('created_by_user_id')
+            ->where(function ($q) {
+                $q->whereNull('bukti_path')->orWhere('bukti_path', '');
+            })
+            ->where('periode_bulan', $manualMonth)
+            ->where('periode_tahun', $manualYear)
+            ->orderByDesc('created_at')
+            ->limit(200)
+            ->get();
+
+        return view('admin.payments.quick', compact('customer', 'search', 'manualPayments', 'manualMonth', 'manualYear'));
     }
 
     /**
