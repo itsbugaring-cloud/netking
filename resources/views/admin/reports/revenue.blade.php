@@ -19,9 +19,9 @@
           <i class='bx bx-download'></i> Ekspor
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="{{ route('admin.reports.export-invoices', ['year' => $year]) }}">CSV Invoice ({{ $year }})</a></li>
-          <li><a class="dropdown-item" href="{{ route('admin.reports.export-invoices', ['year' => $year, 'status' => 'paid']) }}">CSV Lunas Saja</a></li>
-          <li><a class="dropdown-item" href="{{ route('admin.reports.export-invoices', ['year' => $year, 'status' => 'unpaid']) }}">CSV Belum Lunas Saja</a></li>
+          <li><a class="dropdown-item" href="{{ route('admin.reports.export-payments', ['year' => $year]) }}">CSV Pembayaran ({{ $year }})</a></li>
+          <li><a class="dropdown-item" href="{{ route('admin.reports.export-payments', ['year' => $year, 'status' => 'approved']) }}">CSV Disetujui Saja</a></li>
+          <li><a class="dropdown-item" href="{{ route('admin.reports.export-payments', ['year' => $year, 'status' => 'pending']) }}">CSV Pending Saja</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item" href="{{ route('admin.reports.export-revenue', ['year' => $year]) }}">CSV Ringkasan Pendapatan</a></li>
         </ul>
@@ -53,7 +53,7 @@
     </div>
     <div class="stat-card">
       <div>
-        <div class="stat-label">Total Invoice</div>
+        <div class="stat-label">Total Pembayaran</div>
         <div class="stat-value">{{ number_format($totalInvoices) }}</div>
       </div>
       <div class="stat-icon si-green"><i class='bx bx-receipt'></i></div>
@@ -81,7 +81,7 @@
               <thead>
                 <tr>
                   <th>Area</th>
-                  <th class="text-end">Invoice</th>
+                  <th class="text-end">Jumlah</th>
                   <th class="text-end">Pendapatan</th>
                 </tr>
               </thead>
@@ -105,15 +105,15 @@
     <div class="col-xl-6">
       <div class="ms-panel h-100">
         <div class="ms-panel-head">
-          <h5 class="ms-panel-title"><i class='bx bx-group me-2' style="color:#2563eb;"></i>Pendapatan per Mitra</h5>
+          <h5 class="ms-panel-title"><i class='bx bx-group me-2' style="color:#2563eb;"></i>Pendapatan per PIC</h5>
         </div>
         <div class="ms-table-shell">
           <div class="table-responsive">
             <table class="table table-sm mb-0">
               <thead>
                 <tr>
-                  <th>Mitra</th>
-                  <th class="text-end">Invoice</th>
+                  <th>PIC</th>
+                  <th class="text-end">Jumlah</th>
                   <th class="text-end">Pendapatan</th>
                 </tr>
               </thead>
@@ -125,7 +125,7 @@
                   <td class="text-end" style="font-weight:700;color:var(--green);">Rp {{ number_format($row->total, 0, ',', '.') }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="3" class="text-center text-muted py-3">Tidak ada data mitra untuk {{ $year }}</td></tr>
+                <tr><td colspan="3" class="text-center text-muted py-3">Tidak ada data PIC untuk {{ $year }}</td></tr>
                 @endforelse
               </tbody>
             </table>
@@ -145,7 +145,7 @@
           <thead>
             <tr>
               <th>Bulan</th>
-              <th class="text-end">Invoice Lunas</th>
+              <th class="text-end">Pembayaran Disetujui</th>
               <th class="text-end">Pendapatan</th>
               <th style="width:40%;">Progres</th>
             </tr>
@@ -180,11 +180,11 @@
     </div>
   </div>
 
-  {{-- Revenue per Mitra per Bulan --}}
+  {{-- Revenue per PIC per Bulan --}}
   @if(!empty($partnerMonthly))
   <div class="ms-panel mt-3">
     <div class="ms-panel-head">
-      <h5 class="ms-panel-title"><i class='bx bx-group me-2'></i>Pendapatan per Mitra per Bulan — {{ $year }}</h5>
+      <h5 class="ms-panel-title"><i class='bx bx-group me-2'></i>Pendapatan per PIC per Bulan — {{ $year }}</h5>
     </div>
     <div class="ms-table-shell">
       <div class="table-responsive">
@@ -192,7 +192,7 @@
         <table class="table table-sm mb-0" style="font-size:.78rem;min-width:1100px;">
           <thead>
             <tr>
-              <th style="min-width:130px;">Mitra</th>
+              <th style="min-width:130px;">PIC</th>
               @foreach($mnth as $mn)<th class="text-end">{{ $mn }}</th>@endforeach
               <th class="text-end" style="font-weight:700;">Total</th>
             </tr>

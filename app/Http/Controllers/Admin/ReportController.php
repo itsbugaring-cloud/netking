@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Customer;
 use App\Models\Area;
 use App\Models\User;
@@ -20,12 +20,12 @@ class ReportController extends Controller
     {
         $year = $request->input('year', now()->year);
 
-        // Monthly revenue for the year
-        $monthlyRevenue = Invoice::where('status', 'paid')
-            ->whereYear('paid_at', $year)
+        // Monthly revenue for the year (from approved payments)
+        $monthlyRevenue = Payment::where('status', 'approved')
+            ->whereYear('approved_at', $year)
             ->select(
-                DB::raw('MONTH(paid_at) as month'),
-                DB::raw('SUM(amount) as total'),
+                DB::raw('MONTH(approved_at) as month'),
+                DB::raw('SUM(jumlah) as total'),
                 DB::raw('COUNT(*) as count')
             )
             ->groupBy('month')
@@ -46,56 +46,59 @@ class ReportController extends Controller
         }
 
         // Revenue per area
-        $revenueByArea = Invoice::where('invoices.status', 'paid')
-            ->whereYear('paid_at', $year)
-            ->join('customers', 'invoices.customer_id', '=', 'customers.id')
+        $revenueByArea = Payment::where('payments.status', 'approved')
+            ->whereYear('approved_at', $year)
+            ->join('customers', 'payments.customer_id', '=', 'customers.id')
             ->join('areas', 'customers.area_id', '=', 'areas.id')
             ->select(
                 'areas.name as area_name',
-                DB::raw('SUM(invoices.amount) as total'),
-                DB::raw('COUNT(invoices.id) as count')
+                DB::raw('SUM(payments.jumlah) as total'),
+                DB::raw('COUNT(payments.id) as count')
             )
             ->groupBy('areas.name')
             ->orderByDesc('total')
             ->get();
 
         // Revenue per partner
-        $revenueByPartner = Invoice::where('invoices.status', 'paid')
-            ->whereYear('paid_at', $year)
-            ->join('customers', 'invoices.customer_id', '=', 'customers.id')
+        $revenueByPartner = Payment::where('payments.status', 'approved')
+            ->whereYear('approved_at', $year)
+            ->join('customers', 'payments.customer_id', '=', 'customers.id')
             ->join('users', 'customers.partner_id', '=', 'users.id')
             ->select(
                 'users.name as partner_name',
-                DB::raw('SUM(invoices.amount) as total'),
-                DB::raw('COUNT(invoices.id) as count')
+                DB::raw('SUM(payments.jumlah) as total'),
+                DB::raw('COUNT(payments.id) as count')
             )
             ->groupBy('users.name')
             ->orderByDesc('total')
             ->get();
 
         // Summary totals
-        $totalPaid = Invoice::where('status', 'paid')->whereYear('paid_at', $year)->sum('amount');
-        $totalUnpaid = Invoice::where('status', 'unpaid')->sum('amount');
-        $totalOverdue = Invoice::overdue()->sum('amount');
-        $totalInvoices = Invoice::whereYear('created_at', $year)->count();
+        $totalPaid = Payment::where('status', 'approved')->whereYear('approved_at', $year)->sum('jumlah');
+        $totalPending = Payment::where('status', 'pending')->sum('jumlah');
+        $totalPayments = Payment::whereYear('created_at', $year)->count();
 
         // Available years
-        $years = Invoice::selectRaw('YEAR(created_at) as y')
+        $years = Payment::selectRaw('YEAR(created_at) as y')
             ->distinct()
             ->orderByDesc('y')
             ->pluck('y');
 
+        if ($years->isEmpty()) {
+            $years = collect([now()->year]);
+        }
+
         // Revenue per partner per month (for matrix table)
-        $partnerMonthlyRaw = Invoice::where('invoices.status', 'paid')
-            ->whereYear('paid_at', $year)
-            ->join('customers', 'invoices.customer_id', '=', 'customers.id')
+        $partnerMonthlyRaw = Payment::where('payments.status', 'approved')
+            ->whereYear('approved_at', $year)
+            ->join('customers', 'payments.customer_id', '=', 'customers.id')
             ->join('users', 'customers.partner_id', '=', 'users.id')
             ->select(
                 'users.id as partner_id',
                 'users.name as partner_name',
-                DB::raw('MONTH(invoices.paid_at) as month'),
-                DB::raw('SUM(invoices.amount) as total'),
-                DB::raw('COUNT(invoices.id) as count')
+                DB::raw('MONTH(payments.approved_at) as month'),
+                DB::raw('SUM(payments.jumlah) as total'),
+                DB::raw('COUNT(payments.id) as count')
             )
             ->groupBy('users.id', 'users.name', 'month')
             ->orderBy('users.name')
@@ -106,6 +109,11 @@ class ReportController extends Controller
         foreach ($partnerMonthlyRaw as $row) {
             $partnerMonthly[$row->partner_name][$row->month] = $row->total;
         }
+
+        // Keep backward-compatible variable names for the view
+        $totalUnpaid = $totalPending;
+        $totalOverdue = 0;
+        $totalInvoices = $totalPayments;
 
         return view('admin.reports.revenue', compact(
             'year',
@@ -127,15 +135,15 @@ class ReportController extends Controller
     public function billing(Request $request)
     {
         $query = Customer::with(['area', 'partner', 'package'])
-            ->withCount('invoices')
-            ->withSum(['invoices as paid_total' => fn($q) => $q->where('status','paid')], 'amount')
-            ->withSum(['invoices as unpaid_total' => fn($q) => $q->where('status','unpaid')], 'amount');
+            ->withCount('payments')
+            ->withSum(['payments as paid_total' => fn($q) => $q->where('status','approved')], 'jumlah')
+            ->withSum(['payments as pending_total' => fn($q) => $q->where('status','pending')], 'jumlah');
 
         if ($request->filled('area_id'))       $query->where('area_id', $request->area_id);
         if ($request->filled('partner_id'))    $query->where('partner_id', $request->partner_id);
         if ($request->filled('status'))        $query->where('status', $request->status);
-        if ($request->filled('invoice_status')) {
-            $query->whereHas('invoices', fn($q) => $q->where('status', $request->invoice_status));
+        if ($request->filled('payment_status')) {
+            $query->whereHas('payments', fn($q) => $q->where('status', $request->payment_status));
         }
 
         $customers = $query->orderBy('name')->paginate(30)->withQueryString();
@@ -147,7 +155,7 @@ class ReportController extends Controller
             'total'       => Customer::count(),
             'active'      => Customer::where('status','active')->count(),
             'suspended'   => Customer::where('status','suspended')->count(),
-            'unpaid_customers' => Customer::whereHas('invoices', fn($q) => $q->where('status','unpaid'))->count(),
+            'pending_payments' => Payment::where('status','pending')->count(),
         ];
 
         return view('admin.reports.billing', compact('customers','areas','partners','stats'));
@@ -159,8 +167,8 @@ class ReportController extends Controller
     public function exportBilling(Request $request): StreamedResponse
     {
         $query = Customer::with(['area','partner','package'])
-            ->withSum(['invoices as paid_total' => fn($q) => $q->where('status','paid')], 'amount')
-            ->withSum(['invoices as unpaid_total' => fn($q) => $q->where('status','unpaid')], 'amount');
+            ->withSum(['payments as paid_total' => fn($q) => $q->where('status','approved')], 'jumlah')
+            ->withSum(['payments as pending_total' => fn($q) => $q->where('status','pending')], 'jumlah');
 
         if ($request->filled('area_id'))    $query->where('area_id', $request->area_id);
         if ($request->filled('partner_id')) $query->where('partner_id', $request->partner_id);
@@ -174,7 +182,7 @@ class ReportController extends Controller
         return response()->streamDownload(function () use ($data, $statusLabel) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
-            fputcsv($out, ['Nama','No. HP','Area','Mitra/Teknisi','Paket','Status Pelanggan','Total Bayar','Tunggakan','Tgl Daftar']);
+            fputcsv($out, ['Nama','No. HP','Area','PIC','Paket','Status Pelanggan','Total Bayar','Pending','Tgl Daftar']);
             foreach ($data as $c) {
                 fputcsv($out, [
                     $c->name,
@@ -184,7 +192,7 @@ class ReportController extends Controller
                     $c->package->name ?? '-',
                     $statusLabel[$c->status] ?? ucfirst($c->status),
                     $c->paid_total ?? 0,
-                    $c->unpaid_total ?? 0,
+                    $c->pending_total ?? 0,
                     $c->created_at->format('d M Y'),
                 ]);
             }
@@ -193,20 +201,17 @@ class ReportController extends Controller
     }
 
     /**
-     * Export invoices as CSV
+     * Export payments as CSV
      */
-    public function exportInvoices(Request $request): StreamedResponse
+    public function exportPayments(Request $request): StreamedResponse
     {
-        $query = Invoice::with(['customer.partner', 'customer.area'])
+        $query = Payment::with(['customer.partner', 'customer.area', 'approvedBy'])
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        if ($request->filled('month') && $request->filled('year')) {
-            $query->whereYear('due_date', $request->year)
-                ->whereMonth('due_date', $request->month);
-        } elseif ($request->filled('year')) {
+        if ($request->filled('year')) {
             $query->whereYear('created_at', $request->year);
         }
         if ($request->filled('area_id')) {
@@ -216,11 +221,11 @@ class ReportController extends Controller
             $query->whereHas('customer', fn($q) => $q->where('partner_id', $request->partner_id));
         }
 
-        $invoices = $query->get();
+        $payments = $query->get();
 
-        $filename = 'invoices_' . ($request->year ?? date('Y')) . '_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'payments_' . ($request->year ?? date('Y')) . '_' . now()->format('Ymd_His') . '.csv';
 
-        return response()->streamDownload(function () use ($invoices) {
+        return response()->streamDownload(function () use ($payments) {
             $out = fopen('php://output', 'w');
 
             // BOM for Excel UTF-8
@@ -228,45 +233,50 @@ class ReportController extends Controller
 
             // Header
             fputcsv($out, [
-                'Invoice #',
+                'ID',
                 'Customer',
                 'Area',
-                'Partner',
-                'Amount',
+                'PIC',
+                'Jumlah',
+                'Metode',
+                'Rekening',
+                'Periode',
                 'Status',
-                'Due Date',
-                'Paid Date',
-                'Payment Method',
+                'Approved At',
+                'Approved By',
                 'Created At'
             ]);
 
-            $totalPaid = 0;
-            $totalUnpaid = 0;
+            $totalApproved = 0;
+            $totalPending = 0;
 
-            foreach ($invoices as $inv) {
+            foreach ($payments as $pmt) {
+                $periode = sprintf('%02d/%04d', $pmt->periode_bulan, $pmt->periode_tahun);
                 fputcsv($out, [
-                    $inv->invoice_number,
-                    $inv->customer?->name ?? '-',
-                    $inv->customer?->area?->name ?? '-',
-                    $inv->customer?->partner?->name ?? '-',
-                    $inv->amount,
-                    $inv->status,
-                    $inv->due_date?->format('Y-m-d') ?? '-',
-                    $inv->paid_at?->format('Y-m-d H:i') ?? '-',
-                    $inv->payment_method ?? '-',
-                    $inv->created_at?->format('Y-m-d H:i'),
+                    $pmt->id,
+                    $pmt->customer?->name ?? '-',
+                    $pmt->customer?->area?->name ?? '-',
+                    $pmt->customer?->partner?->name ?? '-',
+                    $pmt->jumlah,
+                    $pmt->metode,
+                    $pmt->rekening_tujuan ?? '-',
+                    $periode,
+                    $pmt->status,
+                    $pmt->approved_at?->format('Y-m-d H:i') ?? '-',
+                    $pmt->approvedBy?->name ?? '-',
+                    $pmt->created_at?->format('Y-m-d H:i'),
                 ]);
 
-                if ($inv->status === 'paid') $totalPaid += $inv->amount;
-                else $totalUnpaid += $inv->amount;
+                if ($pmt->status === 'approved') $totalApproved += $pmt->jumlah;
+                else if ($pmt->status === 'pending') $totalPending += $pmt->jumlah;
             }
 
             // Summary row
             fputcsv($out, []);
-            fputcsv($out, ['SUMMARY', '', '', '', '', '', '', '', '', '']);
-            fputcsv($out, ['Total Invoices', count($invoices)]);
-            fputcsv($out, ['Total Paid', $totalPaid]);
-            fputcsv($out, ['Total Unpaid', $totalUnpaid]);
+            fputcsv($out, ['SUMMARY', '', '', '', '', '', '', '', '', '', '', '']);
+            fputcsv($out, ['Total Payments', count($payments)]);
+            fputcsv($out, ['Total Approved', $totalApproved]);
+            fputcsv($out, ['Total Pending', $totalPending]);
 
             fclose($out);
         }, $filename, [
@@ -281,17 +291,17 @@ class ReportController extends Controller
     {
         $year = $request->input('year', now()->year);
 
-        $data = Invoice::where('invoices.status', 'paid')
-            ->whereYear('invoices.paid_at', $year)
-            ->join('customers', 'invoices.customer_id', '=', 'customers.id')
+        $data = Payment::where('payments.status', 'approved')
+            ->whereYear('payments.approved_at', $year)
+            ->join('customers', 'payments.customer_id', '=', 'customers.id')
             ->leftJoin('areas', 'customers.area_id', '=', 'areas.id')
             ->leftJoin('users', 'customers.partner_id', '=', 'users.id')
             ->select(
-                DB::raw('MONTH(invoices.paid_at) as month'),
+                DB::raw('MONTH(payments.approved_at) as month'),
                 'areas.name as area_name',
                 'users.name as partner_name',
-                DB::raw('SUM(invoices.amount) as total'),
-                DB::raw('COUNT(invoices.id) as count')
+                DB::raw('SUM(payments.jumlah) as total'),
+                DB::raw('COUNT(payments.id) as count')
             )
             ->groupBy('month', 'areas.name', 'users.name')
             ->orderBy('month')
@@ -305,7 +315,7 @@ class ReportController extends Controller
 
             fputcsv($out, ["Revenue Report — {$year}"]);
             fputcsv($out, []);
-            fputcsv($out, ['Month', 'Area', 'Partner', 'Invoice Count', 'Revenue']);
+            fputcsv($out, ['Month', 'Area', 'PIC', 'Payment Count', 'Revenue']);
 
             $grandTotal = 0;
             $months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];

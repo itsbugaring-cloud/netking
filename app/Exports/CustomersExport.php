@@ -25,10 +25,10 @@ class CustomersExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
 
     public function view(): View
     {
-        $query = Customer::with(['area', 'partner', 'package'])
-            ->withSum(['invoices as paid_total' => fn($q) => $q->where('status', 'paid')], 'amount')
-            ->withSum(['invoices as unpaid_total' => fn($q) => $q->where('status', 'unpaid')], 'amount')
-            ->withCount(['invoices as total_invoices']);
+        $query = Customer::with(['partner', 'area', 'package'])
+            ->with(['latestPayment' => function ($q) {
+                $q->with('approvedBy:id,name');
+            }]);
 
         if ($this->request->filled('area_id')) {
             $query->where('area_id', $this->request->area_id);
@@ -61,7 +61,7 @@ class CustomersExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '2563EB'], // Blue
+                'startColor' => ['rgb' => '2563EB'],
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -88,17 +88,14 @@ class CustomersExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
         // Set row height for header
         $sheet->getRowDimension(1)->setRowHeight(24);
 
-        // Number format for currency columns (Harga Paket, Harga Customer, Paid, Tunggakan)
+        // Number format for currency column G (Bayar Rp)
         $sheet->getStyle("G2:G{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
-        $sheet->getStyle("H2:H{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
-        $sheet->getStyle("J2:J{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
-        $sheet->getStyle("K2:K{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
 
-        // Highlight rows where Keterangan has "HARGA BEDA"
+        // Conditional: highlight suspended customers
         for ($row = 2; $row <= $lastRow; $row++) {
-            $keteranganValue = $sheet->getCell("M{$row}")->getValue();
-            if ($keteranganValue && str_contains((string) $keteranganValue, 'HARGA BEDA')) {
-                $sheet->getStyle("M{$row}")->applyFromArray([
+            $statusValue = $sheet->getCell("H{$row}")->getValue();
+            if ($statusValue === 'Diisolir') {
+                $sheet->getStyle("H{$row}")->applyFromArray([
                     'font' => ['bold' => true, 'color' => ['rgb' => 'DC2626']],
                 ]);
             }

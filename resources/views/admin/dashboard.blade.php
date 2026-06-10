@@ -540,26 +540,26 @@
       <div class="ops-kpi-meta">{{ number_format($stats['active_customers'] ?? 0) }} aktif &middot; {{ number_format($stats['suspended_customers'] ?? 0) }} nonaktif</div>
     </div>
 
-    {{-- Tagihan Belum Dibayar --}}
-    @php $unpaid = $stats['unpaid_invoices_count'] ?? 0;
-         $unpaidBg = $unpaid > 0 ? 'rgba(217,119,6,.1)' : 'rgba(22,163,74,.1)';
-         $unpaidBorder = $unpaid > 0 ? 'rgba(217,119,6,.25)' : 'rgba(22,163,74,.25)';
-         $unpaidText = $unpaid > 0 ? '#d97706' : '#16a34a'; @endphp
+    {{-- Pembayaran Pending --}}
+    @php $pending = $stats['pending_payments'] ?? 0;
+         $pendingBg = $pending > 0 ? 'rgba(217,119,6,.1)' : 'rgba(22,163,74,.1)';
+         $pendingBorder = $pending > 0 ? 'rgba(217,119,6,.25)' : 'rgba(22,163,74,.25)';
+         $pendingText = $pending > 0 ? '#d97706' : '#16a34a'; @endphp
     <div class="ops-kpi">
       <div class="ops-kpi-top">
         <div>
-          <div class="ops-kpi-label">Tagihan Belum Dibayar</div>
-          <div class="ops-kpi-value">{{ number_format($unpaid) }}</div>
+          <div class="ops-kpi-label">Pembayaran Pending</div>
+          <div class="ops-kpi-value">{{ number_format($pending) }}</div>
         </div>
-        <div class="ops-kpi-icon" style="background:{{ $unpaidBg }};border-color:{{ $unpaidBorder }};color:{{ $unpaidText }};">
-          <i class='bx bx-{{ $unpaid > 0 ? "error" : "check" }}'></i>
+        <div class="ops-kpi-icon" style="background:{{ $pendingBg }};border-color:{{ $pendingBorder }};color:{{ $pendingText }};">
+          <i class='bx bx-{{ $pending > 0 ? "error" : "check" }}'></i>
         </div>
       </div>
       <div class="ops-kpi-meta">
-        @if(($stats['overdue_invoices_count'] ?? 0) > 0)
-          <span style="color:#dc2626;">{{ number_format($stats['overdue_invoices_count']) }} jatuh tempo</span>
+        @if(($stats['approved_this_month'] ?? 0) > 0)
+          <span style="color:#16a34a;">{{ number_format($stats['approved_this_month']) }} disetujui bulan ini</span>
         @else
-          Semua tagihan dalam antrian normal
+          Belum ada pembayaran disetujui bulan ini
         @endif
       </div>
     </div>
@@ -613,15 +613,15 @@
         <div class="ops-network-card">
           <div class="ops-network-top">
             <div>
-              <div class="ops-network-label">Belum Dibayar</div>
-              <div class="ops-network-value"><span id="live-unpaid">{{ number_format($stats['unpaid_invoices_count'] ?? 0) }}</span></div>
+              <div class="ops-network-label">Pending Review</div>
+              <div class="ops-network-value"><span id="live-unpaid">{{ number_format($stats['pending_payments'] ?? 0) }}</span></div>
             </div>
             <div class="ops-kpi-icon"><i class='bx bx-calendar-exclamation'></i></div>
           </div>
           <div class="ops-network-foot">
             <span class="ops-dot" style="background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.14);"></span>
-            <span id="live-overdue-wrap" style="{{ ($stats['overdue_invoices_count'] ?? 0) > 0 ? 'display:inline;' : 'display:none;' }}"><span id="live-overdue">{{ number_format($stats['overdue_invoices_count'] ?? 0) }}</span> jatuh tempo</span>
-            <span id="live-overdue-empty" style="{{ ($stats['overdue_invoices_count'] ?? 0) > 0 ? 'display:none;' : 'display:inline;' }}">Antrian tindak lanjut tagihan</span>
+            <span id="live-overdue-wrap" style="{{ ($stats['pending_payments'] ?? 0) > 0 ? 'display:inline;' : 'display:none;' }}"><span id="live-overdue">{{ number_format($stats['pending_payments'] ?? 0) }}</span> menunggu review</span>
+            <span id="live-overdue-empty" style="{{ ($stats['pending_payments'] ?? 0) > 0 ? 'display:none;' : 'display:inline;' }}">Semua pembayaran telah diproses</span>
           </div>
         </div>
 
@@ -761,8 +761,8 @@
               <span class="ops-quick-label">OLT & ONT</span>
               <i class='bx bx-right-arrow-alt'></i>
             </a>
-            <a href="{{ route('admin.invoices.index') }}" class="ops-quick-link">
-              <span class="ops-quick-label">Tagihan</span>
+            <a href="{{ route('admin.payments.review') }}" class="ops-quick-link">
+              <span class="ops-quick-label">Pembayaran</span>
               <i class='bx bx-right-arrow-alt'></i>
             </a>
           </div>
@@ -971,14 +971,14 @@
             document.getElementById('live-ont-online').textContent = data.ont_online;
             document.getElementById('live-ont-total').textContent = data.ont_total;
           }
-          if (data.unpaid_invoices !== undefined) {
-            document.getElementById('live-unpaid').textContent = data.unpaid_invoices;
+          if (data.pending_payments !== undefined) {
+            document.getElementById('live-unpaid').textContent = data.pending_payments;
           }
-          if (data.overdue_invoices !== undefined) {
+          if (data.pending_payments !== undefined) {
             const wrap = document.getElementById('live-overdue-wrap');
             const empty = document.getElementById('live-overdue-empty');
-            document.getElementById('live-overdue').textContent = data.overdue_invoices;
-            if (data.overdue_invoices > 0) {
+            document.getElementById('live-overdue').textContent = data.pending_payments;
+            if (data.pending_payments > 0) {
               wrap.style.display = 'inline';
               empty.style.display = 'none';
             } else {

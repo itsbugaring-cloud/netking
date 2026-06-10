@@ -82,12 +82,12 @@
                 </li>
                 @endif
 
-                <li class="nav-item {{ request()->routeIs('admin.invoices.*') || request()->routeIs('admin.billing.*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.invoices.index') }}">
+                <li class="nav-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.payments.review') }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <i class="ti ti-file-invoice"></i>
+                            <i class="ti ti-cash"></i>
                         </span>
-                        <span class="nav-link-title">Tagihan</span>
+                        <span class="nav-link-title">Pembayaran</span>
                     </a>
                 </li>
 

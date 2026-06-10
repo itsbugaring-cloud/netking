@@ -75,10 +75,10 @@
                                     <span class="nav-link-title">Dasbor</span>
                                 </a>
                             </li>
-                            <li class="nav-item {{ request()->routeIs('customer.invoices.*') ? 'active' : '' }}">
-                                <a class="nav-link" href="{{ route('customer.invoices.index') }}">
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-invoice"></i></span>
-                                    <span class="nav-link-title">Tagihan</span>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url('/bayar/' . (auth('customer')->user()->customer_code ?? '')) }}">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-cash"></i></span>
+                                    <span class="nav-link-title">Bayar</span>
                                 </a>
                             </li>
                             <li class="nav-item {{ request()->routeIs('customer.profile.*') ? 'active' : '' }}">

@@ -9,7 +9,6 @@ use App\Models\Customer;
 use App\Models\CustomerDevice;
 use App\Models\Odp;
 use App\Models\User;
-use App\Services\BillingCalculator;
 use App\Jobs\CreateMikrotikSecretJob;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
@@ -178,19 +177,12 @@ class CustomerController extends Controller
             ->with('success', "Customer {$customer->name} created and queued for provisioning.");
     }
 
-    public function show(Customer $customer, BillingCalculator $billing)
+    public function show(Customer $customer)
     {
         $this->authorizeArea($customer);
         $customer->load(['partner', 'area', 'package', 'odp', 'ont', 'devices']);
 
-        $periodYear = now()->year;
-        $periodMonth = now()->month;
-        $prorationPreview = $billing->calculateForPeriod($customer, $periodYear, $periodMonth);
-        $baseDays = max(1, (int) config('billing.proration_base_days', 30));
-        $prorationPreview['daily_rate'] = round(((float) ($prorationPreview['base_amount'] ?? 0)) / $baseDays, 2);
-        $prorationPreview['due_date'] = $billing->resolveDueDateForPeriod($periodYear, $periodMonth)->toDateString();
-
-        return view('admin.customers.show', compact('customer', 'prorationPreview'));
+        return view('admin.customers.show', compact('customer'));
     }
 
     public function edit(Customer $customer)

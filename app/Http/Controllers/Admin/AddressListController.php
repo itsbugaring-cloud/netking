@@ -117,15 +117,21 @@ class AddressListController extends Controller
         $mikrotik = MikroTikService::forArea($area);
         $listName = config('netking.isolir_list', 'isolir');
 
-        // Find overdue customers (unpaid invoices past grace period)
+        // Find overdue customers (no approved payment for current period past grace period)
         $graceDays = (int) config('netking.isolir_grace_days', 7);
         $overdueCustomers = Customer::where('area_id', $area->id)
             ->where('status', 'active')
             ->where('is_isolated', false)
             ->whereNotNull('remote_ip')
-            ->whereHas('invoices', function ($q) use ($graceDays) {
-                $q->where('status', 'unpaid')
-                  ->where('due_date', '<', now()->subDays($graceDays));
+            ->whereDoesntHave('payments', function ($q) {
+                $q->where('status', 'approved')
+                  ->where('periode_bulan', now()->month)
+                  ->where('periode_tahun', now()->year);
+            })
+            ->where(function ($q) use ($graceDays) {
+                // Only isolate if billing_start_date is past grace period into the month
+                $q->whereNotNull('billing_start_date')
+                  ->where('billing_start_date', '<', now()->subDays($graceDays));
             })
             ->get();
 

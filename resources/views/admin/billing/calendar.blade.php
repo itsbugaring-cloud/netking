@@ -9,8 +9,8 @@
       <h1 class="ms-page-title">Kalender Penagihan</h1>
     </div>
     <div class="ms-page-actions">
-      <a href="{{ route('admin.invoices.index') }}" class="ms-btn-secondary">
-        <i class='bx bx-list-ul'></i> Daftar Invoice
+      <a href="{{ route('admin.payments.review') }}" class="ms-btn-secondary">
+        <i class='bx bx-list-ul'></i> Daftar Pembayaran
       </a>
     </div>
   </div>

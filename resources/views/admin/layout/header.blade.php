@@ -1,6 +1,6 @@
 @php
-$unpaidInvoices = \App\Models\Invoice::where('status', 'unpaid')->count();
-$notifCount = $unpaidInvoices;
+$pendingPayments = \App\Models\Payment::where('status', 'pending')->count();
+$notifCount = $pendingPayments;
 @endphp
 <header class="navbar navbar-expand-md d-none d-lg-flex d-print-none">
     <div class="container-xl">
@@ -19,13 +19,13 @@ $notifCount = $unpaidInvoices;
                             <h3 class="card-title">Notifikasi</h3>
                         </div>
                         <div class="list-group list-group-flush list-group-hoverable">
-                            @if($unpaidInvoices > 0)
-                            <a href="{{ route('admin.invoices.index', ['status' => 'unpaid']) }}" class="list-group-item list-group-item-action">
+                            @if($pendingPayments > 0)
+                            <a href="{{ route('admin.payments.review') }}" class="list-group-item list-group-item-action">
                                 <div class="row align-items-center">
                                     <div class="col-auto"><span class="status-dot bg-yellow d-block"></span></div>
                                     <div class="col text-truncate">
-                                        <div class="d-block text-reset fw-semibold">{{ $unpaidInvoices }} Tagihan Belum Lunas</div>
-                                        <div class="d-block text-muted text-truncate mt-n1">Menunggu pembayaran</div>
+                                        <div class="d-block text-reset fw-semibold">{{ $pendingPayments }} Pembayaran Menunggu Review</div>
+                                        <div class="d-block text-muted text-truncate mt-n1">Menunggu verifikasi admin</div>
                                     </div>
                                 </div>
                             </a>

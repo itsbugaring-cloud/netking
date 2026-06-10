@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\User;
 use App\Models\Customer;
-use App\Models\Invoice;
+use App\Models\Payment;
 
 class DashboardController extends Controller
 {
@@ -19,7 +19,7 @@ class DashboardController extends Controller
         }
 
         if ($user->role === 'finance') {
-            return redirect()->route('admin.invoices.index');
+            return redirect()->route('admin.payments.review');
         }
 
         return $this->adminDashboard();
@@ -37,18 +37,19 @@ class DashboardController extends Controller
             'pending_customers'      => Customer::where('status', 'provisioning')->count(),
             'provisioning_customers' => Customer::where('status', 'provisioning')->count(),
             'failed_customers'       => Customer::where('status', 'failed')->count(),
-            'total_revenue'          => Invoice::where('status', 'paid')->sum('amount'),
-            'monthly_revenue'        => Invoice::where('status', 'paid')
-                ->whereMonth('paid_at', now()->month)
-                ->whereYear('paid_at', now()->year)
-                ->sum('amount'),
+            'total_revenue'          => Payment::where('status', 'approved')->sum('jumlah'),
+            'monthly_revenue'        => Payment::where('status', 'approved')
+                ->whereMonth('approved_at', now()->month)
+                ->whereYear('approved_at', now()->year)
+                ->sum('jumlah'),
             'mrr'                    => Customer::where('customers.status', 'active')
                 ->join('packages', 'customers.package_id', '=', 'packages.id')
                 ->sum('packages.price'),
-            'unpaid_invoices_count'  => Invoice::where('status', 'unpaid')->count(),
-            'unpaid_invoices_amount' => Invoice::where('status', 'unpaid')->sum('amount'),
-            'overdue_invoices_count' => Invoice::where('status', 'unpaid')
-                ->where('due_date', '<', now())->count(),
+            'pending_payments'       => Payment::where('status', 'pending')->count(),
+            'approved_this_month'    => Payment::where('status', 'approved')
+                ->whereMonth('approved_at', now()->month)
+                ->whereYear('approved_at', now()->year)
+                ->count(),
             'unpaid_commissions'     => 0, // [REMOVED] Commission feature removed
             'paid_commissions'       => 0, // [REMOVED] Commission feature removed
             'open_tickets'           => \App\Models\Ticket::whereIn('status', ['open', 'pending'])->count(),
@@ -70,10 +71,10 @@ class DashboardController extends Controller
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $labels[] = $date->format('M');
-            $revenueData[] = (int) Invoice::where('status', 'paid')
-                ->whereMonth('paid_at', $date->month)
-                ->whereYear('paid_at', $date->year)
-                ->sum('amount');
+            $revenueData[] = (int) Payment::where('status', 'approved')
+                ->whereMonth('approved_at', $date->month)
+                ->whereYear('approved_at', $date->year)
+                ->sum('jumlah');
             $growthData[] = (int) Customer::whereMonth('created_at', $date->month)
                 ->whereYear('created_at', $date->year)
                 ->count();
@@ -89,40 +90,35 @@ class DashboardController extends Controller
         $chartData = ['labels' => $labels, 'revenue' => $revenueData, 'growth' => $cumulative];
 
         // Sparkline 7-day trend data for stat cards
-        $sparkline = ['customers' => [], 'revenue' => [], 'invoices' => [], 'active' => []];
+        $sparkline = ['customers' => [], 'revenue' => [], 'payments' => [], 'active' => []];
         for ($d = 6; $d >= 0; $d--) {
             $day = now()->subDays($d);
             $sparkline['customers'][] = (int) Customer::whereDate('created_at', '<=', $day)->count();
             $sparkline['active'][] = (int) Customer::where('status', 'active')->whereDate('created_at', '<=', $day)->count();
-            $sparkline['invoices'][] = (int) Invoice::where('status', 'unpaid')->whereDate('created_at', '<=', $day)->count();
-            $sparkline['revenue'][] = (int) Invoice::where('status', 'paid')->whereDate('paid_at', $day)->sum('amount');
+            $sparkline['payments'][] = (int) Payment::where('status', 'pending')->whereDate('created_at', '<=', $day)->count();
+            $sparkline['revenue'][] = (int) Payment::where('status', 'approved')->whereDate('approved_at', $day)->sum('jumlah');
         }
 
         return view('admin.dashboard', compact('stats', 'recentCustomers', 'topPartners', 'areaStats', 'chartData', 'sparkline'));
     }
 
     /**
-     * Billing calendar JSON endpoint for FullCalendar
+     * Billing calendar JSON endpoint — now returns payment data
      */
     public function billingCalendar()
     {
-        $invoices = Invoice::with('customer:id,name')
-            ->whereNotNull('due_date')
+        $payments = Payment::with('customer:id,name')
+            ->where('status', 'approved')
+            ->whereNotNull('approved_at')
+            ->orderBy('approved_at', 'desc')
+            ->limit(200)
             ->get();
 
-        $events = $invoices->map(function ($inv) {
-            if ($inv->status === 'paid') {
-                $color = '#10b981'; // green
-            } elseif ($inv->status === 'unpaid' && $inv->due_date->isPast()) {
-                $color = '#ef4444'; // red (overdue)
-            } else {
-                $color = '#f59e0b'; // yellow (pending)
-            }
+        $events = $payments->map(function ($pmt) {
             return [
-                'title' => ($inv->customer->name ?? 'Unknown') . ' - ' . $inv->invoice_number,
-                'start' => $inv->due_date->format('Y-m-d'),
-                'color' => $color,
-                'url'   => route('admin.invoices.show', $inv->id),
+                'title' => ($pmt->customer->name ?? 'Unknown') . ' - Rp ' . number_format($pmt->jumlah, 0, ',', '.'),
+                'start' => $pmt->approved_at->format('Y-m-d'),
+                'color' => '#10b981',
             ];
         });
 
@@ -146,24 +142,24 @@ class DashboardController extends Controller
             'pending_customers'      => (clone $partnerCustomers)->where('status', 'provisioning')->count(),
             'provisioning_customers' => (clone $partnerCustomers)->where('status', 'provisioning')->count(),
             'failed_customers'       => (clone $partnerCustomers)->where('status', 'failed')->count(),
-            'total_revenue'          => Invoice::whereIn('customer_id', $customerIds)
-                ->where('status', 'paid')->sum('amount'),
-            'monthly_revenue'        => Invoice::whereIn('customer_id', $customerIds)
-                ->where('status', 'paid')
-                ->whereMonth('paid_at', now()->month)
-                ->whereYear('paid_at', now()->year)
-                ->sum('amount'),
+            'total_revenue'          => Payment::whereIn('customer_id', $customerIds)
+                ->where('status', 'approved')->sum('jumlah'),
+            'monthly_revenue'        => Payment::whereIn('customer_id', $customerIds)
+                ->where('status', 'approved')
+                ->whereMonth('approved_at', now()->month)
+                ->whereYear('approved_at', now()->year)
+                ->sum('jumlah'),
             'mrr'                    => Customer::where('customers.partner_id', $partner->id)
                 ->where('customers.status', 'active')
                 ->join('packages', 'customers.package_id', '=', 'packages.id')
                 ->sum('packages.price'),
-            'unpaid_invoices_count'  => Invoice::whereIn('customer_id', $customerIds)
-                ->where('status', 'unpaid')->count(),
-            'unpaid_invoices_amount' => Invoice::whereIn('customer_id', $customerIds)
-                ->where('status', 'unpaid')->sum('amount'),
-            'overdue_invoices_count' => Invoice::whereIn('customer_id', $customerIds)
-                ->where('status', 'unpaid')
-                ->where('due_date', '<', now())->count(),
+            'pending_payments'       => Payment::whereIn('customer_id', $customerIds)
+                ->where('status', 'pending')->count(),
+            'approved_this_month'    => Payment::whereIn('customer_id', $customerIds)
+                ->where('status', 'approved')
+                ->whereMonth('approved_at', now()->month)
+                ->whereYear('approved_at', now()->year)
+                ->count(),
             'unpaid_commissions'     => 0, // [REMOVED] Commission feature removed
             'paid_commissions'       => 0, // [REMOVED] Commission feature removed
             'open_tickets'           => \App\Models\Ticket::whereIn('status', ['open', 'pending'])->count(),
@@ -183,11 +179,11 @@ class DashboardController extends Controller
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $labels[] = $date->format('M');
-            $revenueData[] = (int) Invoice::whereIn('customer_id', $customerIds)
-                ->where('status', 'paid')
-                ->whereMonth('paid_at', $date->month)
-                ->whereYear('paid_at', $date->year)
-                ->sum('amount');
+            $revenueData[] = (int) Payment::whereIn('customer_id', $customerIds)
+                ->where('status', 'approved')
+                ->whereMonth('approved_at', $date->month)
+                ->whereYear('approved_at', $date->year)
+                ->sum('jumlah');
             $growthData[] = (int) Customer::where('partner_id', $partner->id)
                 ->whereMonth('created_at', $date->month)
                 ->whereYear('created_at', $date->year)
@@ -204,13 +200,13 @@ class DashboardController extends Controller
         $chartData = ['labels' => $labels, 'revenue' => $revenueData, 'growth' => $cumulative];
 
         // Sparkline 7-day trend data
-        $sparkline = ['customers' => [], 'revenue' => [], 'invoices' => [], 'active' => []];
+        $sparkline = ['customers' => [], 'revenue' => [], 'payments' => [], 'active' => []];
         for ($d = 6; $d >= 0; $d--) {
             $day = now()->subDays($d);
             $sparkline['customers'][] = (int) Customer::where('partner_id', $partner->id)->whereDate('created_at', '<=', $day)->count();
             $sparkline['active'][] = (int) Customer::where('partner_id', $partner->id)->where('status', 'active')->whereDate('created_at', '<=', $day)->count();
-            $sparkline['invoices'][] = (int) Invoice::whereIn('customer_id', $customerIds)->where('status', 'unpaid')->whereDate('created_at', '<=', $day)->count();
-            $sparkline['revenue'][] = (int) Invoice::whereIn('customer_id', $customerIds)->where('status', 'paid')->whereDate('paid_at', $day)->sum('amount');
+            $sparkline['payments'][] = (int) Payment::whereIn('customer_id', $customerIds)->where('status', 'pending')->whereDate('created_at', '<=', $day)->count();
+            $sparkline['revenue'][] = (int) Payment::whereIn('customer_id', $customerIds)->where('status', 'approved')->whereDate('approved_at', $day)->sum('jumlah');
         }
 
         return view('admin.dashboard', compact('stats', 'recentCustomers', 'topPartners', 'areaStats', 'chartData', 'sparkline'));

@@ -45,12 +45,7 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->appendOutputTo(storage_path('logs/router-backup.log'));
 
-        // Suspend otomatis pelanggan yang invoice-nya jatuh tempo + 7 hari (tiap hari pukul 08:00)
-        // DINONAKTIFKAN SEMENTARA - 2026-04-16
-        // $schedule->command('customers:suspend-overdue', ['--days=7'])
-        //          ->dailyAt('08:00')
-        //          ->withoutOverlapping()
-        //          ->appendOutputTo(storage_path('logs/suspend-overdue.log'));
+        // [REMOVED] Auto-suspend command removed — invoice system replaced by payments
 
         // [REMOVED] Commission recap — feature removed
     }

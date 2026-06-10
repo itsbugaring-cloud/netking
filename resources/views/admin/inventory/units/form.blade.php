@@ -110,7 +110,7 @@
             <div class="mb-3">
               <label class="form-label">Penanggung Jawab</label>
               <select name="penanggung_jawab_user_id" class="form-select @error('penanggung_jawab_user_id') is-invalid @enderror">
-                <option value="">-- Pilih Partner --</option>
+                <option value="">-- Pilih PIC --</option>
                 @foreach($partner_list as $partner)
                   <option value="{{ $partner->id }}"
                     {{ old('penanggung_jawab_user_id', $unit->penanggung_jawab_user_id ?? '') == $partner->id ? 'selected' : '' }}>

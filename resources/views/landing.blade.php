@@ -835,7 +835,7 @@
           <div class="feat-icon"><i class='bx bx-receipt'></i></div>
           <div class="feat-t">
             <strong>Pembayaran Sekali Klik</strong>
-            <span>Lihat rincian, unduh invoice, dan bayar online secara instan.</span>
+            <span>Lihat rincian, upload bukti bayar, dan konfirmasi secara instan.</span>
           </div>
         </li>
         <li>

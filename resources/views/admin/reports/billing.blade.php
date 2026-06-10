@@ -59,17 +59,17 @@
         </div>
         <div>
           <label style="font-size:.75rem;font-weight:600;color:var(--txt-3);display:block;margin-bottom:4px;">Status Tagihan</label>
-          <select name="invoice_status" class="form-select form-select-sm" style="min-width:150px;border-radius:8px;">
+          <select name="payment_status" class="form-select form-select-sm" style="min-width:150px;border-radius:8px;">
             <option value="">Semua</option>
-            <option value="unpaid" {{ request('invoice_status')=='unpaid'?'selected':'' }}>Ada Tunggakan</option>
-            <option value="paid" {{ request('invoice_status')=='paid'?'selected':'' }}>Sudah Bayar</option>
+            <option value="pending" {{ request('payment_status')=='pending'?'selected':'' }}>Ada Pending</option>
+            <option value="approved" {{ request('payment_status')=='approved'?'selected':'' }}>Sudah Bayar</option>
           </select>
         </div>
         <div style="display:flex;gap:6px;align-items:flex-end;">
           <button type="submit" class="btn btn-sm btn-primary" style="border-radius:8px;height:31px;">
             <i class='bx bx-filter-alt'></i> Filter
           </button>
-          @if(request()->hasAny(['area_id','status','invoice_status']))
+          @if(request()->hasAny(['area_id','status','payment_status']))
           <a href="{{ route('admin.reports.billing') }}" class="btn btn-sm ms-btn-secondary" style="border-radius:8px;height:31px;">Reset</a>
           @endif
         </div>

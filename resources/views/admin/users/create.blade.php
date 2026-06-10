@@ -51,7 +51,7 @@
               <select id="role-select" name="role" class="form-select @error('role') is-invalid @enderror" required onchange="toggleAreaField()">
                 <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
                 <option value="finance" {{ old('role') === 'finance' ? 'selected' : '' }}>Finance</option>
-                <option value="partner" {{ old('role') === 'partner' ? 'selected' : '' }}>Partner</option>
+                <option value="partner" {{ old('role') === 'partner' ? 'selected' : '' }}>PIC</option>
               </select>
               @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
@@ -66,7 +66,7 @@
                 </option>
                 @endforeach
               </select>
-              <div class="form-text">Wajib diisi hanya untuk akun mitra.</div>
+              <div class="form-text">Wajib diisi hanya untuk akun PIC.</div>
               @error('area_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 

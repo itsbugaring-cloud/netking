@@ -77,7 +77,7 @@
                       <option value="{{ $i }}" {{ ($settings['billing_day'] ?? '1') == $i ? 'selected' : '' }}>{{ $i }}</option>
                       @endfor
                     </select>
-                    <div class="form-text">Tanggal dalam sebulan untuk pembuatan invoice otomatis.</div>
+                    <div class="form-text">Tanggal dalam sebulan untuk batas jatuh tempo pembayaran.</div>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label">Denda Keterlambatan (%)</label>
@@ -91,7 +91,7 @@
                   </div>
                   <div class="col-12">
                     <hr class="my-1">
-                    <div class="form-text mb-2">Akun pembayaran manual untuk aplikasi pelanggan dan halaman invoice.</div>
+                    <div class="form-text mb-2">Akun pembayaran untuk aplikasi pelanggan dan halaman pembayaran.</div>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label">Nama Bank 1</label>
@@ -128,11 +128,11 @@
                   </div>
                   <div class="col-12">
                     <label class="form-label">Catatan QRIS</label>
-                    <textarea name="payment_qris_notes" class="form-control" rows="2">{{ $settings['payment_qris_notes'] ?? 'Scan QRIS resmi NETKING, bayar sesuai nominal invoice, lalu upload bukti pembayaran agar admin dapat memverifikasi pembayaran Anda.' }}</textarea>
+                    <textarea name="payment_qris_notes" class="form-control" rows="2">{{ $settings['payment_qris_notes'] ?? 'Scan QRIS resmi NETKING, bayar sesuai nominal tagihan, lalu upload bukti pembayaran agar admin dapat memverifikasi pembayaran Anda.' }}</textarea>
                   </div>
                   <div class="col-12">
                     <label class="form-label">Catatan Pembayaran Manual</label>
-                    <textarea name="manual_payment_notes" class="form-control" rows="3">{{ $settings['manual_payment_notes'] ?? 'Transfer sesuai nominal invoice, lalu upload bukti pembayaran agar admin bisa memverifikasi pembayaran Anda.' }}</textarea>
+                    <textarea name="manual_payment_notes" class="form-control" rows="3">{{ $settings['manual_payment_notes'] ?? 'Transfer sesuai nominal tagihan, lalu upload bukti pembayaran agar admin bisa memverifikasi pembayaran Anda.' }}</textarea>
                   </div>
                 </div>
                 <div class="mt-4">
@@ -149,7 +149,7 @@
                   <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background:var(--nk-bg-subtle);">
                     <div>
                       <div style="font-weight:600;">Notifikasi Email</div>
-                      <div style="font-size:.78rem;color:#64748b;">Peringatan invoice dan notifikasi sistem</div>
+                      <div style="font-size:.78rem;color:#64748b;">Peringatan pembayaran dan notifikasi sistem</div>
                     </div>
                     <div class="form-check form-switch">
                       <input class="form-check-input" type="checkbox" name="notif_email" value="1" {{ ($settings['notif_email'] ?? '1') == '1' ? 'checked' : '' }}>

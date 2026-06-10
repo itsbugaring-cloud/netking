@@ -416,6 +416,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/billing', [\App\Http\Controllers\Admin\ReportController::class, 'billing'])->name('billing');
             Route::get('/export-revenue', [\App\Http\Controllers\Admin\ReportController::class, 'exportRevenue'])->name('export-revenue');
             Route::get('/export-billing', [\App\Http\Controllers\Admin\ReportController::class, 'exportBilling'])->name('export-billing');
+            Route::get('/export-payments', [\App\Http\Controllers\Admin\ReportController::class, 'exportPayments'])->name('export-payments');
         });
 
         // OLT Devices & ONT Inventory

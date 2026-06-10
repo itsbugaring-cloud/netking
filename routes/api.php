@@ -34,11 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Customer Portal APIs (require role:customer)
     Route::middleware('api.role:customer')->prefix('customer')->group(function () {
-        // Invoices
-        Route::get('/invoices', [\App\Http\Controllers\Api\CustomerInvoiceController::class, 'index']);
-        Route::get('/invoices/{invoice}', [\App\Http\Controllers\Api\CustomerInvoiceController::class, 'show']);
-        Route::post('/invoices/{invoice}/payment-proof', [\App\Http\Controllers\Api\CustomerInvoiceController::class, 'submitPaymentProof']);
-        Route::get('/payment-settings', [\App\Http\Controllers\Api\CustomerInvoiceController::class, 'paymentSettings']);
+        // [REMOVED] Invoice API routes — replaced by Payment system
 
         // Profile
         Route::get('/profile', [\App\Http\Controllers\Api\CustomerProfileController::class, 'index']);

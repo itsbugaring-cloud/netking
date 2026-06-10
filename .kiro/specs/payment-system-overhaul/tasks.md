@@ -62,41 +62,41 @@ Replace the invoice-based payment system with a new `payments` table and flow. R
     - **Property 5: Manual payment creates immediately approved record**
     - **Validates: Requirements 4.2, 4.4**
 
-- [~] 7. Checkpoint - Verify payment flow end-to-end
+- [x] 7. Checkpoint - Verify payment flow end-to-end
   - Ensure all tests pass. Verify: public upload creates pending payment, admin can approve/reject, admin can create manual payment. Ask the user if questions arise.
 
-- [ ] 8. Update Excel export
-  - [~] 8.1 Install maatwebsite/excel: run `composer require maatwebsite/excel`
+- [x] 8. Update Excel export
+  - [x] 8.1 Install maatwebsite/excel: run `composer require maatwebsite/excel`
     - _Requirements: 7.5_
-  - [~] 8.2 Refactor `app/Exports/CustomersExport.php` — update query to load `latestPayment` (latest approved payment with approvedBy), update columns to: No, PIC (partner->name), Area, Nama, No. HP (phone), Layanan (package->name), Bayar Rp (package_price), Status, Tgl Berlangganan (billing_start_date), Tgl Bayar (latestPayment->approved_at), Pembayaran (latestPayment->metode), Rekening (latestPayment->rekening_tujuan), Approved by (latestPayment->approvedBy->name), Keterangan (latestPayment->catatan)
+  - [x] 8.2 Refactor `app/Exports/CustomersExport.php` — update query to load `latestPayment` (latest approved payment with approvedBy), update columns to: No, PIC (partner->name), Area, Nama, No. HP (phone), Layanan (package->name), Bayar Rp (package_price), Status, Tgl Berlangganan (billing_start_date), Tgl Bayar (latestPayment->approved_at), Pembayaran (latestPayment->metode), Rekening (latestPayment->rekening_tujuan), Approved by (latestPayment->approvedBy->name), Keterangan (latestPayment->catatan)
     - _Requirements: 7.1, 7.3, 7.4_
-  - [~] 8.3 Refactor `resources/views/exports/customers.blade.php` — update table header and row columns to match new export format
+  - [x] 8.3 Refactor `resources/views/exports/customers.blade.php` — update table header and row columns to match new export format
     - _Requirements: 7.1_
-  - [~] 8.4 Update `CustomerController@exportExcel` to support area filter parameter
+  - [x] 8.4 Update `CustomerController@exportExcel` to support area filter parameter
     - _Requirements: 7.2_
   - [ ]* 8.5 Write property test for export area filtering
     - **Property 6: Export area filter returns only matching customers**
     - **Validates: Requirements 7.2**
 
-- [ ] 9. Rename Partner/Mitra to PIC across admin views
-  - [~] 9.1 Update `resources/views/layouts/sidebar.blade.php` — replace invoice menu items with new payment routes (Review Pembayaran with pending count badge), remove "Tagihan" link
+- [x] 9. Rename Partner/Mitra to PIC across admin views
+  - [x] 9.1 Update `resources/views/layouts/sidebar.blade.php` — replace invoice menu items with new payment routes (Review Pembayaran with pending count badge), remove "Tagihan" link
     - _Requirements: 6.2_
-  - [~] 9.2 Update all blade files containing "Partner" or "Mitra" labels to use "PIC": `exports/customers.blade.php`, `admin/reports/revenue.blade.php`, `admin/customers/` views, `admin/users/create.blade.php`, `admin/users/edit.blade.php`, `admin/users/index.blade.php`, `admin/inventory/` forms
+  - [x] 9.2 Update all blade files containing "Partner" or "Mitra" labels to use "PIC": `exports/customers.blade.php`, `admin/reports/revenue.blade.php`, `admin/customers/` views, `admin/users/create.blade.php`, `admin/users/edit.blade.php`, `admin/users/index.blade.php`, `admin/inventory/` forms
     - _Requirements: 6.1, 6.2_
-  - [~] 9.3 Update `routes/web.php` — remove invoice-related API endpoint (`api/dashboard-live` unpaid_invoices/overdue_invoices), update sidebar badge to use Payment model pending count
+  - [x] 9.3 Update `routes/web.php` — remove invoice-related API endpoint (`api/dashboard-live` unpaid_invoices/overdue_invoices), update sidebar badge to use Payment model pending count
     - _Requirements: 6.2_
 
 - [ ] 10. Clean up remaining invoice references
-  - [~] 10.1 Remove `app/Services/BillingCalculator.php` if it only serves invoice generation (or refactor if used elsewhere)
+  - [-] 10.1 Remove `app/Services/BillingCalculator.php` if it only serves invoice generation (or refactor if used elsewhere)
     - _Requirements: 1.3_
-  - [~] 10.2 Remove or update `app/Console/Commands/SuspendOverdueCustomers.php` since it references invoices (already disabled in scheduler)
+  - [x] 10.2 Remove or update `app/Console/Commands/SuspendOverdueCustomers.php` since it references invoices (already disabled in scheduler)
     - _Requirements: 1.3_
   - [~] 10.3 Search and remove any remaining references to `Invoice` model, `invoices` table, or `invoice_number` across controllers, views, and other files
     - _Requirements: 1.3_
-  - [~] 10.4 Update DashboardController to remove invoice stats and add payment stats (pending count, approved this month)
+  - [x] 10.4 Update DashboardController to remove invoice stats and add payment stats (pending count, approved this month)
     - _Requirements: 1.3_
 
-- [~] 11. Final checkpoint - Full verification
+- [x] 11. Final checkpoint - Full verification
   - Ensure all tests pass. Verify no broken references to invoices remain. Verify the complete flow: customer uploads on /bayar → pending payment created → admin reviews → approve/reject works → manual payment works → export works. Ask the user if questions arise.
 
 ## Notes

@@ -6,16 +6,8 @@ use Illuminate\Support\Facades\Schedule;
 
 // Scheduled commands
 
-// Schedule monthly invoice generation on the 1st of each month at 00:00
-Schedule::command('invoices:generate')
-    ->monthlyOn(1, '00:00')
-    ->timezone('Asia/Jakarta');
-
-// Auto-suspend customers with overdue invoices (daily at 02:00 WIB)
-// DINONAKTIFKAN dulu sampai flow pembayaran publik benar-benar siap.
-// Schedule::command('customers:suspend-overdue')
-//     ->dailyAt('02:00')
-//     ->timezone('Asia/Jakarta');
+// [REMOVED] Invoice system replaced by payments
+// [REMOVED] Auto-suspend command removed — invoice system replaced by payments
 
 // Daily database backup at 03:00 WIB
 Schedule::command('backup:database')

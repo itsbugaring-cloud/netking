@@ -72,18 +72,12 @@
       'label' => 'Keuangan',
       'items' => array_values(array_filter([
         [
-          'route' => route('admin.invoices.index'),
-          'active' => request()->routeIs('admin.invoices*'),
-          'icon' => 'bx bx-receipt',
-          'title' => 'Tagihan',
+          'route' => route('admin.payments.review'),
+          'active' => request()->routeIs('admin.payments*'),
+          'icon' => 'bx bx-check-shield',
+          'title' => 'Review Pembayaran',
+          'badge' => \App\Models\Payment::pending()->count() ?: null,
         ],
-        $isAdmin ? [
-          'route' => route('admin.invoices.paymentQueue'),
-          'active' => request()->routeIs('admin.invoices.paymentQueue'),
-          'icon' => 'bx bx-image-check',
-          'title' => 'Review Bukti Bayar',
-          'badge' => \App\Models\Invoice::where('payment_review_status','submitted')->where('status','unpaid')->count() ?: null,
-        ] : null,
         $isAdmin ? [
           'route' => route('admin.reports.revenue'),
           'active' => request()->routeIs('admin.reports.revenue'),
@@ -219,7 +213,7 @@
 <div id="cmd-palette" class="cmd-palette" style="display:none;">
   <div class="cmd-header">
     <i class='bx bx-search cmd-header-icon'></i>
-    <input type="text" id="global-search" class="cmd-input" placeholder="Cari pelanggan, invoice, area, OLT..." autocomplete="off" spellcheck="false">
+    <input type="text" id="global-search" class="cmd-input" placeholder="Cari pelanggan, pembayaran, area, OLT..." autocomplete="off" spellcheck="false">
     <kbd class="cmd-kbd">ESC</kbd>
   </div>
   <div class="cmd-body" id="cmd-body">

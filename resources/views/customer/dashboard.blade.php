@@ -81,15 +81,13 @@
                         <h3 class="card-title"><i class="ti ti-cash me-2"></i>Tagihan</h3>
                     </div>
                     <div class="card-body">
-                        @if($stats['unpaid_count'] > 0)
+                        @if($stats['pending_count'] > 0)
                         <div class="alert alert-warning">
                             <div class="d-flex">
                                 <div><i class="ti ti-alert-triangle me-2"></i></div>
                                 <div>
-                                    <h4 class="alert-title">Pembayaran Diperlukan</h4>
-                                    <div>Anda memiliki {{ $stats['unpaid_count'] }} tagihan belum lunas dengan total
-                                        <strong>Rp {{ number_format($stats['unpaid_amount'], 0, ',', '.') }}</strong>
-                                    </div>
+                                    <h4 class="alert-title">Pembayaran Menunggu Verifikasi</h4>
+                                    <div>Anda memiliki {{ $stats['pending_count'] }} pembayaran yang sedang diproses admin.</div>
                                 </div>
                             </div>
                         </div>
@@ -97,28 +95,25 @@
                         <div class="alert alert-success">
                             <div class="d-flex">
                                 <div><i class="ti ti-circle-check me-2"></i></div>
-                                <div>Semua tagihan telah lunas! Anda tidak memiliki tunggakan.</div>
+                                <div>Semua pembayaran telah diverifikasi! Tidak ada pembayaran pending.</div>
                             </div>
                         </div>
                         @endif
 
-                        @if($stats['latest_invoice'])
+                        @if($stats['latest_payment'])
                         <div class="mt-3">
-                            <div class="subheader mb-2">Tagihan Terbaru</div>
+                            <div class="subheader mb-2">Pembayaran Terakhir</div>
                             <div class="card card-sm">
                                 <div class="card-body">
                                     <div class="row align-items-center">
                                         <div class="col-auto">
-                                            <span class="avatar bg-{{ $stats['latest_invoice']->status === 'paid' ? 'green' : 'yellow' }}-lt">
-                                                <i class="ti ti-file-invoice"></i>
+                                            <span class="avatar bg-green-lt">
+                                                <i class="ti ti-cash"></i>
                                             </span>
                                         </div>
                                         <div class="col">
-                                            <div class="fw-bold">#{{ $stats['latest_invoice']->invoice_number }}</div>
-                                            <div class="text-muted">Rp {{ number_format($stats['latest_invoice']->amount, 0, ',', '.') }} · Jatuh Tempo {{ $stats['latest_invoice']->due_date->format('d M Y') }}</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <a href="{{ route('customer.invoices.show', $stats['latest_invoice']) }}" class="btn btn-primary btn-sm">Lihat</a>
+                                            <div class="fw-bold">{{ \Carbon\Carbon::createFromDate($stats['latest_payment']->periode_tahun, $stats['latest_payment']->periode_bulan, 1)->translatedFormat('F Y') }}</div>
+                                            <div class="text-muted">Rp {{ number_format($stats['latest_payment']->jumlah, 0, ',', '.') }} · Disetujui {{ $stats['latest_payment']->approved_at->format('d M Y') }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -138,9 +133,9 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-3 col-6">
-                                <a href="{{ route('customer.invoices.index') }}" class="btn btn-outline-primary w-100 py-3">
-                                    <i class="ti ti-file-invoice icon mb-1"></i>
-                                    <div>Lihat Tagihan</div>
+                                <a href="{{ url('/bayar/' . $customer->customer_code) }}" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="ti ti-cash icon mb-1"></i>
+                                    <div>Bayar</div>
                                 </a>
                             </div>
                             <div class="col-md-3 col-6">

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -37,19 +37,23 @@ class SearchController extends Controller
             ];
         }
 
-        // Search invoices
-        $invoices = Invoice::where('invoice_number', 'like', "%{$q}%")
+        // Search payments by customer name
+        $payments = Payment::whereHas('customer', function ($query) use ($q) {
+                $query->where('name', 'like', "%{$q}%");
+            })
+            ->with('customer:id,name')
+            ->where('status', 'pending')
             ->limit(5)
-            ->get(['id', 'invoice_number', 'amount', 'status']);
+            ->get();
 
-        foreach ($invoices as $inv) {
+        foreach ($payments as $pmt) {
             $results[] = [
-                'type' => 'invoice',
-                'icon' => 'bx-receipt',
-                'title' => $inv->invoice_number,
-                'subtitle' => 'Rp ' . number_format($inv->amount, 0, ',', '.'),
-                'url' => route('admin.invoices.show', $inv->id),
-                'badge' => $inv->status,
+                'type' => 'payment',
+                'icon' => 'bx-money',
+                'title' => ($pmt->customer->name ?? 'Unknown') . ' - Rp ' . number_format($pmt->jumlah, 0, ',', '.'),
+                'subtitle' => ucfirst($pmt->status) . ' · ' . sprintf('%02d/%04d', $pmt->periode_bulan, $pmt->periode_tahun),
+                'url' => route('admin.payments.review'),
+                'badge' => $pmt->status,
             ];
         }
 

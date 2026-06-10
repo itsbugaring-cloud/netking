@@ -124,7 +124,7 @@
         <div>
             <div style="font-weight:700;color:#9a3412;font-size:.875rem;">PPPoE Belum Diaktifkan di Router</div>
             <div style="font-size:.8rem;color:#c2410c;margin-top:2px;">
-                Invoice sudah lunas tapi PPPoE <strong>{{ $customer->pppoe_user }}</strong> gagal diaktifkan otomatis karena MikroTik tidak reachable saat konfirmasi pembayaran.
+                Pembayaran sudah dikonfirmasi tapi PPPoE <strong>{{ $customer->pppoe_user }}</strong> gagal diaktifkan otomatis karena MikroTik tidak reachable saat konfirmasi pembayaran.
                 @if($customer->error_message)
                     <br>Alasan: {{ $customer->error_message }}
                 @endif
@@ -309,20 +309,12 @@
                 $billingStartLabel = optional($customer->billing_start_date)->format('d M Y')
                   ?? optional($customer->created_at)->format('d M Y')
                   ?? '-';
-                $prorataSummary = (($prorationPreview['skip'] ?? false) === true)
-                  ? 'Masuk periode berikutnya'
-                  : (
-                      (($prorationPreview['is_prorated'] ?? false) === true)
-                        ? (($prorationPreview['billed_days'] ?? 0) . ' hari x Rp ' . number_format((float) ($prorationPreview['daily_rate'] ?? 0), 0, ',', '.') . ' = Rp ' . number_format((float) ($prorationPreview['amount'] ?? 0), 0, ',', '.'))
-                        : ('Full cycle: Rp ' . number_format((float) ($prorationPreview['amount'] ?? 0), 0, ',', '.'))
-                    );
                 $fields = [
                 ['ID Pelanggan', "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>" . ($customer->customer_code ?? '-') . "</code> <button class='btn btn-sm btn-clipboard p-0 ms-1' data-clipboard-text='" . ($customer->customer_code ?? '') . "' title='Salin' style='border:none;background:none;color:#94a3b8;cursor:pointer;'><i class='bx bx-copy'></i></button>"],
                 ['PPPoE User', "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>{$customer->pppoe_user}</code> <button class='btn btn-sm btn-clipboard p-0 ms-1' data-clipboard-text='{$customer->pppoe_user}' title='Salin' style='border:none;background:none;color:#94a3b8;cursor:pointer;'><i class='bx bx-copy'></i></button>"],
                 ['Paket', $customer->package->name ?? 'N/A'],
                 ['Harga Bulanan', 'Rp ' . number_format($customer->package_price ?? 0, 0, ',', '.')],
                 ['Mulai Tagihan', $billingStartLabel],
-                ['Preview Prorata', $prorataSummary],
                 ['Area', $customer->area->name ?? 'N/A'],
                 ['ODP', $customer->odp ? $customer->odp->name . ' (Port ' . ($customer->odp_port ?? '?') . ')' : 'N/A'],
                 ['ONT SN', $customer->ont_sn ? "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>{$customer->ont_sn}</code>" : 'N/A'],
@@ -361,8 +353,8 @@
         {{-- Tab Navigation --}}
         <ul class="nav nav-tabs mb-0" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-invoices" type="button" role="tab">
-                    <i class='bx bx-file me-1'></i>Tagihan
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-payments" type="button" role="tab">
+                    <i class='bx bx-money me-1'></i>Pembayaran
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -387,51 +379,43 @@
 
         {{-- Tab Content --}}
         <div class="tab-content">
-            {{-- Invoices Tab --}}
-            <div class="tab-pane fade show active" id="tab-invoices" role="tabpanel">
+            {{-- Payments Tab --}}
+            <div class="tab-pane fade show active" id="tab-payments" role="tabpanel">
                 <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;">
                     <div class="table-responsive">
-                        <table class="table table-flat mb-0" id="customer-invoices-table">
+                        <table class="table table-flat mb-0" id="customer-payments-table">
                             <thead>
                                 <tr>
-                                    <th>No. Tagihan</th>
-                                    <th>Jumlah</th>
                                     <th>Periode</th>
-                                    <th>Jatuh Tempo</th>
+                                    <th>Jumlah</th>
+                                    <th>Metode</th>
                                     <th>Status</th>
-                                    <th>Aksi</th>
+                                    <th>Tanggal</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($customer->invoices()->latest()->take(10)->get() as $invoice)
+                                @forelse($customer->payments()->latest()->take(10)->get() as $payment)
                                 <tr>
-                                    <td>
-                                        <a href="{{ route('admin.invoices.show', $invoice) }}" style="color:#2563eb; font-size:0.8125rem; font-family:monospace;">
-                                            {{ $invoice->invoice_number }}
-                                        </a>
+                                    <td style="font-size:0.8125rem; color:#64748b;">
+                                        {{ \Carbon\Carbon::createFromDate($payment->periode_tahun, $payment->periode_bulan, 1)->translatedFormat('M Y') }}
                                     </td>
-                                    <td style="font-weight:600; color:#1e293b;">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
-                                    <td style="font-size:0.8125rem; color:#64748b;">{{ \Carbon\Carbon::parse($invoice->billing_month)->format('M Y') }}</td>
-                                    <td style="font-size:0.8125rem; color:#64748b;">{{ $invoice->due_date?->format('d M Y') }}</td>
+                                    <td style="font-weight:600; color:#1e293b;">Rp {{ number_format($payment->jumlah, 0, ',', '.') }}</td>
+                                    <td style="font-size:0.8125rem; color:#64748b;">{{ ucfirst($payment->metode) }}</td>
                                     <td>
-                                        @if($invoice->status === 'paid')
-                                        <span class="badge-status badge-paid">Lunas</span>
-                                        @elseif($invoice->status === 'unpaid' && $invoice->due_date?->isPast())
-                                        <span class="badge-status badge-overdue">Jatuh Tempo</span>
+                                        @if($payment->status === 'approved')
+                                        <span class="badge-status badge-paid">Disetujui</span>
+                                        @elseif($payment->status === 'rejected')
+                                        <span class="badge-status badge-overdue">Ditolak</span>
                                         @else
-                                        <span class="badge-status badge-unpaid">Belum Lunas</span>
+                                        <span class="badge-status badge-unpaid">Pending</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <a href="{{ route('admin.invoices.show', $invoice) }}" class="btn btn-sm" style="background:rgba(3,195,236,0.12); color:#03c3ec; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:6px; padding:0;">
-                                            <i class='bx bx-show' style="font-size:0.875rem;"></i>
-                                        </a>
-                                    </td>
+                                    <td style="font-size:0.8125rem; color:#64748b;">{{ $payment->created_at->format('d M Y') }}</td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-4" style="color:#64748b; font-size:0.875rem;">
-                                        Belum ada tagihan
+                                    <td colspan="5" class="text-center py-4" style="color:#64748b; font-size:0.875rem;">
+                                        Belum ada pembayaran
                                     </td>
                                 </tr>
                                 @endforelse
@@ -538,7 +522,7 @@
                                 ->limit(30)
                                 ->get();
 
-                            $invoiceLogs = $customer->invoices()->whereNotNull('paid_at')->orderBy('paid_at', 'desc')->take(10)->get();
+                            $paymentLogs = $customer->payments()->where('status', 'approved')->orderBy('approved_at', 'desc')->take(10)->get();
                         @endphp
                         <div style="max-height:400px;overflow-y:auto;">
                             @forelse($logs as $log)
@@ -583,20 +567,20 @@
                             @empty
                             @endforelse
 
-                            {{-- Invoice Payment History --}}
-                            @foreach($invoiceLogs as $inv)
+                            {{-- Payment History --}}
+                            @foreach($paymentLogs as $pmt)
                             <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.625rem 1.25rem;border-bottom:1px solid var(--border);">
                                 <div style="width:28px;height:28px;border-radius:6px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
                                     <i class='bx bx-money' style="font-size:.85rem;color:var(--green);"></i>
                                 </div>
                                 <div style="flex:1;">
-                                    <div style="font-size:.8rem;font-weight:500;">Tagihan {{ $inv->invoice_number }} lunas — Rp {{ number_format($inv->amount, 0, ',', '.') }}</div>
-                                    <div style="font-size:.7rem;color:var(--text-muted);">{{ $inv->paid_at->diffForHumans() }} · {{ \Carbon\Carbon::parse($inv->billing_month)->format('M Y') }}</div>
+                                    <div style="font-size:.8rem;font-weight:500;">Pembayaran disetujui — Rp {{ number_format($pmt->jumlah, 0, ',', '.') }}</div>
+                                    <div style="font-size:.7rem;color:var(--text-muted);">{{ $pmt->approved_at->diffForHumans() }} · {{ \Carbon\Carbon::createFromDate($pmt->periode_tahun, $pmt->periode_bulan, 1)->translatedFormat('M Y') }}</div>
                                 </div>
                             </div>
                             @endforeach
 
-                            @if($logs->isEmpty() && $invoiceLogs->isEmpty())
+                            @if($logs->isEmpty() && $paymentLogs->isEmpty())
                             <div class="text-center py-4" style="color:var(--text-muted);font-size:.875rem;">
                                 <i class='bx bx-history' style="font-size:2rem;opacity:.3;display:block;margin-bottom:6px;"></i>
                                 Belum ada riwayat aktivitas

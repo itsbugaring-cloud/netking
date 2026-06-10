@@ -99,7 +99,7 @@
                 <div class="empty-state">
                   <div class="empty-state-icon"><i class='bx bx-group'></i></div>
                   <div class="empty-state-title">Tidak ada pengguna ditemukan</div>
-                  <div class="empty-state-desc">Akun akses admin dan mitra akan terdaftar di sini.</div>
+                  <div class="empty-state-desc">Akun akses admin dan PIC akan terdaftar di sini.</div>
                 </div>
               </td>
             </tr>

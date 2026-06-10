@@ -52,7 +52,7 @@
               <select id="role-select" name="role" class="form-select @error('role') is-invalid @enderror" required onchange="toggleAreaField()">
                 <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Admin</option>
                 <option value="finance" {{ old('role', $user->role) === 'finance' ? 'selected' : '' }}>Finance</option>
-                <option value="partner" {{ old('role', $user->role) === 'partner' ? 'selected' : '' }}>Partner</option>
+                <option value="partner" {{ old('role', $user->role) === 'partner' ? 'selected' : '' }}>PIC</option>
               </select>
               @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
@@ -67,7 +67,7 @@
                 </option>
                 @endforeach
               </select>
-              <div class="form-text">Wajib diisi hanya untuk akun mitra.</div>
+              <div class="form-text">Wajib diisi hanya untuk akun PIC.</div>
               @error('area_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
@@ -101,7 +101,7 @@
         <form action="{{ route('admin.users.reset-password', $user) }}" method="POST">
           @csrf
           <div class="ms-panel-body">
-            <p class="text-muted small mb-3">Gunakan ini jika admin, finance, atau partner lupa password login. Setelah reset, semua sesi lama akan dicabut dan pengguna harus login ulang.</p>
+            <p class="text-muted small mb-3">Gunakan ini jika admin, finance, atau PIC lupa password login. Setelah reset, semua sesi lama akan dicabut dan pengguna harus login ulang.</p>
             <div class="mb-3">
               <label class="form-label">Password Baru <span class="text-danger">*</span></label>
               <input type="password" name="new_password" class="form-control @error('new_password') is-invalid @enderror" required minlength="8" placeholder="Minimal 8 karakter">

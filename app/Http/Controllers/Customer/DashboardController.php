@@ -16,20 +16,16 @@ class DashboardController extends Controller
         $customer = auth('customer')->user();
         $customer->load('package');
 
-        // Get latest invoice
-        $latestInvoice = $customer->invoices()
-            ->latest()
+        // Get latest approved payment
+        $latestPayment = $customer->payments()
+            ->where('status', 'approved')
+            ->latest('approved_at')
             ->first();
 
-        // Count unpaid invoices
-        $unpaidCount = $customer->invoices()
-            ->where('status', 'unpaid')
+        // Count pending payments
+        $pendingCount = $customer->payments()
+            ->where('status', 'pending')
             ->count();
-
-        // Get total unpaid amount
-        $unpaidAmount = $customer->invoices()
-            ->where('status', 'unpaid')
-            ->sum('amount');
 
         // Check MikroTik connection status (optional - may fail if MikroTik not configured)
         $isOnline = false;
@@ -62,9 +58,8 @@ class DashboardController extends Controller
             'ip_address' => $customer->remote_ip,
             'is_online' => $isOnline,
             'uptime' => $uptime,
-            'latest_invoice' => $latestInvoice,
-            'unpaid_count' => $unpaidCount,
-            'unpaid_amount' => $unpaidAmount,
+            'latest_payment' => $latestPayment,
+            'pending_count' => $pendingCount,
         ];
 
         return view('customer.dashboard', compact('customer', 'stats'));
