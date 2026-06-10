@@ -299,29 +299,8 @@
                 <input type="hidden" name="customer_code" value="{{ $customer->customer_code }}">
 
                 <div class="mb-3">
-                  <label class="form-label fw-semibold">Rekening Tujuan</label>
-                  <div class="payment-method-grid">
-                    @foreach($paymentSettings['accounts'] as $account)
-                    <label class="payment-method-option">
-                      <input type="radio" name="rekening_tujuan" value="{{ $account['bank_name'] }}" {{ old('rekening_tujuan') === $account['bank_name'] ? 'checked' : '' }} required>
-                      <div class="payment-method-card">
-                        <span class="payment-method-name">{{ $account['bank_name'] }}</span>
-                        <span class="payment-method-detail">{{ $account['account_number'] }}</span>
-                        <span class="payment-method-holder">a.n. {{ $account['account_holder'] }}</span>
-                      </div>
-                    </label>
-                    @endforeach
-                    @if(!empty($paymentSettings['qris']))
-                    <label class="payment-method-option">
-                      <input type="radio" name="rekening_tujuan" value="QRIS" {{ old('rekening_tujuan') === 'QRIS' ? 'checked' : '' }} required>
-                      <div class="payment-method-card">
-                        <span class="payment-method-name">QRIS</span>
-                        <span class="payment-method-detail">Scan QR Code</span>
-                        <span class="payment-method-holder">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</span>
-                      </div>
-                    </label>
-                    @endif
-                  </div>
+                  <input type="hidden" name="rekening_tujuan" id="selectedRekening" value="{{ old('rekening_tujuan', '') }}" required>
+                  <div id="rekening-error" class="text-danger small" style="display:none;">Pilih rekening tujuan di panel sebelah kanan</div>
                 </div>
 
                 <div class="mb-3">
@@ -381,9 +360,10 @@
                     @endphp
                     <div class="accordion-item">
                       <h2 class="accordion-header">
-                        <button class="accordion-button collapsed py-3 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#bank-{{ $idx }}">
+                        <button class="accordion-button collapsed py-3 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#bank-{{ $idx }}" onclick="selectRekening('{{ $account['bank_name'] }}')">
                           <div class="d-flex align-items-center gap-2" style="min-height: 32px;">
                             <img src="{{ asset('img/banks/' . $bankSlug . '.' . $logoExt) }}" alt="{{ $account['bank_name'] }}" style="height: 28px; width: auto; object-fit: contain;" onerror="this.outerHTML='<span class=fw-bold>{{ $account['bank_name'] ?? '' }}</span>'">
+                            <span class="rekening-check ms-auto" id="check-{{ $account['bank_name'] }}" style="display:none;color:#16a34a;font-size:1.2rem;"><i class="ti ti-circle-check-filled"></i></span>
                           </div>
                         </button>
                       </h2>
@@ -404,9 +384,10 @@
                 @if(!empty($paymentSettings['qris']))
                   <div class="accordion-item">
                     <h2 class="accordion-header">
-                      <button class="accordion-button collapsed py-3 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#qris-panel">
+                      <button class="accordion-button collapsed py-3 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#qris-panel" onclick="selectRekening('QRIS')">
                         <div class="d-flex align-items-center gap-2" style="min-height: 32px;">
                           <img src="{{ asset('img/banks/qris.png') }}" alt="QRIS" style="height: 28px; width: auto; object-fit: contain;" onerror="this.outerHTML='<span class=fw-bold>QRIS</span>'">
+                          <span class="rekening-check ms-auto" id="check-QRIS" style="display:none;color:#16a34a;font-size:1.2rem;"><i class="ti ti-circle-check-filled"></i></span>
                         </div>
                       </button>
                     </h2>
@@ -466,6 +447,32 @@
   <!-- Tabler Core -->
   <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
   <script>
+    // Select rekening from sidebar
+    function selectRekening(bankName) {
+      document.getElementById('selectedRekening').value = bankName;
+      document.querySelectorAll('.rekening-check').forEach(el => el.style.display = 'none');
+      var check = document.getElementById('check-' + bankName);
+      if (check) check.style.display = 'inline';
+      var err = document.getElementById('rekening-error');
+      if (err) err.style.display = 'none';
+    }
+
+    // Validate rekening selected before upload submit
+    document.addEventListener('DOMContentLoaded', function() {
+      var uploadForm = document.querySelector('form[action*="payment"]');
+      if (uploadForm) {
+        uploadForm.addEventListener('submit', function(e) {
+          var rek = document.getElementById('selectedRekening');
+          if (rek && !rek.value) {
+            e.preventDefault();
+            var err = document.getElementById('rekening-error');
+            if (err) err.style.display = 'block';
+            document.querySelector('.bento-side').scrollIntoView({behavior: 'smooth'});
+          }
+        });
+      }
+    });
+
     // Copy to clipboard with toast
     function copyToClipboard(text) {
       navigator.clipboard.writeText(text).then(() => {
