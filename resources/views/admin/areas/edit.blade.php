@@ -55,12 +55,17 @@
           </div>
           <div class="ms-panel-body">
             <div class="row g-3">
-              <div class="col-md-6">
+              <div class="col-md-5">
                 <label class="form-label">IP Address Router <span class="text-danger">*</span></label>
                 <input type="text" name="router_ip" class="form-control @error('router_ip') is-invalid @enderror" value="{{ old('router_ip', $area->router_ip) }}" required>
                 @error('router_ip')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
-              <div class="col-md-3">
+              <div class="col-md-2">
+                <label class="form-label">VLAN ID</label>
+                <input type="text" name="vlan_id" class="form-control @error('vlan_id') is-invalid @enderror" value="{{ old('vlan_id', $area->vlan_id) }}" placeholder="cth. 100">
+                @error('vlan_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              </div>
+              <div class="col-md-2">
                 <label class="form-label">Username Router <span class="text-danger">*</span></label>
                 <input type="text" name="router_user" class="form-control @error('router_user') is-invalid @enderror" value="{{ old('router_user', $area->router_user) }}" required>
                 @error('router_user')<div class="invalid-feedback">{{ $message }}</div>@enderror

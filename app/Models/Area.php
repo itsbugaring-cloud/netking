@@ -14,6 +14,7 @@ class Area extends Model
     protected $fillable = [
         'name',
         'router_ip',
+        'vlan_id',
         'router_user',
         'router_pass',
         'router_identity',

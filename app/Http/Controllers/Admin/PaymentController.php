@@ -121,7 +121,59 @@ class PaymentController extends Controller
             'created_by_user_id' => auth()->id(),
         ]);
 
+        // If came from quick payment page, redirect back there
+        $referer = $request->headers->get('referer', '');
+        if (str_contains($referer, 'payments/quick')) {
+            return redirect()->route('admin.payments.quick')
+                ->with('success', 'Pembayaran manual berhasil dicatat untuk ' . $customer->name . '.');
+        }
+
         return redirect()->route('admin.customers.show', $customer)
             ->with('success', 'Pembayaran manual berhasil dicatat.');
+    }
+
+    /**
+     * Bulk store payments for multiple customers at once.
+     */
+    public function bulkStore(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_ids' => 'required|array|min:1',
+            'customer_ids.*' => 'required|integer|exists:customers,id',
+            'periode_bulan' => 'required|integer|min:1|max:12',
+            'periode_tahun' => 'required|integer|min:2020|max:2030',
+            'metode' => 'required|in:transfer,cash',
+            'rekening_tujuan' => 'required|string|max:50',
+            'catatan' => 'nullable|string|max:1000',
+        ]);
+
+        $count = 0;
+        foreach ($validated['customer_ids'] as $customerId) {
+            $customer = Customer::with('package')->find($customerId);
+            if (!$customer) {
+                continue;
+            }
+
+            Payment::create([
+                'customer_id' => $customer->id,
+                'periode_bulan' => $validated['periode_bulan'],
+                'periode_tahun' => $validated['periode_tahun'],
+                'jumlah' => $customer->package->price ?? 0,
+                'metode' => $validated['metode'],
+                'rekening_tujuan' => $validated['rekening_tujuan'],
+                'status' => 'approved',
+                'approved_by_user_id' => auth()->id(),
+                'approved_at' => now(),
+                'catatan' => $validated['catatan'] ?? null,
+                'created_by_user_id' => auth()->id(),
+            ]);
+
+            $count++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'count' => $count,
+        ]);
     }
 }
