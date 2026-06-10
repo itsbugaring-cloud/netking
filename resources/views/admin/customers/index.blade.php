@@ -146,8 +146,8 @@
       <div class="ms-panel-body d-flex align-items-center justify-content-between gap-3 py-3">
         <span class="ms-chip" id="bulk-count">0 dipilih</span>
         <div class="d-flex gap-2">
-          <button type="button" class="ms-btn-secondary" onclick="bulkPaymentModal()">
-            <i class='bx bx-money'></i> 💰 Tandai Bayar Terpilih
+          <button type="button" class="ms-btn" onclick="showBulkPaymentModal()" style="background:#16a34a;border-color:#16a34a;">
+            <i class='bx bx-money'></i> Tandai Bayar Terpilih
           </button>
           <button type="button" class="ms-btn-ghost" onclick="bulkDelete()">
             <i class='bx bx-trash'></i> Hapus Terpilih
@@ -388,69 +388,69 @@
 </div>
 @endif
 
-{{-- Bulk Payment Modal --}}
-@unless($isFinance)
+<!-- Modal Bulk Payment -->
 <div class="modal fade" id="bulkPaymentModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="border-radius:18px;border:1px solid var(--border);overflow:hidden;">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:12px;border:1px solid var(--border);background:var(--surface);">
       <div class="modal-header" style="border-bottom:1px solid var(--border);padding:1rem 1.25rem;">
-        <div>
-          <div style="font-size:.75rem;font-weight:700;color:var(--txt-3);text-transform:uppercase;letter-spacing:.08em;">Bulk Payment</div>
-          <h5 class="modal-title mb-0" style="font-weight:800;">💰 Tandai Bayar Terpilih</h5>
-        </div>
+        <h5 class="modal-title" style="font-size:.95rem;font-weight:600;">💰 Tandai Bayar Terpilih</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body" style="padding:1.25rem;">
-        <div class="alert alert-info py-2" style="border-radius:12px;font-size:.8rem;">
-          <strong id="bulkPaymentCount">0</strong> pelanggan akan ditandai sudah bayar.
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.82rem;font-weight:500;">Periode Bulan</label>
+          <select id="bp-bulan" class="form-select form-select-sm">
+            <option value="1">Januari</option>
+            <option value="2">Februari</option>
+            <option value="3">Maret</option>
+            <option value="4">April</option>
+            <option value="5">Mei</option>
+            <option value="6">Juni</option>
+            <option value="7">Juli</option>
+            <option value="8">Agustus</option>
+            <option value="9">September</option>
+            <option value="10">Oktober</option>
+            <option value="11">November</option>
+            <option value="12">Desember</option>
+          </select>
         </div>
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label" style="font-weight:600;">Periode Bulan <span class="text-danger">*</span></label>
-            <select id="bp-bulan" class="form-select">
-              @for($m = 1; $m <= 12; $m++)
-              <option value="{{ $m }}" {{ $m == now()->month ? 'selected' : '' }}>{{ $m }} - {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
-              @endfor
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label" style="font-weight:600;">Periode Tahun <span class="text-danger">*</span></label>
-            <input type="number" id="bp-tahun" class="form-control" value="{{ now()->year }}" min="2020" max="2030">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label" style="font-weight:600;">Metode <span class="text-danger">*</span></label>
-            <select id="bp-metode" class="form-select">
-              <option value="transfer">Transfer</option>
-              <option value="cash">Cash</option>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label" style="font-weight:600;">Rekening Tujuan <span class="text-danger">*</span></label>
-            <select id="bp-rekening" class="form-select">
-              <option value="BRI - 159601000592564">BRI - 159601000592564</option>
-              <option value="BNI - 0320906963">BNI - 0320906963</option>
-              <option value="Mandiri - 1300029358960">Mandiri - 1300029358960</option>
-              <option value="BCA - 6395904187">BCA - 6395904187</option>
-              <option value="QRIS - NETKING">QRIS - NETKING</option>
-              <option value="Cash">Cash</option>
-            </select>
-          </div>
-          <div class="col-12">
-            <label class="form-label" style="font-weight:600;">Catatan</label>
-            <textarea id="bp-catatan" class="form-control" rows="2" placeholder="Opsional..."></textarea>
-          </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.82rem;font-weight:500;">Periode Tahun</label>
+          <input type="number" id="bp-tahun" class="form-control form-control-sm" value="{{ date('Y') }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.82rem;font-weight:500;">Metode</label>
+          <select id="bp-metode" class="form-select form-select-sm">
+            <option value="transfer">Transfer</option>
+            <option value="cash">Cash</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.82rem;font-weight:500;">Rekening Tujuan</label>
+          <select id="bp-rekening" class="form-select form-select-sm">
+            <option value="BRI - 159601000592564">BRI - 159601000592564</option>
+            <option value="BNI - 0320906963">BNI - 0320906963</option>
+            <option value="Mandiri - 1300029358960">Mandiri - 1300029358960</option>
+            <option value="BCA - 6395904187">BCA - 6395904187</option>
+            <option value="QRIS - NETKING">QRIS - NETKING</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.82rem;font-weight:500;">Catatan (opsional)</label>
+          <textarea id="bp-catatan" class="form-control form-control-sm" rows="2" placeholder="Catatan pembayaran..."></textarea>
         </div>
       </div>
       <div class="modal-footer" style="border-top:1px solid var(--border);padding:1rem 1.25rem;">
         <button type="button" class="ms-btn-ghost" data-bs-dismiss="modal">Batal</button>
-        <button type="button" class="ms-btn" onclick="bulkPaymentSubmit()">
+        <button type="button" class="ms-btn" onclick="bulkPaymentSubmit()" style="background:#16a34a;border-color:#16a34a;">
           <i class='bx bx-check'></i> Proses Pembayaran
         </button>
       </div>
     </div>
   </div>
 </div>
-@endunless
+
 @endsection
 
 @section('scripts')
@@ -524,11 +524,9 @@ function bulkDelete() {
   });
 }
 
-function bulkPaymentModal() {
-  if (@json($isFinance)) return;
-  var count = $('.row-check:checked').length;
-  if (!count) return;
-  $('#bulkPaymentCount').text(count);
+function showBulkPaymentModal() {
+  // Set default month to current
+  document.getElementById('bp-bulan').value = new Date().getMonth() + 1;
   var modal = new bootstrap.Modal(document.getElementById('bulkPaymentModal'));
   modal.show();
 }
@@ -536,15 +534,15 @@ function bulkPaymentModal() {
 function bulkPaymentSubmit() {
   var ids = [];
   $('.row-check:checked').each(function() { ids.push(parseInt($(this).val())); });
-  if (!ids.length) return;
+  if (!ids.length) { toastr.error('Tidak ada pelanggan yang dipilih'); return; }
 
   var payload = {
     customer_ids: ids,
-    periode_bulan: parseInt($('#bp-bulan').val()),
-    periode_tahun: parseInt($('#bp-tahun').val()),
-    metode: $('#bp-metode').val(),
-    rekening_tujuan: $('#bp-rekening').val(),
-    catatan: $('#bp-catatan').val() || null
+    periode_bulan: document.getElementById('bp-bulan').value,
+    periode_tahun: document.getElementById('bp-tahun').value,
+    metode: document.getElementById('bp-metode').value,
+    rekening_tujuan: document.getElementById('bp-rekening').value,
+    catatan: document.getElementById('bp-catatan').value
   };
 
   fetch('{{ route("admin.payments.bulk-store") }}', {
@@ -559,21 +557,14 @@ function bulkPaymentSubmit() {
   .then(function(data) {
     if (data.success) {
       bootstrap.Modal.getInstance(document.getElementById('bulkPaymentModal')).hide();
-      Swal.fire({
-        title: 'Berhasil!',
-        text: data.count + ' pembayaran berhasil dicatat.',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      }).then(function() {
-        location.reload();
-      });
+      Swal.fire({ icon: 'success', title: 'Berhasil!', text: data.count + ' pembayaran berhasil ditandai', timer: 2000, showConfirmButton: false });
+      setTimeout(() => location.reload(), 1500);
     } else {
       toastr.error(data.message || 'Gagal memproses pembayaran');
     }
   })
-  .catch(function() {
-    toastr.error('Kesalahan jaringan');
-  });
+  .catch(() => toastr.error('Kesalahan jaringan'));
 }
+
 </script>
 @endsection

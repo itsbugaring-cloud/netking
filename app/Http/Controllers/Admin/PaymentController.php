@@ -139,21 +139,20 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'customer_ids' => 'required|array|min:1',
-            'customer_ids.*' => 'required|integer|exists:customers,id',
+            'customer_ids.*' => 'integer|exists:customers,id',
             'periode_bulan' => 'required|integer|min:1|max:12',
             'periode_tahun' => 'required|integer|min:2020|max:2030',
             'metode' => 'required|in:transfer,cash',
-            'rekening_tujuan' => 'required|string|max:50',
+            'rekening_tujuan' => 'required|string|max:100',
             'catatan' => 'nullable|string|max:1000',
         ]);
 
-        $count = 0;
-        foreach ($validated['customer_ids'] as $customerId) {
-            $customer = Customer::with('package')->find($customerId);
-            if (!$customer) {
-                continue;
-            }
+        $customers = Customer::with('package')
+            ->whereIn('id', $validated['customer_ids'])
+            ->get();
 
+        $count = 0;
+        foreach ($customers as $customer) {
             Payment::create([
                 'customer_id' => $customer->id,
                 'periode_bulan' => $validated['periode_bulan'],
@@ -167,13 +166,9 @@ class PaymentController extends Controller
                 'catatan' => $validated['catatan'] ?? null,
                 'created_by_user_id' => auth()->id(),
             ]);
-
             $count++;
         }
 
-        return response()->json([
-            'success' => true,
-            'count' => $count,
-        ]);
+        return response()->json(['success' => true, 'count' => $count]);
     }
 }
