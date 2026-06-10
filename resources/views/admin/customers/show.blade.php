@@ -321,6 +321,7 @@
                 ['Paket', $customer->package->name ?? 'N/A'],
                 ['Harga Bulanan', 'Rp ' . number_format($customer->package_price ?? 0, 0, ',', '.')],
                 ['Mulai Tagihan', $billingStartLabel],
+                ['Jatuh Tempo', 'Tgl ' . ($customer->billing_due_day ?? config('billing.invoice_due_day', 20))],
                 ['Area', $customer->area->name ?? 'N/A'],
                 ['ODP', $customer->odp ? $customer->odp->name . ' (Port ' . ($customer->odp_port ?? '?') . ')' : 'N/A'],
                 ['ONT SN', $customer->ont_sn ? "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>{$customer->ont_sn}</code>" : 'N/A'],

@@ -29,6 +29,7 @@ class Customer extends Authenticatable
         'ont_sn',
         'package_price',
         'billing_start_date',
+        'billing_due_day',
         'phone',
         'address',
         'status',
@@ -61,6 +62,15 @@ class Customer extends Authenticatable
     public function getAuthPassword()
     {
         return $this->portal_password;
+    }
+
+    /**
+     * Get the effective billing due day for this customer.
+     * Falls back to global config if not set per-customer.
+     */
+    public function getEffectiveDueDay(): int
+    {
+        return $this->billing_due_day ?? (int) config('billing.invoice_due_day', 20);
     }
 
     protected static function booted(): void

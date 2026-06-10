@@ -126,6 +126,12 @@
                 <div class="form-text">Dipakai untuk hitung prorata invoice bulan pertama.</div>
                 @error('billing_start_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
+              <div class="col-md-6">
+                <label class="form-label">Jatuh Tempo (Tanggal)</label>
+                <input type="number" name="billing_due_day" class="form-control @error('billing_due_day') is-invalid @enderror" value="{{ old('billing_due_day', $customer->billing_due_day) }}" min="1" max="28" placeholder="Default: {{ config('billing.invoice_due_day', 20) }}">
+                <div class="form-text">Kosongkan untuk pakai default (tgl {{ config('billing.invoice_due_day', 20) }}). Isi 25 kalau mau jatuh tempo tgl 25.</div>
+                @error('billing_due_day')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              </div>
               <div class="col-12">
                 <div id="proration-preview" class="alert alert-info py-2 mb-0" style="font-size:.82rem;display:none;">
                   <strong>Preview Prorata:</strong> <span id="proration-preview-text">-</span>
