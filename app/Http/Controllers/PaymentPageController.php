@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminNotification;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\Setting;
@@ -72,6 +73,16 @@ class PaymentPageController extends Controller
             'catatan' => $validated['catatan'] ?? null,
             'created_by_user_id' => null,
         ]);
+
+        // Notify admin/finance via website notification
+        AdminNotification::notify(
+            'payment_pending',
+            'Pembayaran Baru',
+            "{$customer->name} ({$customer->customer_code}) - Rp " . number_format($customer->package_price, 0, ',', '.') . " via {$validated['rekening_tujuan']}",
+            'bx-money',
+            'green',
+            '/admin/payments/review'
+        );
 
         return redirect()->back()->with('success', 'Pembayaran sedang diproses');
     }
