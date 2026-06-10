@@ -329,62 +329,62 @@
       </form>
 
       @if(($manualPayments ?? collect())->isNotEmpty())
-      <form id="bulk-delete-manual-payments-global-form" action="{{ route('admin.payments.bulk-destroy') }}" method="POST" onsubmit="return confirm('Hapus semua pembayaran manual yang dipilih?');">
+      <form id="bulk-delete-manual-payments-global-form" action="{{ route('admin.payments.bulk-destroy') }}" method="POST" onsubmit="return confirm('Hapus semua pembayaran manual yang dipilih?');" class="d-none">
         @csrf
         @method('DELETE')
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <label class="d-flex align-items-center gap-2 mb-0" style="font-size:.8rem;color:var(--txt-3);">
-            <input type="checkbox" id="select-all-global-manual-payments">
-            Pilih semua
-          </label>
-          <button type="submit" class="btn btn-sm btn-outline-danger">Hapus yang dipilih</button>
-        </div>
-
-        <div class="table-responsive">
-          <table class="table table-flat manual-list-table mb-0">
-            <thead>
-              <tr>
-                <th style="width:40px;">#</th>
-                <th>Pelanggan</th>
-                <th>Area</th>
-                <th>Periode</th>
-                <th>Jumlah</th>
-                <th>Rekening</th>
-                <th>Tgl Bayar</th>
-                <th>Dibuat</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach($manualPayments as $payment)
-              <tr>
-                <td>
-                  <input type="checkbox" name="payment_ids[]" value="{{ $payment->id }}" class="global-manual-payment-checkbox" style="width:16px;height:16px;">
-                </td>
-                <td>
-                  <div style="font-weight:600;color:var(--txt);">{{ $payment->customer?->name ?? '—' }}</div>
-                  <div style="color:var(--txt-3);font-size:.74rem;">
-                    {{ $payment->customer?->customer_code ?? '—' }} · {{ $payment->customer?->pppoe_user ?? '—' }}
-                  </div>
-                </td>
-                <td>{{ $payment->customer?->area?->name ?? '—' }}</td>
-                <td>{{ \Carbon\Carbon::createFromDate($payment->periode_tahun, $payment->periode_bulan, 1)->translatedFormat('M Y') }}</td>
-                <td>Rp {{ number_format($payment->jumlah, 0, ',', '.') }}</td>
-                <td>{{ $payment->rekening_tujuan }}</td>
-                <td>
-                  <form action="{{ route('admin.payments.manual-date', $payment) }}" method="POST" class="d-flex align-items-center gap-2">
-                    @csrf
-                    @method('PATCH')
-                    <input type="date" name="tanggal_bayar" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" class="form-control form-control-sm" style="min-width:145px;">
-                    <button type="submit" class="btn btn-sm btn-outline-primary">Simpan</button>
-                  </form>
-                </td>
-                <td>{{ $payment->created_at?->format('d M Y H:i') ?? '—' }}</td>
-              </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
       </form>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <label class="d-flex align-items-center gap-2 mb-0" style="font-size:.8rem;color:var(--txt-3);">
+          <input type="checkbox" id="select-all-global-manual-payments">
+          Pilih semua
+        </label>
+        <button type="submit" form="bulk-delete-manual-payments-global-form" class="btn btn-sm btn-outline-danger">Hapus yang dipilih</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-flat manual-list-table mb-0">
+          <thead>
+            <tr>
+              <th style="width:40px;">#</th>
+              <th>Pelanggan</th>
+              <th>Area</th>
+              <th>Periode</th>
+              <th>Jumlah</th>
+              <th>Rekening</th>
+              <th>Tgl Bayar</th>
+              <th>Dibuat</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach($manualPayments as $payment)
+            <tr>
+              <td>
+                <input type="checkbox" name="payment_ids[]" value="{{ $payment->id }}" form="bulk-delete-manual-payments-global-form" class="global-manual-payment-checkbox" style="width:16px;height:16px;">
+              </td>
+              <td>
+                <div style="font-weight:600;color:var(--txt);">{{ $payment->customer?->name ?? '—' }}</div>
+                <div style="color:var(--txt-3);font-size:.74rem;">
+                  {{ $payment->customer?->customer_code ?? '—' }} · {{ $payment->customer?->pppoe_user ?? '—' }}
+                </div>
+              </td>
+              <td>{{ $payment->customer?->area?->name ?? '—' }}</td>
+              <td>{{ \Carbon\Carbon::createFromDate($payment->periode_tahun, $payment->periode_bulan, 1)->translatedFormat('M Y') }}</td>
+              <td>Rp {{ number_format($payment->jumlah, 0, ',', '.') }}</td>
+              <td>{{ $payment->rekening_tujuan }}</td>
+              <td>
+                <form action="{{ route('admin.payments.manual-date', $payment) }}" method="POST" class="d-flex align-items-center gap-2">
+                  @csrf
+                  @method('PATCH')
+                  <input type="date" name="tanggal_bayar" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" class="form-control form-control-sm" style="min-width:145px;">
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Simpan</button>
+                </form>
+              </td>
+              <td>{{ $payment->created_at?->format('d M Y H:i') ?? '—' }}</td>
+            </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
       @else
       <div class="not-found-msg" style="padding:1rem 0 0;">
         <i class='bx bx-check-shield'></i>
