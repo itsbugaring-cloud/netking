@@ -122,18 +122,7 @@ class PaymentController extends Controller
             'catatan' => 'nullable|string|max:1000',
         ]);
 
-        $manualPayment = Payment::query()
-            ->where('customer_id', $customer->id)
-            ->where('periode_bulan', $validated['periode_bulan'])
-            ->where('periode_tahun', $validated['periode_tahun'])
-            ->whereNotNull('created_by_user_id')
-            ->where(function ($q) {
-                $q->whereNull('bukti_path')->orWhere('bukti_path', '');
-            })
-            ->latest('id')
-            ->first();
-
-        $payload = [
+        Payment::create([
             'customer_id' => $customer->id,
             'periode_bulan' => $validated['periode_bulan'],
             'periode_tahun' => $validated['periode_tahun'],
@@ -145,28 +134,40 @@ class PaymentController extends Controller
             'approved_at' => Carbon::parse($validated['tanggal_bayar'])->startOfDay(),
             'catatan' => $validated['catatan'] ?? null,
             'created_by_user_id' => auth()->id(),
-        ];
-
-        $wasUpdated = $manualPayment !== null;
-        if ($manualPayment) {
-            $manualPayment->update($payload);
-        } else {
-            Payment::create($payload);
-        }
+        ]);
 
         // If came from quick payment page, redirect back there
         $referer = $request->headers->get('referer', '');
         if (str_contains($referer, 'payments/quick')) {
             return redirect()->route('admin.payments.quick')
-                ->with('success', $wasUpdated
-                    ? 'Pembayaran manual berhasil diperbarui untuk ' . $customer->name . '.'
-                    : 'Pembayaran manual berhasil dicatat untuk ' . $customer->name . '.');
+                ->with('success', 'Pembayaran manual berhasil dicatat untuk ' . $customer->name . '.');
         }
 
         return redirect()->route('admin.customers.show', $customer)
-            ->with('success', $wasUpdated
-                ? 'Pembayaran manual berhasil diperbarui.'
-                : 'Pembayaran manual berhasil dicatat.');
+            ->with('success', 'Pembayaran manual berhasil dicatat.');
+    }
+
+    /**
+     * Update transfer/payment date for a manual/admin-created payment entry.
+     */
+    public function updateManualDate(Request $request, Payment $payment)
+    {
+        $isManualEntry = $payment->created_by_user_id !== null && empty($payment->bukti_path);
+
+        if (!$isManualEntry) {
+            return back()->with('error', 'Hanya pembayaran manual yang bisa diubah tanggal bayarnya.');
+        }
+
+        $validated = $request->validate([
+            'tanggal_bayar' => 'required|date',
+        ]);
+
+        $payment->update([
+            'approved_at' => Carbon::parse($validated['tanggal_bayar'])->startOfDay(),
+            'approved_by_user_id' => auth()->id(),
+        ]);
+
+        return back()->with('success', 'Tanggal bayar pembayaran manual berhasil diperbarui.');
     }
 
     /**

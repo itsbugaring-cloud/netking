@@ -206,7 +206,7 @@
       </div>
       <div class="ms-panel-body">
         <div style="margin-bottom:1rem;padding:.85rem 1rem;border:1px solid color-mix(in srgb, var(--blue) 20%, var(--border));border-radius:10px;background:color-mix(in srgb, var(--blue) 6%, var(--surface));font-size:.82rem;color:var(--txt-3);">
-          Jika pelanggan yang sama sudah punya pembayaran manual di periode bulan/tahun yang sama, simpan ulang akan <strong>memperbarui data lama</strong>, bukan menambah duplikat baru.
+          Jika salah input tanggal transfer, ubah dari daftar pembayaran manual di bawah. Form ini tetap mencatat entri baru.
         </div>
         <form action="{{ route('admin.payments.manual.store', $customer) }}" method="POST">
           @csrf
@@ -350,6 +350,7 @@
                 <th>Periode</th>
                 <th>Jumlah</th>
                 <th>Rekening</th>
+                <th>Tgl Bayar</th>
                 <th>Dibuat</th>
               </tr>
             </thead>
@@ -369,6 +370,14 @@
                 <td>{{ \Carbon\Carbon::createFromDate($payment->periode_tahun, $payment->periode_bulan, 1)->translatedFormat('M Y') }}</td>
                 <td>Rp {{ number_format($payment->jumlah, 0, ',', '.') }}</td>
                 <td>{{ $payment->rekening_tujuan }}</td>
+                <td>
+                  <form action="{{ route('admin.payments.manual-date', $payment) }}" method="POST" class="d-flex align-items-center gap-2">
+                    @csrf
+                    @method('PATCH')
+                    <input type="date" name="tanggal_bayar" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" class="form-control form-control-sm" style="min-width:145px;">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Simpan</button>
+                  </form>
+                </td>
                 <td>{{ $payment->created_at?->format('d M Y H:i') ?? '—' }}</td>
               </tr>
               @endforeach
