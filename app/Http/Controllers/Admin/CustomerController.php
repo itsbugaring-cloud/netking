@@ -248,6 +248,8 @@ class CustomerController extends Controller
             unset($validated['portal_password']);
         }
 
+        $validated['is_free'] = $request->boolean('is_free');
+
         $customer->update($validated);
 
         return redirect()->route('admin.customers.show', $customer)

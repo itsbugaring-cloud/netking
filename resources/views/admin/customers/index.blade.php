@@ -245,6 +245,9 @@
                 'pending'      => ['label' => 'Pending',      'class' => 'badge-pending'],
               ];
               $s = $statusMap[$customer->status] ?? ['label' => ucfirst($customer->status), 'class' => 'badge-inactive'];
+              if ($customer->is_free) {
+                $s = ['label' => 'Gratis', 'class' => 'badge-pending'];
+              }
             @endphp
             <tr>
               <td>@unless($isFinance)<input type="checkbox" class="row-check" value="{{ $customer->id }}" style="accent-color:var(--blue);">@endunless</td>

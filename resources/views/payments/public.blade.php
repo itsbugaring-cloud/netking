@@ -226,6 +226,16 @@
                 </div>
               </div>
 
+              @if($customer->is_free)
+              <div class="alert alert-success mb-4">
+                <div class="d-flex align-items-center">
+                  <i class="ti ti-gift me-2"></i>
+                  <div>
+                    <strong>Pelanggan Gratis</strong> — Anda tidak memiliki tagihan. Terima kasih!
+                  </div>
+                </div>
+              </div>
+              @else
               <div class="alert alert-info mb-4">
                 <div class="d-flex align-items-center">
                   <i class="ti ti-info-circle me-2"></i>
@@ -286,7 +296,7 @@
               @endif
             </div>
           </div>
-          @endif
+          @endif {{-- end is_free @else --}}
 
         </div>
 

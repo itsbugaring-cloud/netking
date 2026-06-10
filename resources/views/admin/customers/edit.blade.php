@@ -165,13 +165,21 @@
           <div class="mb-3 pb-3" style="border-bottom:1px solid #eef2f7;">
             <div style="font-size:.75rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Status</div>
             <div class="mt-1">
-              @if($customer->status === 'active')
+              @if($customer->is_free)
+              <span class="badge-status badge-pending">Gratis</span>
+              @elseif($customer->status === 'active')
               <span class="badge-status badge-active">Aktif</span>
               @elseif($customer->status === 'pending')
               <span class="badge-status badge-pending">Pending</span>
               @else
               <span class="badge-status badge-inactive">Tidak Aktif</span>
               @endif
+            </div>
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="checkbox" name="is_free" value="1" id="is-free-check" {{ old('is_free', $customer->is_free) ? 'checked' : '' }}>
+              <label class="form-check-label" for="is-free-check" style="font-size:.82rem;">
+                <strong>Pelanggan Gratis</strong> — tidak ditagih, tidak kena auto-isolir
+              </label>
             </div>
           </div>
           <div class="mb-3 pb-3" style="border-bottom:1px solid #eef2f7;">

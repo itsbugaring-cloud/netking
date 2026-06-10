@@ -179,8 +179,8 @@ class ImportCustomerPhones extends Command
             $statusDone = 0;
             foreach ($statusUpdates as $u) {
                 if ($u['new_status'] === '_gratis') {
-                    // Keep status active, set package_price = 0 to skip billing
-                    $u['customer']->update(['package_price' => 0]);
+                    // Mark as free customer
+                    $u['customer']->update(['is_free' => true]);
                 } else {
                     $u['customer']->update(['status' => $u['new_status']]);
                 }

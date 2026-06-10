@@ -32,6 +32,7 @@ class Customer extends Authenticatable
         'phone',
         'address',
         'status',
+        'is_free',
         'is_isolated',
         'isolated_at',
         'error_message',
@@ -48,6 +49,7 @@ class Customer extends Authenticatable
         'package_price' => 'decimal:2',
         'billing_start_date' => 'date',
         'last_login_at' => 'datetime',
+        'is_free' => 'boolean',
         'is_isolated' => 'boolean',
         'isolated_at' => 'datetime',
     ];
