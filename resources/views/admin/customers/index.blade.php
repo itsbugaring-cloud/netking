@@ -210,7 +210,7 @@
     <div class="ms-panel-body pt-0 pb-0">
       <form method="GET" action="{{ route('admin.customers.index') }}" class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
         <div class="d-flex gap-3 flex-wrap align-items-center">
-          <div class="nk-search-wrap nk-table-search-trigger">
+          <div class="nk-search-wrap">
             <i class='bx bx-search'></i>
             <input type="text" name="search" class="nk-search-input" value="{{ request('search') }}" placeholder="Cari nama, PPPoE, no HP, alamat...">
           </div>
