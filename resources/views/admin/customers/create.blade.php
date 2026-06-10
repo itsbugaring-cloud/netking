@@ -120,11 +120,6 @@
                 @error('local_address')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
               <div class="col-md-6">
-                <label class="form-label">Password Aplikasi / Portal <span class="text-danger">*</span></label>
-                <input type="password" name="portal_password" class="form-control @error('portal_password') is-invalid @enderror" autocomplete="new-password" required>
-                @error('portal_password')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              </div>
-              <div class="col-md-6">
                 <label class="form-label">Harga Paket Bulanan (Rp) <span class="text-danger">*</span></label>
                 <input type="number" name="package_price" id="package-price" class="form-control @error('package_price') is-invalid @enderror" value="{{ old('package_price', 100000) }}" min="0" step="1000" required>
                 @error('package_price')<div class="invalid-feedback">{{ $message }}</div>@enderror

@@ -150,7 +150,6 @@ class CustomerController extends Controller
                 Rule::unique('customers', 'pppoe_user')->where(fn($q) => $q->where('area_id', $areaId)),
             ],
             'pppoe_pass'      => 'required|string|max:255',
-            'portal_password' => 'required|string|min:6',
             'area_id'         => 'required|exists:areas,id',
             'partner_id'      => 'nullable|exists:users,id',
             'package_id'      => 'nullable|exists:packages,id',
@@ -166,7 +165,7 @@ class CustomerController extends Controller
 
         $customer = Customer::create([
             ...$validated,
-            'portal_password' => Hash::make($validated['portal_password']),
+            'portal_password' => Hash::make(Str::random(12)),
             'status'          => 'provisioning',
         ]);
 
