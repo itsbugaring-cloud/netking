@@ -104,10 +104,11 @@ class ImportCustomerPhones extends Command
                 }
 
                 $ketLower = strtolower(trim($ket));
-                if (str_contains($ketLower, 'berhenti') && $customer->status !== 'inactive') {
-                    $statusUpdates[] = ['customer' => $customer, 'new_status' => 'inactive', 'reason' => 'BERHENTI BERLANGGANAN', 'excel' => $row];
-                } elseif (str_contains($ketLower, 'gratis')) {
-                    $statusUpdates[] = ['customer' => $customer, 'new_status' => 'gratis', 'reason' => 'GRATIS', 'excel' => $row];
+                if (str_contains($ketLower, 'berhenti') && $customer->status === 'active') {
+                    $statusUpdates[] = ['customer' => $customer, 'new_status' => 'suspended', 'reason' => 'BERHENTI BERLANGGANAN', 'excel' => $row];
+                } elseif (str_contains($ketLower, 'gratis') && $customer->status === 'active') {
+                    // Mark as gratis via package_price = 0 (keep status active, skip billing)
+                    $statusUpdates[] = ['customer' => $customer, 'new_status' => '_gratis', 'reason' => 'GRATIS', 'excel' => $row];
                 }
             } elseif ($candidates->count() > 1) {
                 $ambiguous[] = ['excel' => $row, 'candidates' => $candidates->pluck('pppoe_user', 'id')->toArray()];
@@ -177,7 +178,12 @@ class ImportCustomerPhones extends Command
 
             $statusDone = 0;
             foreach ($statusUpdates as $u) {
-                $u['customer']->update(['status' => $u['new_status']]);
+                if ($u['new_status'] === '_gratis') {
+                    // Keep status active, set package_price = 0 to skip billing
+                    $u['customer']->update(['package_price' => 0]);
+                } else {
+                    $u['customer']->update(['status' => $u['new_status']]);
+                }
                 $statusDone++;
             }
 
