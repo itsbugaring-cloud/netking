@@ -103,6 +103,9 @@
     </div>
     <div class="ms-page-actions">
         @unless($isFinance)
+        <button type="button" class="ms-btn-secondary" onclick="copyPaymentLink()" title="Salin link bayar untuk dikirim ke pelanggan via WA">
+            <i class='bx bx-copy'></i> Salin Link Bayar
+        </button>
         <a href="{{ route('admin.payments.manual', $customer) }}" class="ms-btn-secondary" style="color:#16a34a;border-color:#16a34a;">
             <i class='bx bx-money'></i> Tandai Bayar Manual
         </a>
@@ -903,6 +906,15 @@
         document.getElementById('edit-notes').value = device.notes || '';
 
         new bootstrap.Modal(document.getElementById('editDeviceModal')).show();
+    }
+
+    function copyPaymentLink() {
+        var url = '{{ url("/bayar?customer_code=" . $customer->customer_code) }}';
+        navigator.clipboard.writeText(url).then(function() {
+            toastr.success('Link bayar disalin: ' + url);
+        }).catch(function() {
+            prompt('Salin link ini:', url);
+        });
     }
 
     $(function() {

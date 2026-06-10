@@ -27,6 +27,51 @@
       background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f0f9ff 100%);
       min-height: 100vh;
     }
+
+    /* Payment Method Selection */
+    .payment-method-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .5rem;
+    }
+    @media (max-width: 576px) {
+      .payment-method-grid { grid-template-columns: 1fr; }
+    }
+    .payment-method-option input[type="radio"] { display: none; }
+    .payment-method-card {
+      display: flex;
+      flex-direction: column;
+      padding: .75rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all .15s ease;
+      background: #fff;
+    }
+    .payment-method-card:hover {
+      border-color: #93c5fd;
+      background: #f0f9ff;
+    }
+    .payment-method-option input[type="radio"]:checked + .payment-method-card {
+      border-color: #2563eb;
+      background: #eff6ff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+    .payment-method-name {
+      font-weight: 700;
+      font-size: .875rem;
+      color: #1e293b;
+    }
+    .payment-method-detail {
+      font-size: .75rem;
+      color: #64748b;
+      font-family: monospace;
+    }
+    .payment-method-holder {
+      font-size: .7rem;
+      color: #94a3b8;
+    }
+
     .pay-header {
       background: linear-gradient(135deg, #0ea5e9, #2563eb 60%, #4f46e5);
       border-radius: 1rem;
@@ -254,18 +299,29 @@
                 <input type="hidden" name="customer_code" value="{{ $customer->customer_code }}">
 
                 <div class="mb-3">
-                  <label class="form-label">Rekening Tujuan</label>
-                  <select name="rekening_tujuan" class="form-select" required>
-                    <option value="">Pilih rekening tujuan</option>
+                  <label class="form-label fw-semibold">Rekening Tujuan</label>
+                  <div class="payment-method-grid">
                     @foreach($paymentSettings['accounts'] as $account)
-                      <option value="{{ $account['bank_name'] }}" @selected(old('rekening_tujuan') === $account['bank_name'])>
-                        {{ $account['bank_name'] }} — {{ $account['account_number'] }} ({{ $account['account_holder'] }})
-                      </option>
+                    <label class="payment-method-option">
+                      <input type="radio" name="rekening_tujuan" value="{{ $account['bank_name'] }}" {{ old('rekening_tujuan') === $account['bank_name'] ? 'checked' : '' }} required>
+                      <div class="payment-method-card">
+                        <span class="payment-method-name">{{ $account['bank_name'] }}</span>
+                        <span class="payment-method-detail">{{ $account['account_number'] }}</span>
+                        <span class="payment-method-holder">a.n. {{ $account['account_holder'] }}</span>
+                      </div>
+                    </label>
                     @endforeach
                     @if(!empty($paymentSettings['qris']))
-                      <option value="QRIS" @selected(old('rekening_tujuan') === 'QRIS')>QRIS</option>
+                    <label class="payment-method-option">
+                      <input type="radio" name="rekening_tujuan" value="QRIS" {{ old('rekening_tujuan') === 'QRIS' ? 'checked' : '' }} required>
+                      <div class="payment-method-card">
+                        <span class="payment-method-name">QRIS</span>
+                        <span class="payment-method-detail">Scan QR Code</span>
+                        <span class="payment-method-holder">{{ $paymentSettings['qris'] }}</span>
+                      </div>
+                    </label>
                     @endif
-                  </select>
+                  </div>
                 </div>
 
                 <div class="mb-3">
