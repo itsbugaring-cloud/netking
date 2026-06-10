@@ -2,6 +2,7 @@
     <thead>
         <tr>
             <th>No</th>
+            <th>ID Pelanggan</th>
             <th>PIC</th>
             <th>Area</th>
             <th>Nama</th>
@@ -26,15 +27,17 @@
                 'cash' => 'Tunai',
                 default => $latestPayment?->metode ? ucfirst($latestPayment->metode) : '',
             };
-            $statusLabel = match($c->status) {
-                'active' => 'Aktif',
-                'suspended' => 'Diisolir',
-                'inactive' => 'Nonaktif',
+            $statusLabel = match(true) {
+                (bool) $c->is_free => 'Gratis',
+                $c->status === 'active' => 'Aktif',
+                $c->status === 'suspended' => 'Diisolir',
+                $c->status === 'inactive' => 'Nonaktif',
                 default => ucfirst($c->status),
             };
         @endphp
         <tr>
             <td>{{ $i + 1 }}</td>
+            <td>{{ $c->customer_code ?? '' }}</td>
             <td>{{ $c->partner?->name ?? '' }}</td>
             <td>{{ $c->area?->name ?? '-' }}</td>
             <td>{{ $c->name }}</td>
