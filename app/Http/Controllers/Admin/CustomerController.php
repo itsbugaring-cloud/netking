@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerController extends Controller
 {
@@ -907,9 +906,9 @@ class CustomerController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $filename = 'data_pelanggan_netking_' . now()->format('Ymd_His') . '.xlsx';
+        $filename = 'data_pelanggan_netking_' . now()->format('Ymd_His') . '.csv';
 
-        return Excel::download(new CustomersExport($request), $filename);
+        return (new CustomersExport($request))->download($filename);
     }
 
     private function buildBillingStartTemplateXlsx(string $targetPath): void
