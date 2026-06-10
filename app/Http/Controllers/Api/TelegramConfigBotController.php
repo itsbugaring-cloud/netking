@@ -585,7 +585,8 @@ class TelegramConfigBotController extends Controller
             $buttons = [];
             foreach ($packages as $p) {
                 $price = number_format((float) $p->price, 0, ',', '.');
-                $label = "{$p->code} • {$p->speed_down}M/{$p->speed_up}M • Rp{$price}";
+                $profile = $p->mikrotik_profile ?: $p->code;
+                $label = "{$profile} ({$p->speed_down}M) • Rp{$price}";
                 $buttons[] = [['text' => $label, 'callback_data' => 'cfg:pkg:' . $p->id]];
             }
 

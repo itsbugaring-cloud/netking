@@ -203,7 +203,10 @@ class CustomerController extends Controller
             $areas    = Area::orderBy('name')->get();
             // Admin: ODP di-filter per area customer, AJAX bisa reload jika ganti area
             $odps     = Odp::where('area_id', $customer->area_id)->orderBy('name')->get();
-            $packages = \App\Models\Package::where('is_active', true)->orderBy('name')->get();
+            $packages = \App\Models\Package::where('is_active', true)
+                ->where('area_id', $customer->area_id)
+                ->orderBy('name')
+                ->get();
         }
         return view('admin.customers.edit', compact('customer', 'areas', 'packages', 'odps'));
     }
