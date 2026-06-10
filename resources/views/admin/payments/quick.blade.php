@@ -14,24 +14,45 @@
     border-radius: 12px 12px 0 0 !important;
     background: transparent !important;
   }
-  .search-bar {
+  .quick-toolbar {
     display: flex;
+    flex-wrap: wrap;
     gap: .75rem;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 1.5rem;
   }
-  .search-bar input {
-    flex: 1;
-    padding: .5rem .75rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    color: var(--txt);
-    font-size: .875rem;
+  .quick-toolbar-left {
+    display: flex;
+    flex: 1 1 320px;
+    gap: .75rem;
+    align-items: center;
   }
-  .search-bar input:focus {
+  .nk-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: .3rem .6rem;
+    min-height: 38px;
+    width: 100%;
+  }
+  .nk-search-wrap i {
+    color: var(--txt-3);
+    font-size: .9rem;
+  }
+  .nk-search-input {
+    border: none;
     outline: none;
-    border-color: var(--blue);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 15%, transparent);
+    background: transparent;
+    font-size: .78rem;
+    color: var(--txt);
+    width: 100%;
+  }
+  .nk-search-input::placeholder {
+    color: var(--txt-3);
   }
   .customer-header {
     display: flex;
@@ -72,30 +93,17 @@
     letter-spacing: .04em;
     margin-bottom: .35rem;
   }
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
+  .quick-payment-page .form-control,
+  .quick-payment-page .form-select {
     width: 100%;
-    padding: .5rem .75rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    color: var(--txt);
-    font-size: .875rem;
   }
-  .form-group textarea {
+  .quick-payment-page textarea.form-control {
     min-height: 80px;
     resize: vertical;
   }
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: var(--blue);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 15%, transparent);
-  }
   .radio-group {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     align-items: center;
   }
@@ -139,7 +147,45 @@
     margin-bottom: 1rem;
   }
   .manual-toolbar .field {
-    min-width: 140px;
+    min-width: 180px;
+  }
+  .manual-toolbar .field-label {
+    font-size: .76rem;
+    color: var(--txt-3);
+    font-weight: 500;
+    margin-bottom: .35rem;
+  }
+  .quick-payment-page .form-select-sm + .select2-container--bootstrap-5 .select2-selection,
+  .quick-payment-page .select2-container .select2-selection--single {
+    min-height: 38px;
+  }
+  .quick-payment-page .select2-container {
+    width: 100% !important;
+  }
+  .quick-payment-page .select2-container .select2-selection--single .select2-selection__rendered {
+    white-space: normal;
+    line-height: 1.35;
+    padding-top: .38rem;
+    padding-bottom: .38rem;
+  }
+  .quick-payment-page .select2-container--bootstrap-5 .select2-dropdown {
+    min-width: 100% !important;
+  }
+  .manual-actions {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 768px) {
+    .quick-toolbar-left,
+    .manual-toolbar,
+    .manual-actions {
+      width: 100%;
+    }
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 @endsection
@@ -154,10 +200,15 @@
   </div>
 
   {{-- Search bar --}}
-  <form method="GET" action="{{ route('admin.payments.quick') }}" class="search-bar">
-    <input type="text" name="q" value="{{ $search ?? '' }}" placeholder="Cari kode pelanggan, nama, PPPoE user, atau no. HP..." autofocus>
-    <input type="hidden" name="manual_month" value="{{ $manualMonth ?? now()->month }}">
-    <input type="hidden" name="manual_year" value="{{ $manualYear ?? now()->year }}">
+  <form method="GET" action="{{ route('admin.payments.quick') }}" class="quick-toolbar">
+    <div class="quick-toolbar-left">
+      <div class="nk-search-wrap">
+        <i class='bx bx-search'></i>
+        <input type="text" name="q" class="nk-search-input" value="{{ $search ?? '' }}" placeholder="Cari kode pelanggan, nama, PPPoE user, atau no. HP..." autofocus>
+      </div>
+      <input type="hidden" name="manual_month" value="{{ $manualMonth ?? now()->month }}">
+      <input type="hidden" name="manual_year" value="{{ $manualYear ?? now()->year }}">
+    </div>
     <button type="submit" class="ms-btn">
       <i class='bx bx-search'></i> Cari
     </button>
@@ -215,7 +266,7 @@
             {{-- Periode Bulan --}}
             <div class="form-group">
               <label for="periode_bulan">Bulan</label>
-              <select name="periode_bulan" id="periode_bulan" required>
+              <select name="periode_bulan" id="periode_bulan" class="form-select form-select-sm" required>
                 @php
                   $months = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
                 @endphp
@@ -228,7 +279,7 @@
             {{-- Periode Tahun --}}
             <div class="form-group">
               <label for="periode_tahun">Tahun</label>
-              <select name="periode_tahun" id="periode_tahun" required>
+              <select name="periode_tahun" id="periode_tahun" class="form-select form-select-sm" required>
                 @for($y = 2024; $y <= 2027; $y++)
                 <option value="{{ $y }}" {{ (old('periode_tahun', now()->year) == $y) ? 'selected' : '' }}>{{ $y }}</option>
                 @endfor
@@ -238,7 +289,7 @@
             {{-- Jumlah --}}
             <div class="form-group">
               <label for="jumlah">Jumlah (Rp)</label>
-              <input type="number" name="jumlah" id="jumlah"
+              <input type="number" name="jumlah" id="jumlah" class="form-control"
                      value="{{ old('jumlah', $customer->package_price ?? $customer->package->price ?? 0) }}"
                      min="0" step="1000" required>
             </div>
@@ -246,7 +297,7 @@
             {{-- Tanggal Bayar --}}
             <div class="form-group">
               <label for="tanggal_bayar">Tanggal Bayar</label>
-              <input type="date" name="tanggal_bayar" id="tanggal_bayar"
+              <input type="date" name="tanggal_bayar" id="tanggal_bayar" class="form-control"
                      value="{{ old('tanggal_bayar', date('Y-m-d')) }}"
                      required>
             </div>
@@ -254,7 +305,7 @@
             {{-- Rekening Tujuan --}}
             <div class="form-group">
               <label for="rekening_tujuan">Rekening</label>
-              <select name="rekening_tujuan" id="rekening_tujuan" required>
+              <select name="rekening_tujuan" id="rekening_tujuan" class="form-select form-select-sm" required>
                 <option value="">Pilih rekening...</option>
                 <option value="BRI" {{ old('rekening_tujuan') == 'BRI' ? 'selected' : '' }}>BRI</option>
                 <option value="BNI" {{ old('rekening_tujuan') == 'BNI' ? 'selected' : '' }}>BNI</option>
@@ -283,7 +334,7 @@
             {{-- Catatan --}}
             <div class="form-group full-width">
               <label for="catatan">Catatan (opsional)</label>
-              <textarea name="catatan" id="catatan" placeholder="Catatan tambahan...">{{ old('catatan') }}</textarea>
+              <textarea name="catatan" id="catatan" class="form-control" placeholder="Catatan tambahan...">{{ old('catatan') }}</textarea>
             </div>
           </div>
 
@@ -307,8 +358,8 @@
     <div class="ms-panel-body">
       <form method="GET" action="{{ route('admin.payments.quick') }}" class="manual-toolbar">
         <div class="field">
-          <label class="form-label">Bulan</label>
-          <select name="manual_month" class="form-select">
+          <div class="field-label">Bulan</div>
+          <select name="manual_month" class="form-select form-select-sm">
             @php $months = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; @endphp
             @for($m = 1; $m <= 12; $m++)
             <option value="{{ $m }}" {{ (int) ($manualMonth ?? now()->month) === $m ? 'selected' : '' }}>{{ $months[$m] }}</option>
@@ -316,8 +367,8 @@
           </select>
         </div>
         <div class="field">
-          <label class="form-label">Tahun</label>
-          <select name="manual_year" class="form-select">
+          <div class="field-label">Tahun</div>
+          <select name="manual_year" class="form-select form-select-sm">
             @for($y = 2024; $y <= 2027; $y++)
             <option value="{{ $y }}" {{ (int) ($manualYear ?? now()->year) === $y ? 'selected' : '' }}>{{ $y }}</option>
             @endfor
@@ -329,7 +380,7 @@
       </form>
 
       @if(($manualPayments ?? collect())->isNotEmpty())
-      <form id="bulk-delete-manual-payments-global-form" action="{{ route('admin.payments.bulk-destroy') }}" method="POST" onsubmit="return confirm('Hapus semua pembayaran manual yang dipilih?');" class="d-none">
+      <form id="bulk-delete-manual-payments-global-form" action="{{ route('admin.payments.bulk-destroy') }}" method="POST" data-confirm="Hapus semua pembayaran manual yang dipilih?" class="d-none">
         @csrf
         @method('DELETE')
       </form>
@@ -342,9 +393,9 @@
           <input type="checkbox" id="select-all-global-manual-payments">
           Pilih semua
         </label>
-        <div class="d-flex align-items-center gap-2">
-          <button type="submit" form="bulk-update-manual-payment-dates-form" class="btn btn-sm btn-outline-primary">Simpan Semua Tanggal</button>
-          <button type="submit" form="bulk-delete-manual-payments-global-form" class="btn btn-sm btn-outline-danger">Hapus yang dipilih</button>
+        <div class="manual-actions">
+          <button type="submit" form="bulk-update-manual-payment-dates-form" class="ms-btn-secondary">Simpan Semua Tanggal</button>
+          <button type="submit" form="bulk-delete-manual-payments-global-form" class="ms-btn-ghost" style="color:#dc2626;border-color:color-mix(in srgb, #dc2626 24%, var(--border));">Hapus yang dipilih</button>
         </div>
       </div>
 
@@ -385,7 +436,7 @@
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="tanggal_bayar" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" class="single-date-mirror">
-                    <button type="submit" class="btn btn-sm btn-outline-primary single-date-save">Simpan</button>
+                    <button type="submit" class="ms-btn-secondary single-date-save" style="padding:.42rem .7rem;">Simpan</button>
                   </form>
                 </div>
               </td>
