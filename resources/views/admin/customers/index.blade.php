@@ -223,7 +223,7 @@
               <th>Area</th>
               <th>Paket</th>
               <th style="width:110px;">Status</th>
-              <th style="width:110px;">Bergabung</th>
+              <th style="width:110px;">Berlangganan</th>
               <th style="width:90px;">Aksi</th>
             </tr>
           </thead>
@@ -271,7 +271,7 @@
                   {{ $s['label'] }}
                 </span>
               </td>
-              <td style="color:var(--txt-3);white-space:nowrap;">{{ $customer->created_at->format('d M Y') }}</td>
+              <td style="color:var(--txt-3);white-space:nowrap;">{{ ($customer->billing_start_date ?? $customer->created_at)->format('d M Y') }}</td>
               <td>
                 <div class="d-flex gap-1">
                   <a href="{{ route('admin.customers.show', $customer) }}" class="cust-action-btn view" title="Lihat Detail">

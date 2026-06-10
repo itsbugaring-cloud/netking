@@ -29,8 +29,8 @@
       <div class="stat-icon" style="background:color-mix(in srgb,var(--red,#ef4444) 10%,var(--surface));color:var(--red,#ef4444);"><i class='bx bx-block'></i></div>
     </div>
     <div class="stat-card">
-      <div><div class="stat-label">Ada Tunggakan</div><div class="stat-value">{{ number_format($stats['unpaid_customers']) }}</div></div>
-      <div class="stat-icon" style="background:color-mix(in srgb,var(--orange,#f59e0b) 10%,var(--surface));color:var(--orange,#f59e0b);"><i class='bx bx-receipt'></i></div>
+      <div><div class="stat-label">Pembayaran Pending</div><div class="stat-value">{{ number_format($stats['pending_payments']) }}</div></div>
+      <div class="stat-icon" style="background:color-mix(in srgb,var(--orange,#f59e0b) 10%,var(--surface));color:var(--orange,#f59e0b);"><i class='bx bx-time-five'></i></div>
     </div>
   </div>
 
