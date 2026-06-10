@@ -5412,10 +5412,47 @@
       height: 30px !important;
       font-size: .75rem !important;
       border-radius: 6px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      display: flex !important;
+      align-items: center !important;
     }
     .workspace-shell .main .select2-container .select2-selection__rendered {
       line-height: 28px !important;
       font-size: .75rem !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      padding-left: .6rem !important;
+      padding-right: 1.8rem !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    .workspace-shell .main .select2-container .select2-selection__arrow {
+      height: 28px !important;
+      width: 24px !important;
+      top: 1px !important;
+      right: 4px !important;
+    }
+    .workspace-shell .main .select2-container--bootstrap-5 .select2-dropdown {
+      padding: .25rem !important;
+      border-radius: 8px !important;
+    }
+    .workspace-shell .main .select2-search--dropdown .select2-search__field,
+    .workspace-shell .main .select2-container--bootstrap-5 .select2-search .select2-search__field {
+      min-height: 30px !important;
+      height: 30px !important;
+      font-size: .75rem !important;
+      padding: .2rem .55rem !important;
+      border-radius: 6px !important;
+    }
+    .workspace-shell .main .select2-results__option {
+      font-size: .78rem !important;
+      line-height: 1.25 !important;
+      padding: .38rem .55rem !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
     }
     /* Tables: borderless everywhere */
     .workspace-shell .main .table,
