@@ -414,6 +414,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/revenue', [\App\Http\Controllers\Admin\ReportController::class, 'revenue'])->name('revenue');
             Route::get('/billing', [\App\Http\Controllers\Admin\ReportController::class, 'billing'])->name('billing');
+            Route::get('/payments', [\App\Http\Controllers\Admin\ReportController::class, 'paymentReport'])->name('payments');
             Route::get('/export-revenue', [\App\Http\Controllers\Admin\ReportController::class, 'exportRevenue'])->name('export-revenue');
             Route::get('/export-billing', [\App\Http\Controllers\Admin\ReportController::class, 'exportBilling'])->name('export-billing');
             Route::get('/export-payments', [\App\Http\Controllers\Admin\ReportController::class, 'exportPayments'])->name('export-payments');

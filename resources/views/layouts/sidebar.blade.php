@@ -79,6 +79,12 @@
           'badge' => \App\Models\Payment::pending()->count() ?: null,
         ],
         $isAdmin ? [
+          'route' => route('admin.reports.payments'),
+          'active' => request()->routeIs('admin.reports.payments'),
+          'icon' => 'bx bx-money',
+          'title' => 'Laporan Pembayaran',
+        ] : null,
+        $isAdmin ? [
           'route' => route('admin.reports.revenue'),
           'active' => request()->routeIs('admin.reports.revenue'),
           'icon' => 'bx bx-bar-chart-alt-2',

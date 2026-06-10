@@ -201,6 +201,59 @@ class ReportController extends Controller
     }
 
     /**
+     * Monthly payment report page
+     */
+    public function paymentReport(Request $request)
+    {
+        $month = (int) $request->input('month', now()->month);
+        $year = (int) $request->input('year', now()->year);
+        $areaId = $request->input('area_id');
+
+        $query = Payment::where('status', 'approved')
+            ->where('periode_bulan', $month)
+            ->where('periode_tahun', $year);
+
+        if ($areaId) {
+            $query->whereHas('customer', fn($q) => $q->where('area_id', $areaId));
+        }
+
+        // Summary
+        $totalAmount = (clone $query)->sum('jumlah');
+        $totalCount = (clone $query)->count();
+
+        // Per-rekening breakdown
+        $rekeningBreakdown = (clone $query)
+            ->select('rekening_tujuan', DB::raw('SUM(jumlah) as total'), DB::raw('COUNT(*) as count'))
+            ->groupBy('rekening_tujuan')
+            ->orderByDesc('total')
+            ->get();
+
+        // Detail table
+        $payments = (clone $query)
+            ->with(['customer.area', 'approvedBy'])
+            ->orderBy('approved_at', 'desc')
+            ->paginate(50)
+            ->withQueryString();
+
+        $areas = Area::orderBy('name')->get(['id', 'name']);
+
+        // Available years
+        $years = Payment::selectRaw('DISTINCT periode_tahun as y')
+            ->orderByDesc('y')
+            ->pluck('y');
+        if ($years->isEmpty()) {
+            $years = collect([now()->year]);
+        }
+
+        return view('admin.reports.payments', compact(
+            'month', 'year', 'areaId',
+            'totalAmount', 'totalCount',
+            'rekeningBreakdown', 'payments',
+            'areas', 'years'
+        ));
+    }
+
+    /**
      * Export payments as CSV
      */
     public function exportPayments(Request $request): StreamedResponse
