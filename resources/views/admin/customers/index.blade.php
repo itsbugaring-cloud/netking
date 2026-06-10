@@ -3,6 +3,11 @@
 
 @section('styles')
 <style>
+  /* ── Fix modal z-index (prevent workspace-shell interference) ────────── */
+  #billingStartImportModal { z-index: 1060 !important; }
+  #billingStartImportModal .modal-dialog { pointer-events: auto; }
+  .modal-backdrop { z-index: 1055 !important; }
+
   /* ── Panel transparent (sama seperti ONT inventory) ─────────────────── */
   .customers-index-page .ms-panel {
     border: none !important; box-shadow: none !important;
