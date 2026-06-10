@@ -15,7 +15,8 @@ class ImportPaymentHistory extends Command
         {file : Path to NETKING.xlsx}
         {--apply : Actually write to DB (default: dry-run)}
         {--sheet=PEMBAYARAN PELANGGAN : Sheet name or zero-based sheet index}
-        {--year=2026 : Default year for monthly payment columns when date is blank}';
+        {--year=2026 : Default year for monthly payment columns when date is blank}
+        {--month= : Filter only one billing month (1-12)}';
 
     protected $description = 'Import payment history from Excel. Match customer by name + area. DRY-RUN by default.';
 
@@ -27,6 +28,8 @@ class ImportPaymentHistory extends Command
         $apply = (bool) $this->option('apply');
         $sheetOption = (string) $this->option('sheet');
         $defaultYear = (int) $this->option('year');
+        $monthFilter = $this->option('month');
+        $monthFilter = ($monthFilter === null || $monthFilter === '') ? null : (int) $monthFilter;
 
         if (!file_exists($file)) {
             $this->error("File not found: {$file}");
@@ -51,8 +54,11 @@ class ImportPaymentHistory extends Command
         $this->buildAreaMapping();
 
         // Parse Excel rows
-        $excelRows = $this->parseExcelRows($sheet, $defaultYear);
+        $excelRows = $this->parseExcelRows($sheet, $defaultYear, $monthFilter);
         $this->info("Parsed {$excelRows->count()} rows from Excel.");
+        if ($monthFilter !== null) {
+            $this->line("Month filter: {$monthFilter}/{$defaultYear}");
+        }
         $this->newLine();
 
         // Load customers
@@ -189,6 +195,11 @@ class ImportPaymentHistory extends Command
             }
         }
 
+        $validPerMonth = collect($matchedValid)
+            ->groupBy(fn ($m) => sprintf('%02d/%04d', $m['excel']['month'], $m['excel']['year']))
+            ->map->count()
+            ->sortKeys();
+
         // Report: Ambiguous
         if (!empty($ambiguous)) {
             $this->newLine();
@@ -220,6 +231,12 @@ class ImportPaymentHistory extends Command
         $this->line("  Ambiguous: " . count($ambiguous));
         $this->line("  No Match:  " . count($noMatch));
         $this->line("  Will import: " . count($matchedValid) . " payment records");
+        if ($validPerMonth->isNotEmpty()) {
+            $this->line("  Valid per month:");
+            foreach ($validPerMonth as $period => $count) {
+                $this->line("    - {$period}: {$count}");
+            }
+        }
         $this->info('═══════════════════════════════════════════');
 
         // Apply
@@ -265,7 +282,7 @@ class ImportPaymentHistory extends Command
         return 0;
     }
 
-    private function parseExcelRows($sheet, int $defaultYear): \Illuminate\Support\Collection
+    private function parseExcelRows($sheet, int $defaultYear, ?int $monthFilter = null): \Illuminate\Support\Collection
     {
         $rows = collect();
         $maxRow = $sheet->getHighestRow();
@@ -289,6 +306,10 @@ class ImportPaymentHistory extends Command
             if (!$name || !$area) continue;
 
             foreach ($monthBlocks as $block) {
+                if ($monthFilter !== null && (int) $block['month'] !== $monthFilter) {
+                    continue;
+                }
+
                 $rekeningRaw = trim((string) ($sheet->getCell("{$block['rekening']}{$row}")->getValue() ?? ''));
                 $nominalRaw = $sheet->getCell("{$block['nominal']}{$row}")->getValue();
                 $tanggalRaw = $sheet->getCell("{$block['tanggal']}{$row}")->getValue();
