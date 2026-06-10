@@ -294,9 +294,10 @@
                 </button>
               </form>
               @endif
+              @endif {{-- end @if($customer->is_free) @else --}}
             </div>
           </div>
-          @endif {{-- end is_free @else --}}
+          @endif {{-- end @if($customer) --}}
 
         </div>
 
