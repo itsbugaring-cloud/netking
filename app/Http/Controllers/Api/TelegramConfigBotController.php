@@ -546,14 +546,14 @@ class TelegramConfigBotController extends Controller
         if ($field === 'area_id') {
             $areas = Area::query()
                 ->orderBy('name')
-                ->get(['id', 'name', 'router_identity', 'vlan_id']);
+                ->get(['id', 'name', 'router_identity', 'vlan_pppoe']);
 
             $buttons = [];
             $row = [];
             foreach ($areas as $i => $area) {
                 $label = $area->router_identity ?: $area->name;
-                if ($area->vlan_id) {
-                    $label .= ' (VLAN: ' . $area->vlan_id . ')';
+                if ($area->vlan_pppoe) {
+                    $label .= ' (VLAN: ' . $area->vlan_pppoe . ')';
                 }
                 $row[] = ['text' => '🔹 ' . $label, 'callback_data' => 'cfg:area:' . $area->id];
                 if (count($row) === 2) {

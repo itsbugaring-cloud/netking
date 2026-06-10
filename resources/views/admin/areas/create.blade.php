@@ -43,10 +43,15 @@
                 <input type="text" name="router_ip" class="form-control @error('router_ip') is-invalid @enderror" value="{{ old('router_ip') }}" placeholder="cth. 192.168.88.1" required>
                 @error('router_ip')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
-              <div class="col-md-2">
-                <label class="form-label">VLAN ID</label>
-                <input type="text" name="vlan_id" class="form-control @error('vlan_id') is-invalid @enderror" value="{{ old('vlan_id') }}" placeholder="cth. 100">
-                @error('vlan_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              <div class="col-md-1">
+                <label class="form-label">VLAN PPPoE</label>
+                <input type="text" name="vlan_pppoe" class="form-control @error('vlan_pppoe') is-invalid @enderror" value="{{ old('vlan_pppoe') }}" placeholder="cth. 100">
+                @error('vlan_pppoe')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              </div>
+              <div class="col-md-1">
+                <label class="form-label">VLAN MGMT</label>
+                <input type="text" name="vlan_mgmt" class="form-control @error('vlan_mgmt') is-invalid @enderror" value="{{ old('vlan_mgmt') }}" placeholder="cth. 200">
+                @error('vlan_mgmt')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
               <div class="col-md-2">
                 <label class="form-label">Username Router <span class="text-danger">*</span></label>

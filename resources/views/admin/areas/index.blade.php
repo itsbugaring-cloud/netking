@@ -41,7 +41,8 @@
               <th>Nama Area</th>
               <th>MikroTik Identity</th>
               <th>Router IP</th>
-              <th>VLAN ID</th>
+              <th>VLAN PPPoE</th>
+              <th>VLAN MGMT</th>
               <th style="width:120px;">Pelanggan</th>
               <th style="width:90px;">Aksi</th>
             </tr>
@@ -60,8 +61,15 @@
               </td>
               <td style="color:var(--txt-3);"><code>{{ $area->router_ip }}</code></td>
               <td>
-                @if($area->vlan_id)
-                <span style="font-weight:600;font-size:.8rem;color:var(--blue);">{{ $area->vlan_id }}</span>
+                @if($area->vlan_pppoe)
+                <span style="font-weight:600;font-size:.8rem;color:var(--blue);">{{ $area->vlan_pppoe }}</span>
+                @else
+                <span style="color:var(--txt-3);font-size:.75rem;">—</span>
+                @endif
+              </td>
+              <td>
+                @if($area->vlan_mgmt)
+                <span style="font-weight:600;font-size:.8rem;color:var(--blue);">{{ $area->vlan_mgmt }}</span>
                 @else
                 <span style="color:var(--txt-3);font-size:.75rem;">—</span>
                 @endif
@@ -87,7 +95,7 @@
             </tr>
             @empty
             <tr>
-              <td colspan="7">
+              <td colspan="8">
                 <div class="text-center py-5" style="color:var(--txt-3);">
                   <i class='bx bx-map-pin fs-1 d-block mb-2'></i>
                   <div style="font-size:.9375rem;font-weight:500;">Belum ada area</div>
@@ -121,7 +129,7 @@
         zeroRecords: 'Tidak ditemukan',
         paginate: { previous: '&lsaquo;', next: '&rsaquo;' }
       },
-      columnDefs: [{ orderable: false, targets: [5] }]
+      columnDefs: [{ orderable: false, targets: [6] }]
     });
     $('#areas-search').on('input', function() { table.search(this.value).draw(); });
     $('#areas-length').on('change', function() { table.page.len(+this.value).draw(); });
