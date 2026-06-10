@@ -398,10 +398,14 @@
                                     <th>Metode</th>
                                     <th>Status</th>
                                     <th>Tanggal</th>
+                                    <th style="width:88px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($customer->payments()->latest()->take(10)->get() as $payment)
+                                @php
+                                    $isManualPayment = $payment->created_by_user_id && !$payment->bukti_path;
+                                @endphp
                                 <tr>
                                     <td style="font-size:0.8125rem; color:#64748b;">
                                         {{ \Carbon\Carbon::createFromDate($payment->periode_tahun, $payment->periode_bulan, 1)->translatedFormat('M Y') }}
@@ -418,10 +422,23 @@
                                         @endif
                                     </td>
                                     <td style="font-size:0.8125rem; color:#64748b;">{{ $payment->created_at->format('d M Y') }}</td>
+                                    <td>
+                                        @if($isManualPayment)
+                                        <form action="{{ route('admin.payments.destroy', $payment) }}" method="POST" onsubmit="return confirm('Hapus pembayaran manual ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size:.72rem;padding:.2rem .5rem;">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                        @else
+                                        <span style="color:#94a3b8;font-size:.8rem;">—</span>
+                                        @endif
+                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4" style="color:#64748b; font-size:0.875rem;">
+                                    <td colspan="6" class="text-center py-4" style="color:#64748b; font-size:0.875rem;">
                                         Belum ada pembayaran
                                     </td>
                                 </tr>

@@ -41,7 +41,7 @@ class SyncAreaVlans extends Command
                     continue;
                 }
 
-                $pppoeInterface = $pppoeServers[0]['interface'] ?? null;
+                $pppoeInterface = $this->pickPppoeInterface($pppoeServers);
                 $this->line("  PPPoE Server interface: {$pppoeInterface}");
 
                 // Check if that interface is a VLAN
@@ -101,6 +101,7 @@ class SyncAreaVlans extends Command
     private function getVlanId(MikroTikService $mikrotik, ?string $interfaceName): ?string
     {
         if (!$interfaceName) return null;
+        if ($this->looksLikeMgmt($interfaceName)) return null;
 
         try {
             $client = $this->getClient($mikrotik);
@@ -133,6 +134,59 @@ class SyncAreaVlans extends Command
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    private function pickPppoeInterface(array $pppoeServers): ?string
+    {
+        if (empty($pppoeServers)) {
+            return null;
+        }
+
+        $interfaces = [];
+        foreach ($pppoeServers as $server) {
+            $name = trim((string) ($server['interface'] ?? ''));
+            if ($name !== '') {
+                $interfaces[] = $name;
+            }
+        }
+
+        if (empty($interfaces)) {
+            return null;
+        }
+
+        foreach ($interfaces as $name) {
+            if ($this->looksLikePppoe($name) && !$this->looksLikeMgmt($name)) {
+                return $name;
+            }
+        }
+
+        foreach ($interfaces as $name) {
+            if (!$this->looksLikeMgmt($name)) {
+                return $name;
+            }
+        }
+
+        return $interfaces[0];
+    }
+
+    private function looksLikeMgmt(?string $name): bool
+    {
+        $value = strtolower(trim((string) $name));
+        if ($value === '') {
+            return false;
+        }
+
+        return str_contains($value, 'mgmt') || str_contains($value, 'management');
+    }
+
+    private function looksLikePppoe(?string $name): bool
+    {
+        $value = strtolower(trim((string) $name));
+        if ($value === '') {
+            return false;
+        }
+
+        return str_contains($value, 'pppoe');
     }
 
     private function findMgmtVlan(MikroTikService $mikrotik): ?string

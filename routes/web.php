@@ -132,6 +132,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/review', [PaymentController::class, 'reviewIndex'])->name('review');
             Route::post('/{payment}/approve', [PaymentController::class, 'approve'])->name('approve');
             Route::post('/{payment}/reject', [PaymentController::class, 'reject'])->name('reject');
+            Route::delete('/{payment}', [PaymentController::class, 'destroy'])->name('destroy');
             Route::get('/manual/{customer}', [PaymentController::class, 'manualPaymentForm'])->name('manual');
             Route::post('/manual/{customer}', [PaymentController::class, 'manualPaymentStore'])->name('manual.store');
 

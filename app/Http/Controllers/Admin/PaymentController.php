@@ -134,5 +134,30 @@ class PaymentController extends Controller
             ->with('success', 'Pembayaran manual berhasil dicatat.');
     }
 
+    /**
+     * Delete a manual/admin-created payment entry.
+     */
+    public function destroy(Payment $payment)
+    {
+        $isManualEntry = $payment->created_by_user_id !== null && empty($payment->bukti_path);
+
+        if (!$isManualEntry) {
+            return back()->with('error', 'Hanya pembayaran manual yang bisa dihapus dari sini.');
+        }
+
+        $customer = $payment->customer;
+        $periodLabel = sprintf('%02d/%s', (int) $payment->periode_bulan, (string) $payment->periode_tahun);
+
+        $payment->delete();
+
+        if ($customer) {
+            return redirect()->route('admin.customers.show', $customer)
+                ->with('success', 'Pembayaran manual periode ' . $periodLabel . ' berhasil dihapus.');
+        }
+
+        return redirect()->route('admin.payments.quick')
+            ->with('success', 'Pembayaran manual periode ' . $periodLabel . ' berhasil dihapus.');
+    }
+
 
 }
