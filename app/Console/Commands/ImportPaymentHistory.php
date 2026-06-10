@@ -66,6 +66,8 @@ class ImportPaymentHistory extends Command
 
         // Match
         $matched = [];
+        $matchedValid = [];
+        $matchedNeedsReview = [];
         $noMatch = [];
         $ambiguous = [];
 
@@ -103,10 +105,17 @@ class ImportPaymentHistory extends Command
             });
 
             if ($candidates->count() === 1) {
-                $matched[] = [
+                $match = [
                     'excel' => $row,
                     'customer' => $candidates->first(),
                 ];
+                $matched[] = $match;
+                $reviewReasons = $this->paymentReviewReasons($row);
+                if (empty($reviewReasons)) {
+                    $matchedValid[] = $match;
+                } else {
+                    $matchedNeedsReview[] = $match + ['review_reasons' => $reviewReasons];
+                }
             } elseif ($candidates->count() > 1) {
                 $ambiguous[] = [
                     'excel' => $row,
@@ -144,6 +153,19 @@ class ImportPaymentHistory extends Command
             $this->table(['ID', 'PPPoE', 'DB Area', 'Excel Name', 'Periode', 'Nominal', 'Rekening', 'Tgl Bayar', 'Excel Langganan', 'DB Langganan', 'Excel Layanan', 'DB Paket', 'Excel Bayar', 'DB Harga'], $table);
             if (count($matched) > 50) {
                 $this->line("  ... and " . (count($matched) - 50) . " more matches.");
+            }
+        }
+
+        if (!empty($matchedNeedsReview)) {
+            $this->newLine();
+            $this->warn("═══ MATCHED BUT NEED REVIEW: " . count($matchedNeedsReview) . " ═══");
+            foreach (array_slice($matchedNeedsReview, 0, 30) as $m) {
+                $e = $m['excel'];
+                $c = $m['customer'];
+                $this->line("  {$e['name']} | {$c->pppoe_user} | " . sprintf('%02d/%04d', $e['month'], $e['year']) . " | " . implode(', ', $m['review_reasons']));
+            }
+            if (count($matchedNeedsReview) > 30) {
+                $this->line("  ... +" . (count($matchedNeedsReview) - 30) . " more");
             }
         }
 
@@ -193,16 +215,18 @@ class ImportPaymentHistory extends Command
         $this->info('  SUMMARY');
         $this->info('═══════════════════════════════════════════');
         $this->line("  Matched:   " . count($matched));
+        $this->line("  Valid:     " . count($matchedValid));
+        $this->line("  Review:    " . count($matchedNeedsReview));
         $this->line("  Ambiguous: " . count($ambiguous));
         $this->line("  No Match:  " . count($noMatch));
-        $this->line("  Will import: " . count($matched) . " payment records");
+        $this->line("  Will import: " . count($matchedValid) . " payment records");
         $this->info('═══════════════════════════════════════════');
 
         // Apply
-        if ($apply && !empty($matched)) {
+        if ($apply && !empty($matchedValid)) {
             $this->newLine();
             $created = 0;
-            foreach ($matched as $m) {
+            foreach ($matchedValid as $m) {
                 $c = $m['customer'];
                 $e = $m['excel'];
 
@@ -536,6 +560,31 @@ class ImportPaymentHistory extends Command
     private function formatDate(?string $value): string
     {
         return $value ?: '-';
+    }
+
+    private function paymentReviewReasons(array $row): array
+    {
+        $reasons = [];
+
+        if (($row['nominal'] ?? 0) <= 0) {
+            $reasons[] = 'nominal<=0';
+        }
+
+        if (empty($row['tanggal_bayar'])) {
+            $reasons[] = 'tanggal_bayar_kosong';
+        }
+
+        $rekening = (string) ($row['rekening'] ?? '');
+        $allowed = ['BRI', 'BNI', 'Mandiri', 'BCA', 'QRIS', 'Cash'];
+        if (!in_array($rekening, $allowed, true)) {
+            $reasons[] = 'rekening_nonstandar:' . $rekening;
+        }
+
+        if ($rekening === 'GRATIS') {
+            $reasons[] = 'gratis';
+        }
+
+        return $reasons;
     }
 
     private function serviceLooksSame(string $excelService, string $dbPackageName, string $dbProfile): bool
