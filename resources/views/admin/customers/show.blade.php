@@ -103,6 +103,9 @@
     </div>
     <div class="ms-page-actions">
         @unless($isFinance)
+        <a href="{{ route('admin.payments.manual', $customer) }}" class="ms-btn-secondary" style="color:#16a34a;border-color:#16a34a;">
+            <i class='bx bx-money'></i> Tandai Bayar Manual
+        </a>
         <button type="button" class="ms-btn-secondary" data-bs-toggle="modal" data-bs-target="#resetPortalPasswordModal">
             <i class='bx bx-key'></i> Reset Password Portal
         </button>

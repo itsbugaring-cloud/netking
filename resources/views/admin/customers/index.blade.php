@@ -219,8 +219,10 @@
             <tr>
               <th style="width:38px;">@unless($isFinance)<input type="checkbox" id="select-all" style="accent-color:var(--blue);">@endunless</th>
               <th>Pelanggan</th>
+              <th>ID Pelanggan</th>
               <th>PPPoE User</th>
               <th>Area</th>
+              <th>No. HP</th>
               <th>Paket</th>
               <th style="width:110px;">Status</th>
               <th style="width:110px;">Berlangganan</th>
@@ -248,15 +250,15 @@
                   </div>
                   <div>
                     <div style="font-weight:600;color:var(--txt);">{{ $customer->name }}</div>
-                    <div style="font-size:.73rem;color:var(--txt-3);">{{ $customer->phone ?: '—' }}</div>
-                    <div style="font-size:.7rem;color:var(--txt-3);">{{ $customer->customer_code ?: 'Belum ada ID' }}</div>
                   </div>
                 </div>
               </td>
+              <td><code style="font-size:.75rem;">{{ $customer->customer_code ?: '—' }}</code></td>
               <td><code>{{ $customer->pppoe_user }}</code></td>
               <td>
                 <div style="font-weight:600;color:var(--txt);">{{ $customer->area->name ?? '—' }}</div>
               </td>
+              <td style="font-size:.8125rem;color:var(--txt-3);">{{ $customer->phone ?: '—' }}</td>
               <td>
                 @if($customer->package)
                 <div style="font-weight:600;color:var(--txt);">{{ $customer->package->name }}</div>
@@ -293,7 +295,7 @@
             </tr>
             @empty
             <tr>
-              <td colspan="8">
+              <td colspan="10">
                 <div class="empty-state">
                   <div class="empty-state-icon"><i class='bx bx-group'></i></div>
                   <div class="empty-state-title">Belum ada pelanggan</div>

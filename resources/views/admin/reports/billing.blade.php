@@ -11,6 +11,9 @@
       <a href="{{ route('admin.reports.export-billing', request()->query()) }}" class="btn btn-sm btn-success" style="border-radius:8px;font-weight:600;">
         <i class='bx bx-download me-1'></i> Export CSV
       </a>
+      <a href="{{ route('admin.customers.export-excel', request()->query()) }}" class="btn btn-sm btn-primary" style="border-radius:8px;font-weight:600;">
+        <i class='bx bx-spreadsheet me-1'></i> Ekspor Excel
+      </a>
     </div>
   </div>
 
@@ -89,6 +92,7 @@
             <tr>
               <th>#</th>
               <th>Nama</th>
+              <th>ID Pelanggan</th>
               <th>Area</th>
               <th>Paket</th>
               <th>Status</th>
@@ -106,6 +110,7 @@
                 </a>
                 <div style="font-size:.72rem;color:var(--txt-3);">{{ $c->phone ?? '-' }}</div>
               </td>
+              <td><code style="font-size:.75rem;">{{ $c->customer_code ?? '—' }}</code></td>
               <td style="font-size:.8125rem;">{{ $c->area->name ?? '-' }}</td>
               <td style="font-size:.8125rem;">{{ $c->package->name ?? '-' }}</td>
               <td>
