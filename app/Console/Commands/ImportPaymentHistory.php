@@ -14,7 +14,8 @@ class ImportPaymentHistory extends Command
     protected $signature = 'payments:import-history
         {file : Path to NETKING.xlsx}
         {--apply : Actually write to DB (default: dry-run)}
-        {--sheet=1 : Sheet index (1=PEMBAYARAN PELANGGAN)}';
+        {--sheet=PEMBAYARAN PELANGGAN : Sheet name or zero-based sheet index}
+        {--year=2026 : Default year for monthly payment columns when date is blank}';
 
     protected $description = 'Import payment history from Excel. Match customer by name + area. DRY-RUN by default.';
 
@@ -24,7 +25,8 @@ class ImportPaymentHistory extends Command
     {
         $file = $this->argument('file');
         $apply = (bool) $this->option('apply');
-        $sheetIndex = (int) $this->option('sheet');
+        $sheetOption = (string) $this->option('sheet');
+        $defaultYear = (int) $this->option('year');
 
         if (!file_exists($file)) {
             $this->error("File not found: {$file}");
@@ -39,20 +41,24 @@ class ImportPaymentHistory extends Command
 
         $this->info('Loading Excel...');
         $spreadsheet = IOFactory::load($file);
-        $sheet = $spreadsheet->getSheet($sheetIndex);
+        $sheet = $this->resolveSheet($spreadsheet, $sheetOption);
+        if ($sheet === null) {
+            $this->error("Sheet not found: {$sheetOption}");
+            return 1;
+        }
         $this->line("Sheet: {$sheet->getTitle()}, Rows: {$sheet->getHighestRow()}");
 
         $this->buildAreaMapping();
 
         // Parse Excel rows
-        $excelRows = $this->parseExcelRows($sheet);
+        $excelRows = $this->parseExcelRows($sheet, $defaultYear);
         $this->info("Parsed {$excelRows->count()} rows from Excel.");
         $this->newLine();
 
         // Load customers
         $customers = Customer::whereNotNull('pppoe_user')
             ->where('pppoe_user', '!=', '')
-            ->with('area')
+            ->with(['area', 'package'])
             ->get();
 
         $this->info("DB customers: {$customers->count()}");
@@ -126,12 +132,38 @@ class ImportPaymentHistory extends Command
                 number_format($e['nominal'], 0, ',', '.'),
                 $e['rekening'],
                 $e['tanggal_bayar'] ?? '-',
+                $this->formatDate($e['subscription_date']),
+                $this->formatDate(optional($c->billing_start_date)->format('Y-m-d')),
+                $e['service'],
+                $c->package?->name ?? '-',
+                number_format((float) $e['bayar'], 0, ',', '.'),
+                number_format((float) $c->package_price, 0, ',', '.'),
             ];
         }
         if (!empty($table)) {
-            $this->table(['ID', 'PPPoE', 'DB Area', 'Excel Name', 'Periode', 'Nominal', 'Rekening', 'Tgl Bayar'], $table);
+            $this->table(['ID', 'PPPoE', 'DB Area', 'Excel Name', 'Periode', 'Nominal', 'Rekening', 'Tgl Bayar', 'Excel Langganan', 'DB Langganan', 'Excel Layanan', 'DB Paket', 'Excel Bayar', 'DB Harga'], $table);
             if (count($matched) > 50) {
                 $this->line("  ... and " . (count($matched) - 50) . " more matches.");
+            }
+        }
+
+        $baseFieldMismatches = [
+            'subscription_date' => 0,
+            'service' => 0,
+            'price' => 0,
+        ];
+        foreach ($matched as $m) {
+            $c = $m['customer'];
+            $e = $m['excel'];
+
+            if ($this->formatDate($e['subscription_date']) !== $this->formatDate(optional($c->billing_start_date)->format('Y-m-d'))) {
+                $baseFieldMismatches['subscription_date']++;
+            }
+            if (!$this->serviceLooksSame((string) $e['service'], (string) ($c->package?->name ?? ''), (string) ($c->package?->mikrotik_profile ?? ''))) {
+                $baseFieldMismatches['service']++;
+            }
+            if ((int) $e['bayar'] > 0 && (int) round((float) $c->package_price) !== (int) $e['bayar']) {
+                $baseFieldMismatches['price']++;
             }
         }
 
@@ -174,6 +206,16 @@ class ImportPaymentHistory extends Command
                 $c = $m['customer'];
                 $e = $m['excel'];
 
+                $exists = Payment::query()
+                    ->where('customer_id', $c->id)
+                    ->where('periode_bulan', $e['month'])
+                    ->where('periode_tahun', $e['year'])
+                    ->exists();
+
+                if ($exists) {
+                    continue;
+                }
+
                 Payment::create([
                     'customer_id' => $c->id,
                     'periode_bulan' => $e['month'],
@@ -183,7 +225,7 @@ class ImportPaymentHistory extends Command
                     'rekening_tujuan' => $e['rekening'],
                     'status' => 'approved',
                     'approved_at' => $e['tanggal_bayar'],
-                    'catatan' => 'Import historis',
+                    'catatan' => 'Import historis dari Excel',
                 ]);
                 $created++;
             }
@@ -191,48 +233,81 @@ class ImportPaymentHistory extends Command
         } elseif (!$apply) {
             $this->newLine();
             $this->warn('DRY-RUN mode. Jalankan dengan --apply untuk write ke DB.');
+            $this->line("  Mismatch tanggal berlangganan: {$baseFieldMismatches['subscription_date']}");
+            $this->line("  Mismatch layanan: {$baseFieldMismatches['service']}");
+            $this->line("  Mismatch harga: {$baseFieldMismatches['price']}");
         }
 
         return 0;
     }
 
-    private function parseExcelRows($sheet): \Illuminate\Support\Collection
+    private function parseExcelRows($sheet, int $defaultYear): \Illuminate\Support\Collection
     {
         $rows = collect();
         $maxRow = $sheet->getHighestRow();
 
-        for ($row = 3; $row <= $maxRow; $row++) {
+        $monthBlocks = [
+            ['month' => 2, 'rekening' => 'H', 'nominal' => 'I', 'tanggal' => 'J'],
+            ['month' => 3, 'rekening' => 'K', 'nominal' => 'L', 'tanggal' => 'N'],
+            ['month' => 4, 'rekening' => 'O', 'nominal' => 'P', 'tanggal' => 'R'],
+            ['month' => 5, 'rekening' => 'S', 'nominal' => 'T', 'tanggal' => 'V'],
+            ['month' => 6, 'rekening' => 'W', 'nominal' => 'X', 'tanggal' => 'Y'],
+            ['month' => 7, 'rekening' => 'Z', 'nominal' => 'AA', 'tanggal' => 'AB'],
+        ];
+
+        for ($row = 5; $row <= $maxRow; $row++) {
             $name = trim((string) ($sheet->getCell("B{$row}")->getValue() ?? ''));
-            $area = trim((string) ($sheet->getCell("C{$row}")->getValue() ?? ''));
-            $monthRaw = $sheet->getCell("D{$row}")->getValue();
-            $yearRaw = $sheet->getCell("E{$row}")->getValue();
-            $nominalRaw = $sheet->getCell("F{$row}")->getValue();
-            $rekening = trim((string) ($sheet->getCell("G{$row}")->getValue() ?? ''));
-            $tanggalRaw = $sheet->getCell("H{$row}")->getValue();
+            $area = trim((string) ($sheet->getCell("D{$row}")->getValue() ?? ''));
+            $service = trim((string) ($sheet->getCell("F{$row}")->getValue() ?? ''));
+            $subscriptionDate = $this->parseDate($sheet->getCell("E{$row}")->getValue());
+            $bayar = $this->parseNominal($sheet->getCell("G{$row}")->getValue());
 
             if (!$name || !$area) continue;
 
-            $month = $this->parseMonth($monthRaw);
-            $year = $this->parseYear($yearRaw);
-            $nominal = $this->parseNominal($nominalRaw);
-            $tanggalBayar = $this->parseDate($tanggalRaw);
-            $rekening = $this->normalizeRekening($rekening);
+            foreach ($monthBlocks as $block) {
+                $rekeningRaw = trim((string) ($sheet->getCell("{$block['rekening']}{$row}")->getValue() ?? ''));
+                $nominalRaw = $sheet->getCell("{$block['nominal']}{$row}")->getValue();
+                $tanggalRaw = $sheet->getCell("{$block['tanggal']}{$row}")->getValue();
 
-            if (!$month || !$year || !$nominal) continue;
+                $nominal = $this->parseNominal($nominalRaw);
+                $rekening = $this->normalizeRekening($rekeningRaw);
+                $tanggalBayar = $this->parseDate($tanggalRaw);
 
-            $rows->push([
-                'row' => $row,
-                'name' => $name,
-                'area' => $area,
-                'month' => $month,
-                'year' => $year,
-                'nominal' => $nominal,
-                'rekening' => $rekening,
-                'tanggal_bayar' => $tanggalBayar,
-            ]);
+                if ($nominal <= 0 && $rekening === 'Transfer' && !$tanggalBayar) {
+                    continue;
+                }
+
+                $year = $tanggalBayar ? (int) substr($tanggalBayar, 0, 4) : $defaultYear;
+
+                $rows->push([
+                    'row' => $row,
+                    'name' => $name,
+                    'area' => $area,
+                    'subscription_date' => $subscriptionDate,
+                    'service' => $service,
+                    'bayar' => $bayar,
+                    'month' => $block['month'],
+                    'year' => $year,
+                    'nominal' => $nominal,
+                    'rekening' => $rekening,
+                    'tanggal_bayar' => $tanggalBayar,
+                ]);
+            }
         }
 
         return $rows;
+    }
+
+    private function resolveSheet($spreadsheet, string $sheetOption)
+    {
+        if (is_numeric($sheetOption)) {
+            $index = (int) $sheetOption;
+            if ($index >= 0 && $index < $spreadsheet->getSheetCount()) {
+                return $spreadsheet->getSheet($index);
+            }
+        }
+
+        return $spreadsheet->getSheetByName($sheetOption);
     }
 
     private function parseMonth($raw): ?int
@@ -287,11 +362,14 @@ class ImportPaymentHistory extends Command
     {
         $raw = mb_strtoupper(trim($raw));
 
+        if ($raw === '' || $raw === '-') return 'Transfer';
         if (str_contains($raw, 'BRI')) return 'BRI';
         if (str_contains($raw, 'BNI')) return 'BNI';
         if (str_contains($raw, 'MANDIRI')) return 'Mandiri';
         if (str_contains($raw, 'BCA')) return 'BCA';
         if (str_contains($raw, 'QRIS')) return 'QRIS';
+        if (str_contains($raw, 'CASH')) return 'Cash';
+        if (str_contains($raw, 'GRATIS')) return 'GRATIS';
 
         return $raw ?: 'Transfer';
     }
@@ -453,5 +531,23 @@ class ImportPaymentHistory extends Command
         $value = preg_replace('/\s+/', ' ', $value);
         $value = str_replace(['(gratis)', '(server)', '(fasum)'], '', $value);
         return trim($value);
+    }
+
+    private function formatDate(?string $value): string
+    {
+        return $value ?: '-';
+    }
+
+    private function serviceLooksSame(string $excelService, string $dbPackageName, string $dbProfile): bool
+    {
+        $excel = preg_replace('/[^0-9]/', '', $excelService);
+        $dbName = preg_replace('/[^0-9]/', '', $dbPackageName);
+        $dbProf = preg_replace('/[^0-9]/', '', $dbProfile);
+
+        if ($excel === '') {
+            return true;
+        }
+
+        return $excel === $dbName || $excel === $dbProf;
     }
 }

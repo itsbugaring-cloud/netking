@@ -159,5 +159,46 @@ class PaymentController extends Controller
             ->with('success', 'Pembayaran manual periode ' . $periodLabel . ' berhasil dihapus.');
     }
 
+    /**
+     * Bulk delete manual/admin-created payment entries.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'payment_ids' => 'required|array|min:1',
+            'payment_ids.*' => 'integer|exists:payments,id',
+            'customer_id' => 'nullable|integer|exists:customers,id',
+        ]);
+
+        $payments = Payment::whereIn('id', $validated['payment_ids'])
+            ->get();
+
+        $manualPayments = $payments->filter(fn (Payment $payment) => $payment->created_by_user_id !== null && empty($payment->bukti_path));
+
+        if ($manualPayments->isEmpty()) {
+            return back()->with('error', 'Tidak ada pembayaran manual yang valid untuk dihapus.');
+        }
+
+        if ($manualPayments->count() !== $payments->count()) {
+            return back()->with('error', 'Sebagian data yang dipilih bukan pembayaran manual, jadi penghapusan dibatalkan.');
+        }
+
+        $customerId = (int) ($validated['customer_id'] ?? 0);
+        if ($customerId > 0 && $manualPayments->contains(fn (Payment $payment) => (int) $payment->customer_id !== $customerId)) {
+            return back()->with('error', 'Ada pembayaran dari pelanggan lain di pilihan Anda. Penghapusan dibatalkan.');
+        }
+
+        $deletedCount = $manualPayments->count();
+        $manualPayments->each->delete();
+
+        if ($customerId > 0) {
+            return redirect()->route('admin.customers.show', $customerId)
+                ->with('success', $deletedCount . ' pembayaran manual berhasil dihapus.');
+        }
+
+        return redirect()->route('admin.payments.quick')
+            ->with('success', $deletedCount . ' pembayaran manual berhasil dihapus.');
+    }
+
 
 }

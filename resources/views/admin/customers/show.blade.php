@@ -388,11 +388,32 @@
         <div class="tab-content">
             {{-- Payments Tab --}}
             <div class="tab-pane fade show active" id="tab-payments" role="tabpanel">
+                @php
+                    $recentPayments = $customer->payments()->latest()->take(10)->get();
+                    $hasManualPayments = $recentPayments->contains(fn($payment) => $payment->created_by_user_id && !$payment->bukti_path);
+                @endphp
                 <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;">
                     <div class="table-responsive">
+                        @if($hasManualPayments)
+                        <form id="bulk-delete-manual-payments-form" action="{{ route('admin.payments.bulk-destroy') }}" method="POST" onsubmit="return confirm('Hapus semua pembayaran manual yang dipilih?');" class="d-none">
+                            @csrf
+                            @method('DELETE')
+                            <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+                        </form>
+                        <div class="d-flex justify-content-end align-items-center gap-2 px-3 pt-3">
+                            <label class="d-flex align-items-center gap-2 mb-0" style="font-size:.78rem;color:#64748b;">
+                                <input type="checkbox" id="select-all-manual-payments">
+                                Pilih semua manual
+                            </label>
+                            <button type="submit" form="bulk-delete-manual-payments-form" class="btn btn-sm btn-outline-danger" style="font-size:.75rem;">
+                                Hapus yang dipilih
+                            </button>
+                        </div>
+                        @endif
                         <table class="table table-flat mb-0" id="customer-payments-table">
                             <thead>
                                 <tr>
+                                    <th style="width:44px;">#</th>
                                     <th>Periode</th>
                                     <th>Jumlah</th>
                                     <th>Metode</th>
@@ -402,11 +423,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($customer->payments()->latest()->take(10)->get() as $payment)
+                                @forelse($recentPayments as $payment)
                                 @php
                                     $isManualPayment = $payment->created_by_user_id && !$payment->bukti_path;
                                 @endphp
                                 <tr>
+                                    <td>
+                                        @if($isManualPayment)
+                                        <input type="checkbox" name="payment_ids[]" value="{{ $payment->id }}" form="bulk-delete-manual-payments-form" class="manual-payment-checkbox" style="width:16px;height:16px;">
+                                        @else
+                                        <span style="color:#94a3b8;font-size:.8rem;">—</span>
+                                        @endif
+                                    </td>
                                     <td style="font-size:0.8125rem; color:#64748b;">
                                         {{ \Carbon\Carbon::createFromDate($payment->periode_tahun, $payment->periode_bulan, 1)->translatedFormat('M Y') }}
                                     </td>
@@ -438,7 +466,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-4" style="color:#64748b; font-size:0.875rem;">
+                                    <td colspan="7" class="text-center py-4" style="color:#64748b; font-size:0.875rem;">
                                         Belum ada pembayaran
                                     </td>
                                 </tr>
@@ -938,6 +966,15 @@
     $(function() {
         loadTopology();
         setInterval(loadTopology, 30000);
+
+        var selectAllManual = document.getElementById('select-all-manual-payments');
+        if (selectAllManual) {
+            selectAllManual.addEventListener('change', function() {
+                document.querySelectorAll('.manual-payment-checkbox').forEach(function(cb) {
+                    cb.checked = selectAllManual.checked;
+                });
+            });
+        }
     });
 </script>
 </div>
