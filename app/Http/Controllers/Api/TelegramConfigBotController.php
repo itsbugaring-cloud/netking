@@ -796,6 +796,32 @@ class TelegramConfigBotController extends Controller
         }
         $this->saveRequest($ref, $payload);
 
+        // Notify admin via Telegram
+        $adminChatId = config('services.telegram_config.admin_chat_id', env('TELEGRAM_CONFIG_ADMIN_CHAT_ID'));
+        if ($adminChatId) {
+            $areaName = $draft['area_name'] ?? '-';
+            $customerName = $draft['nama'] ?? '-';
+            $pppoeUser = $draft['pppoe_user'] ?? '-';
+            $paketName = $draft['paket_name'] ?? ($draft['paket_kode'] ?? '-');
+            $harga = number_format((float) ($draft['harga'] ?? 0), 0, ',', '.');
+            $fromName = $from['first_name'] ?? 'Unknown';
+            $fromUsername = $from['username'] ?? '';
+            $pushStatus = (($push['success'] ?? false) === true) ? '✅ Secret masuk MikroTik' : '❌ Push gagal: ' . ($push['error'] ?? 'unknown');
+
+            $notifText = "🆕 *Request Baru*\n"
+                . "━━━━━━━━━━━━━━━\n"
+                . "👷 PIC: {$fromName}" . ($fromUsername ? " (@{$fromUsername})" : '') . "\n"
+                . "📍 Area: {$areaName}\n"
+                . "👤 Nama: {$customerName}\n"
+                . "🌐 PPPoE: `{$pppoeUser}`\n"
+                . "📦 Paket: {$paketName} (Rp {$harga})\n"
+                . "━━━━━━━━━━━━━━━\n"
+                . "Status: {$pushStatus}\n"
+                . "Ref: `{$ref}`";
+
+            $this->sendMessage($adminChatId, $notifText, ['parse_mode' => 'Markdown']);
+        }
+
         $state['collecting'] = false;
         $state['last_submitted_ref'] = $ref;
         $state['last_submitted_token'] = $token;
