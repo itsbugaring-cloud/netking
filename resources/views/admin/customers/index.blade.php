@@ -88,6 +88,28 @@
     font-size: .8125rem !important;
   }
 
+  /* ── Search input ────────────────────────────────────────────────────── */
+  .nk-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .4rem .75rem;
+    min-width: 260px;
+  }
+  .nk-search-wrap i { color: var(--txt-3); font-size: 1.1rem; }
+  .nk-search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: .84rem;
+    color: var(--txt);
+    width: 100%;
+  }
+  .nk-search-input::placeholder { color: var(--txt-3); }
+
   /* ── Bulk bar border ─────────────────────────────────────────────────── */
   #bulk-bar.ms-panel {
     border: 1px solid var(--border) !important;

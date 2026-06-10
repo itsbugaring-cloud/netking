@@ -116,7 +116,7 @@
             <i class='bx bx-edit'></i> Ubah
         </a>
         @endunless
-        <a href="{{ route('admin.customers.index') }}" class="ms-btn-secondary">
+        <a href="javascript:history.back()" class="ms-btn-secondary">
             <i class='bx bx-arrow-back'></i> Kembali
         </a>
     </div>
