@@ -284,6 +284,9 @@
               <td style="color:var(--txt-3);white-space:nowrap;">{{ ($customer->billing_start_date ?? $customer->created_at)->format('d M Y') }}</td>
               <td>
                 <div class="d-flex gap-1">
+                  <a href="{{ route('admin.payments.manual', $customer) }}" class="cust-action-btn" title="Tandai Bayar" style="color:#16a34a;background:rgba(22,163,106,.1);border-color:rgba(22,163,106,.22);">
+                    <i class='bx bx-money'></i>
+                  </a>
                   <a href="{{ route('admin.customers.show', $customer) }}" class="cust-action-btn view" title="Lihat Detail">
                     <i class='bx bx-show'></i>
                   </a>

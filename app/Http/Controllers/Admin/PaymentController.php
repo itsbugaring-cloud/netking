@@ -64,6 +64,26 @@ class PaymentController extends Controller
     }
 
     /**
+     * Quick payment page — search customer and pay in one page.
+     */
+    public function quickPayment(Request $request)
+    {
+        $search = $request->input('q');
+        $customer = null;
+
+        if ($search) {
+            $customer = \App\Models\Customer::where('customer_code', $search)
+                ->orWhere('pppoe_user', 'like', "%{$search}%")
+                ->orWhere('name', 'like', "%{$search}%")
+                ->orWhere('phone', $search)
+                ->with(['area', 'package'])
+                ->first();
+        }
+
+        return view('admin.payments.quick', compact('customer', 'search'));
+    }
+
+    /**
      * Show manual payment form for a customer.
      */
     public function manualPaymentForm(Customer $customer)

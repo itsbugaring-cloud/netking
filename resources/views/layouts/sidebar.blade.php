@@ -72,8 +72,14 @@
       'label' => 'Keuangan',
       'items' => array_values(array_filter([
         [
+          'route' => route('admin.payments.quick'),
+          'active' => request()->routeIs('admin.payments.quick'),
+          'icon' => 'bx bx-zap',
+          'title' => 'Bayar Cepat',
+        ],
+        [
           'route' => route('admin.payments.review'),
-          'active' => request()->routeIs('admin.payments*'),
+          'active' => request()->routeIs('admin.payments.review'),
           'icon' => 'bx bx-check-shield',
           'title' => 'Review Pembayaran',
           'badge' => \App\Models\Payment::pending()->count() ?: null,

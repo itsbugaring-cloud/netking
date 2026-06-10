@@ -128,6 +128,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Payment Management
         Route::prefix('payments')->name('payments.')->group(function () {
+            Route::get('/quick', [PaymentController::class, 'quickPayment'])->name('quick');
             Route::get('/review', [PaymentController::class, 'reviewIndex'])->name('review');
             Route::post('/{payment}/approve', [PaymentController::class, 'approve'])->name('approve');
             Route::post('/{payment}/reject', [PaymentController::class, 'reject'])->name('reject');
