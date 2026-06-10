@@ -235,7 +235,7 @@ class CustomerController extends Controller
             'package_id'      => 'nullable|exists:packages,id',
             'package_price'   => 'required|numeric|min:0',
             'billing_start_date' => 'required|date',
-            'billing_due_day'    => 'nullable|integer|min:1|max:28',
+            'billing_due_day'    => 'nullable|integer|min:1|max:31',
             'pppoe_pass'      => 'nullable|string|max:255',
             'ont_sn'          => 'nullable|string|max:255',
             'phone'           => 'nullable|string|max:20',

@@ -9,7 +9,7 @@
       <h1 class="ms-page-title">Ubah Pelanggan</h1>
     </div>
     <div class="ms-page-actions">
-      <a href="{{ route('admin.customers.show', $customer) }}" class="ms-btn-secondary">
+      <a href="javascript:history.back()" class="ms-btn-secondary">
         <i class='bx bx-arrow-back'></i> Kembali
       </a>
     </div>
@@ -128,7 +128,7 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label">Jatuh Tempo (Tanggal)</label>
-                <input type="number" name="billing_due_day" class="form-control @error('billing_due_day') is-invalid @enderror" value="{{ old('billing_due_day', $customer->billing_due_day) }}" min="1" max="28" placeholder="Default: {{ config('billing.invoice_due_day', 20) }}">
+                <input type="number" name="billing_due_day" class="form-control @error('billing_due_day') is-invalid @enderror" value="{{ old('billing_due_day', $customer->billing_due_day) }}" min="1" max="31" placeholder="Default: {{ config('billing.invoice_due_day', 20) }}">
                 <div class="form-text">Kosongkan untuk pakai default (tgl {{ config('billing.invoice_due_day', 20) }}). Isi 25 kalau mau jatuh tempo tgl 25.</div>
                 @error('billing_due_day')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
