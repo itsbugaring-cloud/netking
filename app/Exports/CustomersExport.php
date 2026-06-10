@@ -3,18 +3,14 @@
 namespace App\Exports;
 
 use App\Models\Customer;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Concerns\FromView;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CustomersExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
+/**
+ * Export customers to CSV (Excel-compatible, no external library needed).
+ * Opens correctly in Excel with UTF-8 BOM.
+ */
+class CustomersExport
 {
     private Request $request;
 
@@ -23,7 +19,7 @@ class CustomersExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
         $this->request = $request;
     }
 
-    public function view(): View
+    public function download(string $filename): StreamedResponse
     {
         $query = Customer::with(['partner', 'area', 'package'])
             ->with(['latestPayment' => function ($q) {
@@ -39,68 +35,65 @@ class CustomersExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
 
         $customers = $query->orderBy('area_id')->orderBy('name')->get();
 
-        return view('exports.customers', compact('customers'));
-    }
+        return response()->streamDownload(function () use ($customers) {
+            $out = fopen('php://output', 'w');
 
-    public function title(): string
-    {
-        return 'Data Pelanggan';
-    }
+            // BOM for Excel UTF-8 recognition
+            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-    public function styles(Worksheet $sheet): array
-    {
-        $lastRow = $sheet->getHighestRow();
-        $lastCol = $sheet->getHighestColumn();
+            // Header
+            fputcsv($out, [
+                'No',
+                'PIC',
+                'Area',
+                'Nama',
+                'No. HP',
+                'Layanan',
+                'Bayar (Rp)',
+                'Status',
+                'Tgl Berlangganan',
+                'Tgl Bayar',
+                'Pembayaran',
+                'Rekening',
+                'Approved by',
+                'Keterangan',
+            ]);
 
-        // Header row styling
-        $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
-            'font' => [
-                'bold' => true,
-                'color' => ['rgb' => 'FFFFFF'],
-                'size' => 11,
-            ],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '2563EB'],
-            ],
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER,
-            ],
-        ]);
+            $statusLabels = [
+                'active' => 'Aktif',
+                'suspended' => 'Diisolir',
+                'inactive' => 'Nonaktif',
+            ];
 
-        // All cells border
-        $sheet->getStyle("A1:{$lastCol}{$lastRow}")->applyFromArray([
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['rgb' => 'D1D5DB'],
-                ],
-            ],
-            'alignment' => [
-                'vertical' => Alignment::VERTICAL_CENTER,
-            ],
-        ]);
+            foreach ($customers as $i => $c) {
+                $latestPayment = $c->latestPayment;
+                $metode = match ($latestPayment?->metode) {
+                    'transfer' => 'Transfer',
+                    'cash' => 'Tunai',
+                    default => $latestPayment?->metode ? ucfirst($latestPayment->metode) : '',
+                };
 
-        // Freeze header row
-        $sheet->freezePane('A2');
-
-        // Set row height for header
-        $sheet->getRowDimension(1)->setRowHeight(24);
-
-        // Number format for currency column G (Bayar Rp)
-        $sheet->getStyle("G2:G{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
-
-        // Conditional: highlight suspended customers
-        for ($row = 2; $row <= $lastRow; $row++) {
-            $statusValue = $sheet->getCell("H{$row}")->getValue();
-            if ($statusValue === 'Diisolir') {
-                $sheet->getStyle("H{$row}")->applyFromArray([
-                    'font' => ['bold' => true, 'color' => ['rgb' => 'DC2626']],
+                fputcsv($out, [
+                    $i + 1,
+                    $c->partner?->name ?? '',
+                    $c->area?->name ?? '-',
+                    $c->name,
+                    $c->phone ?? '',
+                    $c->package?->name ?? '-',
+                    (int) ($c->package_price ?: ($c->package?->price ?? 0)),
+                    $statusLabels[$c->status] ?? ucfirst($c->status),
+                    $c->billing_start_date?->format('d/m/Y') ?? '',
+                    $latestPayment?->approved_at?->format('d/m/Y') ?? '',
+                    $metode,
+                    $latestPayment?->rekening_tujuan ?? '',
+                    $latestPayment?->approvedBy?->name ?? '',
+                    $latestPayment?->catatan ?? '',
                 ]);
             }
-        }
 
-        return [];
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 }
