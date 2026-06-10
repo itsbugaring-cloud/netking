@@ -906,9 +906,9 @@ class CustomerController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $filename = 'data_pelanggan_netking_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'data_pelanggan_netking_' . now()->format('Ymd_His') . '.xlsx';
 
-        return (new CustomersExport($request))->download($filename);
+        return \Maatwebsite\Excel\Facades\Excel::download(new CustomersExport($request), $filename);
     }
 
     private function buildBillingStartTemplateXlsx(string $targetPath): void
