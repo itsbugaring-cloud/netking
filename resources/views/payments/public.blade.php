@@ -317,7 +317,7 @@
                       <div class="payment-method-card">
                         <span class="payment-method-name">QRIS</span>
                         <span class="payment-method-detail">Scan QR Code</span>
-                        <span class="payment-method-holder">{{ $paymentSettings['qris'] }}</span>
+                        <span class="payment-method-holder">{{ $paymentSettings['qris']['label'] ?? 'QRIS NETKING' }}</span>
                       </div>
                     </label>
                     @endif
