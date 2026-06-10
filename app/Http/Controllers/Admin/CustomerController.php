@@ -37,9 +37,9 @@ class CustomerController extends Controller
     {
         $user  = auth()->user();
         $query = $this->scopedQuery();
-        $perPage = (int) $request->input('per_page', 50);
+        $perPage = (int) $request->input('per_page', 25);
         if (!in_array($perPage, [25, 50, 100, 200], true)) {
-            $perPage = 50;
+            $perPage = 25;
         }
 
         if ($request->filled('search')) {
@@ -95,7 +95,11 @@ class CustomerController extends Controller
             ]);
         }
 
-        $customers = $query->latest()->paginate($perPage)->withQueryString();
+        $customers = $query->select([
+            'id', 'name', 'pppoe_user', 'phone', 'address', 'status',
+            'area_id', 'partner_id', 'package_id', 'package_price',
+            'billing_start_date', 'is_free', 'customer_code', 'created_at',
+        ])->latest()->paginate($perPage)->withQueryString();
 
         // Pass areas for admin filter dropdown (not needed for partner)
         $areas = ($user->role === 'admin')
