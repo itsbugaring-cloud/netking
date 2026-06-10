@@ -12,7 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Disable FK checks to allow dropping table with references
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Schema::dropIfExists('invoices');
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 
     /**
