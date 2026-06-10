@@ -142,6 +142,11 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
+        if (in_array($textLc, ['/status', '📡 cek status'], true) || str_contains($textLc, 'cek status')) {
+            $this->sendLatestRequestStatus($chatId);
+            return;
+        }
+
         if (in_array($textLc, ['/template', '🧾 template draft'], true) || str_contains($textLc, 'template draft')) {
             $this->sendDraftTemplate($chatId);
             return;
@@ -321,6 +326,16 @@ class TelegramConfigBotController extends Controller
         $state['updated_at'] = now()->toDateTimeString();
         $this->saveState($chatId, $state);
 
+        $this->sendMessage(
+            $chatId,
+            "📝 Mode input aktif. Pilih area dulu ya.",
+            [
+                'reply_markup' => [
+                    'remove_keyboard' => true,
+                ],
+            ]
+        );
+
         $this->promptCurrentField($chatId, $state);
     }
 
@@ -347,6 +362,7 @@ class TelegramConfigBotController extends Controller
 
         $state['draft']['area_id'] = $area->id;
         $state['draft']['area_name'] = $area->name;
+        $state['draft']['area_vlan_pppoe'] = $area->vlan_pppoe;
 
         if (($state['edit_field'] ?? '') === 'area_id') {
             unset($state['draft']['paket_id'], $state['draft']['paket_kode'], $state['draft']['paket_name'], $state['draft']['harga'], $state['draft']['mikrotik_profile']);
@@ -546,15 +562,12 @@ class TelegramConfigBotController extends Controller
         if ($field === 'area_id') {
             $areas = Area::query()
                 ->orderBy('name')
-                ->get(['id', 'name', 'router_identity', 'vlan_pppoe']);
+                ->get(['id', 'name', 'router_identity']);
 
             $buttons = [];
             $row = [];
             foreach ($areas as $i => $area) {
                 $label = $area->router_identity ?: $area->name;
-                if ($area->vlan_pppoe) {
-                    $label .= ' (VLAN: ' . $area->vlan_pppoe . ')';
-                }
                 $row[] = ['text' => '🔹 ' . $label, 'callback_data' => 'cfg:area:' . $area->id];
                 if (count($row) === 2) {
                     $buttons[] = $row;
@@ -567,7 +580,7 @@ class TelegramConfigBotController extends Controller
 
             $msgId = $this->sendMessage(
                 $chatId,
-                "{$progress}\nPilih AREA:",
+                "{$progress}\n\nPilih AREA:",
                 ['reply_markup' => ['inline_keyboard' => $buttons]]
             );
             $this->rememberPromptMessage($chatId, $msgId);
@@ -597,7 +610,7 @@ class TelegramConfigBotController extends Controller
 
             $msgId = $this->sendMessage(
                 $chatId,
-                "{$progress}\nPilih PAKET/PROFILE Mbps:",
+                "{$progress}\n\nPilih PAKET/PROFILE Mbps:",
                 ['reply_markup' => ['inline_keyboard' => $buttons]]
             );
             $this->rememberPromptMessage($chatId, $msgId);
@@ -614,15 +627,19 @@ class TelegramConfigBotController extends Controller
         if ($field === 'pppoe_user') {
             $lastPppoe = $this->getLastPppoeByArea((int) ($state['draft']['area_id'] ?? 0));
             $areaName = (string) ($state['draft']['area_name'] ?? '-');
+            $areaVlan = trim((string) ($state['draft']['area_vlan_pppoe'] ?? ''));
             $hint = $lastPppoe !== null
                 ? "\nArea: {$areaName}\nHint secret terakhir: {$lastPppoe['pppoe_user']} ({$lastPppoe['name']})"
                 : "\nArea: {$areaName}\nHint: belum ada secret sebelumnya.";
+            if ($areaVlan !== '') {
+                $hint .= "\nVLAN PPPoE: {$areaVlan}";
+            }
             $labels['pppoe_user'] .= $hint;
         }
 
         $msgId = $this->sendMessage(
             $chatId,
-            "{$progress}\n" . ($labels[$field] ?? "Masukkan {$field}:"),
+            "{$progress}\n\n" . ($labels[$field] ?? "Masukkan {$field}:"),
             [
                 'reply_markup' => [
                     'keyboard' => [['❌ Batal Input']],
@@ -835,8 +852,8 @@ class TelegramConfigBotController extends Controller
         $this->cleanupTransientMessages($chatId);
 
         $submitMsg = (($push['success'] ?? false) === true)
-            ? "🔥 LEKUY BOS\nData beres. Secret langsung masuk ke router area."
-            : "⚠️ Data sudah kesimpan, tapi push ke router gagal.\nKlik Cek Status buat lihat detailnya.";
+            ? "🔥 LEKUY BOS\n\nData beres.\nSecret langsung masuk ke router area."
+            : "⚠️ Data sudah kesimpan, tapi push ke router gagal.\n\nKlik Cek Status buat lihat detailnya.";
 
         $this->sendMessage(
             $chatId,
@@ -1162,10 +1179,12 @@ class TelegramConfigBotController extends Controller
         $id = (string) ($from['id'] ?? '-');
         $mode = strtoupper($this->cfg('telegram_config_mode', 'TELEGRAM_CONFIG_MODE', 'test'));
 
-        $text = "🚀 NETKING-SENUT siap bantu\n\n" .
+        $text = "🚀 NETKING-SENUT siap bantu\n" .
+            "━━━━━━━━━━━━━━━\n" .
             "Halo {$name} 👋\n" .
             "(@{$username} | ID {$id})\n" .
-            "Mode: {$mode}\n\n" .
+            "Mode: {$mode}\n" .
+            "━━━━━━━━━━━━━━━\n\n" .
             "Langsung klik *Input Data Pelanggan* buat mulai.\n" .
             "Kalau perlu contekan, pakai /guide atau /template ya.";
 
@@ -1202,7 +1221,8 @@ class TelegramConfigBotController extends Controller
         return [
             ['📝 Input Data Pelanggan', '📷 Kirim Foto SN'],
             ['📋 Lihat Draft', '🗂 History Saya'],
-            ['🧾 Template Draft', '📚 Panduan MikroTik PPPoE'],
+            ['📡 Cek Status', '🧾 Template Draft'],
+            ['📚 Panduan MikroTik PPPoE'],
             ['✅ Submit'],
             ['♻️ Reset Draft'],
         ];
@@ -1255,16 +1275,6 @@ class TelegramConfigBotController extends Controller
             $this->saveRequest((string) ($request['ref'] ?? ''), $request);
         }
 
-        $reviewStatus = match ($status) {
-            self::STATUS_DITERIMA => "🟡 Data sudah diterima",
-            self::STATUS_MENUNGGU_PUSH_OLT => "🟠 Menunggu proses OLT",
-            self::STATUS_MENUNGGU_PPPOE_UP => "🟢 Secret sudah masuk router",
-            self::STATUS_ONLINE => "✅ Sudah online",
-            self::STATUS_REJECTED => "❌ Ditolak admin",
-            self::STATUS_FAILED_MIKROTIK => "🔴 Gagal push router",
-            default => "🟨 " . $this->humanStatusLabel($status),
-        };
-
         $pppoeLive = match (($runtime['state'] ?? 'unknown')) {
             'active' => "🟢 Aktif di MikroTik",
             'inactive' => "⚪ Belum aktif di MikroTik",
@@ -1286,10 +1296,10 @@ class TelegramConfigBotController extends Controller
         }
 
         $text =
-            "📡 Status Sekarang\n" .
+            "📡 Active Connection\n" .
+            "━━━━━━━━━━━━━━━\n" .
             "PPPoE: " . ($pppoeUser !== '' ? $pppoeUser : '-') . "\n" .
-            "Review: {$reviewStatus}\n" .
-            "Koneksi: {$pppoeLive}\n" .
+            "Status: {$pppoeLive}\n" .
             "Update terakhir: {$lastAt} • {$lastBy}{$runtimeInfo}";
 
         $statusMsgId = $this->sendMessage($chatId, $text);
