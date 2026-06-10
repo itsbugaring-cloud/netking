@@ -92,19 +92,19 @@
   .nk-search-wrap {
     display: flex;
     align-items: center;
-    gap: .5rem;
+    gap: .4rem;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: .4rem .75rem;
-    min-width: 260px;
+    border-radius: 6px;
+    padding: .3rem .6rem;
+    max-width: 200px;
   }
-  .nk-search-wrap i { color: var(--txt-3); font-size: 1.1rem; }
+  .nk-search-wrap i { color: var(--txt-3); font-size: .9rem; }
   .nk-search-input {
     border: none;
     outline: none;
     background: transparent;
-    font-size: .84rem;
+    font-size: .78rem;
     color: var(--txt);
     width: 100%;
   }
