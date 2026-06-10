@@ -205,6 +205,9 @@
         </span>
       </div>
       <div class="ms-panel-body">
+        <div style="margin-bottom:1rem;padding:.85rem 1rem;border:1px solid color-mix(in srgb, var(--blue) 20%, var(--border));border-radius:10px;background:color-mix(in srgb, var(--blue) 6%, var(--surface));font-size:.82rem;color:var(--txt-3);">
+          Jika pelanggan yang sama sudah punya pembayaran manual di periode bulan/tahun yang sama, simpan ulang akan <strong>memperbarui data lama</strong>, bukan menambah duplikat baru.
+        </div>
         <form action="{{ route('admin.payments.manual.store', $customer) }}" method="POST">
           @csrf
 
