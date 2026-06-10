@@ -134,7 +134,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/{payment}/reject', [PaymentController::class, 'reject'])->name('reject');
             Route::get('/manual/{customer}', [PaymentController::class, 'manualPaymentForm'])->name('manual');
             Route::post('/manual/{customer}', [PaymentController::class, 'manualPaymentStore'])->name('manual.store');
-            Route::post('/bulk-store', [PaymentController::class, 'bulkStore'])->name('bulk-store');
+
         });
     });
 

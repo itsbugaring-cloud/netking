@@ -132,43 +132,5 @@ class PaymentController extends Controller
             ->with('success', 'Pembayaran manual berhasil dicatat.');
     }
 
-    /**
-     * Bulk store payments for multiple customers at once.
-     */
-    public function bulkStore(Request $request)
-    {
-        $validated = $request->validate([
-            'customer_ids' => 'required|array|min:1',
-            'customer_ids.*' => 'integer|exists:customers,id',
-            'periode_bulan' => 'required|integer|min:1|max:12',
-            'periode_tahun' => 'required|integer|min:2020|max:2030',
-            'metode' => 'required|in:transfer,cash',
-            'rekening_tujuan' => 'required|string|max:100',
-            'catatan' => 'nullable|string|max:1000',
-        ]);
 
-        $customers = Customer::with('package')
-            ->whereIn('id', $validated['customer_ids'])
-            ->get();
-
-        $count = 0;
-        foreach ($customers as $customer) {
-            Payment::create([
-                'customer_id' => $customer->id,
-                'periode_bulan' => $validated['periode_bulan'],
-                'periode_tahun' => $validated['periode_tahun'],
-                'jumlah' => $customer->package->price ?? 0,
-                'metode' => $validated['metode'],
-                'rekening_tujuan' => $validated['rekening_tujuan'],
-                'status' => 'approved',
-                'approved_by_user_id' => auth()->id(),
-                'approved_at' => now(),
-                'catatan' => $validated['catatan'] ?? null,
-                'created_by_user_id' => auth()->id(),
-            ]);
-            $count++;
-        }
-
-        return response()->json(['success' => true, 'count' => $count]);
-    }
 }
