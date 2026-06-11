@@ -432,6 +432,12 @@ class AreaController extends Controller
 
         $details = $this->getVlanDetails($mikrotik, $pppoeInterface);
         if ($details === null) {
+            $details = $this->findVlanByParentInterface($mikrotik, $pppoeInterface);
+        }
+        if ($details === null) {
+            $details = $this->findVlanInsideBridge($mikrotik, $pppoeInterface);
+        }
+        if ($details === null) {
             return ['vlan_id' => null];
         }
 
@@ -445,10 +451,7 @@ class AreaController extends Controller
         }
 
         try {
-            $client = $this->getClient($mikrotik);
-            $query = new Query('/interface/vlan/print');
-            $query->equal('.proplist', 'name,vlan-id,interface,comment');
-            $vlans = $client->query($query)->read();
+            $vlans = $this->getAllVlans($mikrotik);
 
             $target = strtolower(trim((string) $interfaceName));
             foreach ($vlans as $vlan) {
@@ -465,6 +468,103 @@ class AreaController extends Controller
         }
 
         return null;
+    }
+
+    private function getAllVlans(MikroTikService $mikrotik): array
+    {
+        try {
+            $client = $this->getClient($mikrotik);
+            $query = new Query('/interface/vlan/print');
+            $query->equal('.proplist', 'name,vlan-id,interface,comment');
+            $rows = $client->query($query)->read();
+            return is_array($rows) ? $rows : [];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    private function findVlanByParentInterface(MikroTikService $mikrotik, ?string $parentInterface): ?array
+    {
+        $parent = strtolower(trim((string) $parentInterface));
+        if ($parent === '' || $this->looksLikeMgmt($parent)) {
+            return null;
+        }
+
+        $best = null;
+        $bestScore = PHP_INT_MIN;
+        foreach ($this->getAllVlans($mikrotik) as $vlan) {
+            $linkedParent = strtolower(trim((string) ($vlan['interface'] ?? '')));
+            if ($linkedParent !== $parent) {
+                continue;
+            }
+
+            $score = $this->scoreVlanCandidate($vlan);
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $vlan;
+            }
+        }
+
+        return $best;
+    }
+
+    private function findVlanInsideBridge(MikroTikService $mikrotik, ?string $bridgeName): ?array
+    {
+        $bridge = strtolower(trim((string) $bridgeName));
+        if ($bridge === '' || $this->looksLikeMgmt($bridge)) {
+            return null;
+        }
+
+        try {
+            $client = $this->getClient($mikrotik);
+            $query = new Query('/interface/bridge/port/print');
+            $query->equal('.proplist', 'interface,bridge');
+            $ports = $client->query($query)->read();
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        $best = null;
+        $bestScore = PHP_INT_MIN;
+        foreach ((array) $ports as $port) {
+            $portBridge = strtolower(trim((string) ($port['bridge'] ?? '')));
+            if ($portBridge !== $bridge) {
+                continue;
+            }
+
+            $member = trim((string) ($port['interface'] ?? ''));
+            $candidate = $this->getVlanDetails($mikrotik, $member) ?? $this->findVlanByParentInterface($mikrotik, $member);
+            if ($candidate === null) {
+                continue;
+            }
+
+            $score = $this->scoreVlanCandidate($candidate);
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $candidate;
+            }
+        }
+
+        return $best;
+    }
+
+    private function scoreVlanCandidate(array $vlan): int
+    {
+        $name = strtolower(trim((string) ($vlan['name'] ?? '')));
+        $comment = strtolower(trim((string) ($vlan['comment'] ?? '')));
+        $score = 0;
+
+        if ($this->looksLikePppoe($name) || $this->looksLikePppoe($comment)) {
+            $score += 100;
+        }
+        if ($this->looksLikeMgmt($name) || $this->looksLikeMgmt($comment)) {
+            $score -= 1000;
+        }
+        if (str_contains($name, 'vlan')) {
+            $score += 10;
+        }
+
+        return $score;
     }
 
     private function findMgmtVlan(MikroTikService $mikrotik): ?string
