@@ -894,7 +894,7 @@ class TelegramConfigBotController extends Controller
         $this->cleanupTransientMessages($chatId);
 
         $submitMsg = (($push['success'] ?? false) === true)
-            ? "✅ Konfig PPPoE berhasil masuk ke MikroTik.\nTinggal lanjut konfigurasi di ONT.\n\nSaya cek juga active connection MikroTik di bawah ini."
+            ? "✅ Konfig PPPoE berhasil masuk ke MikroTik.\nTinggal lanjut konfigurasi di ONT.\n\nStatus active connection MikroTik ditampilkan di bawah ini."
             : "⚠️ Data sudah tersimpan, tapi push ke router gagal.\n\nKlik *Status* buat lihat detailnya.";
 
         $this->sendMessage(
