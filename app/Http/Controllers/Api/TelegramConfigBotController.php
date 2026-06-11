@@ -153,7 +153,7 @@ class TelegramConfigBotController extends Controller
         }
 
         if (in_array($textLc, ['/guide', '📚 panduan mikrotik pppoe', '📚 guide', 'guide'], true) || str_contains($textLc, 'panduan mikrotik pppoe')) {
-            $this->sendMessage($chatId, "Menu guide saya nonaktifkan dulu ya. Langsung klik *Input* buat mulai.", ['parse_mode' => 'Markdown']);
+            $this->sendMessage($chatId, "Menu ini saya nonaktifkan dulu ya. Langsung klik *Input* buat mulai.", ['parse_mode' => 'Markdown']);
             return;
         }
 
@@ -350,7 +350,7 @@ class TelegramConfigBotController extends Controller
 
         $field = self::FLOW_FIELDS[(int) ($state['field_index'] ?? 0)] ?? null;
         if ($field !== 'area_id' && ($state['edit_field'] ?? '') !== 'area_id') {
-            $this->sendMessage($chatId, "⚠️ Pilihan area belum bisa dipakai di step ini. Klik *Input Data Pelanggan* dulu ya.");
+            $this->sendMessage($chatId, "⚠️ Pilihan router belum bisa dipakai di step ini. Klik *Input* dulu ya.", ['parse_mode' => 'Markdown']);
             return;
         }
 
@@ -407,7 +407,7 @@ class TelegramConfigBotController extends Controller
     {
         $state = $this->getState($chatId);
         if (($state['collecting'] ?? false) !== true) {
-            $this->sendMessage($chatId, "⚠️ Session input belum aktif. Klik *Input Data Pelanggan* dulu ya.");
+            $this->sendMessage($chatId, "⚠️ Session input belum aktif. Klik *Input* dulu ya.", ['parse_mode' => 'Markdown']);
             return;
         }
 
@@ -627,7 +627,7 @@ class TelegramConfigBotController extends Controller
 
             $msgId = $this->sendMessage(
                 $chatId,
-                "⚡ PILIH MIKROTIK\n{$progress}\nRouter tujuan dulu, baru lanjut isi data.",
+                "⚡ PILIH MIKROTIK\n{$progress}\nPilih router tujuan dulu, habis itu lanjut isi data.",
                 ['reply_markup' => ['inline_keyboard' => $buttons]]
             );
             $this->rememberPromptMessage($chatId, $msgId);
@@ -657,7 +657,7 @@ class TelegramConfigBotController extends Controller
 
             $msgId = $this->sendMessage(
                 $chatId,
-                "📦 PILIH PROFILE\n{$progress}\nPilih paket yang aktif di router ini.",
+                "📦 PILIH PROFILE\n{$progress}\nPilih profile yang aktif di router ini.",
                 ['reply_markup' => ['inline_keyboard' => $buttons]]
             );
             $this->rememberPromptMessage($chatId, $msgId);
@@ -899,13 +899,14 @@ class TelegramConfigBotController extends Controller
         $this->cleanupTransientMessages($chatId);
 
         $submitMsg = (($push['success'] ?? false) === true)
-            ? "🔥 LEKUY BOS\n\nData beres.\nSecret langsung masuk ke router area."
-            : "⚠️ Data sudah kesimpan, tapi push ke router gagal.\n\nKlik Cek Status buat lihat detailnya.";
+            ? "✅ Data sudah masuk.\nSecret langsung saya kirim ke router tujuan."
+            : "⚠️ Data sudah tersimpan, tapi push ke router gagal.\n\nKlik *Status* buat lihat detailnya.";
 
         $this->sendMessage(
             $chatId,
             $submitMsg,
             [
+                'parse_mode' => 'Markdown',
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
@@ -1156,7 +1157,7 @@ class TelegramConfigBotController extends Controller
         $areaVlan = trim((string) ($draft['area_vlan_pppoe'] ?? ''));
 
         $lines = [
-            "┌ Draft Siap Cek",
+            "📋 DRAFT SIAP CEK",
             '',
             '├ Area: ' . ($draft['area_label'] ?? $draft['area_name'] ?? '-'),
             '├ VLAN PPPoE: ' . ($areaVlan !== '' ? $areaVlan : '-'),
@@ -1222,13 +1223,10 @@ class TelegramConfigBotController extends Controller
     private function sendGreeting(string $chatId, array $from): void
     {
         $name = (string) ($from['first_name'] ?? 'Partner');
-        $username = (string) ($from['username'] ?? '-');
 
-        $text = "⚡ NETKING-SENUT\n\n" .
+        $text = "NETKING-SENUT siap bantu\n\n" .
             "Halo {$name} 👋\n" .
-            "Langsung pilih menu di bawah buat mulai.\n\n" .
-            "Shortcut:\n" .
-            "• /template";
+            "Langsung pilih menu di bawah buat mulai.";
 
         $this->sendMessage(
             $chatId,
@@ -1287,7 +1285,7 @@ class TelegramConfigBotController extends Controller
         $state = $this->getState($chatId);
         $token = (string) ($state['last_submitted_token'] ?? '');
         if ($token === '') {
-            $this->sendMessage($chatId, "Belum ada request terakhir. Klik *Input Data Pelanggan* dulu ya.", ['parse_mode' => 'Markdown']);
+            $this->sendMessage($chatId, "Belum ada request terakhir. Klik *Input* dulu ya.", ['parse_mode' => 'Markdown']);
             return;
         }
 
@@ -1408,8 +1406,7 @@ class TelegramConfigBotController extends Controller
             "No HP: " . ($draft['no_hp'] ?? '-') . "\n" .
             "Paket: " . ($draft['paket_kode'] ?? '-') . " / Rp {$price}\n" .
             "Profile: " . ($draft['mikrotik_profile'] ?? '-') . "\n" .
-            "Tgl Pasang: " . $this->formatDateDisplay((string) ($draft['tanggal_pasang'] ?? '-')) . "\n" .
-            "Mode: " . strtoupper((string) ($payload['mode'] ?? $this->cfg('telegram_config_mode', 'TELEGRAM_CONFIG_MODE', 'test')));
+            "Tgl Pasang: " . $this->formatDateDisplay((string) ($draft['tanggal_pasang'] ?? '-'));
 
         $buttons = [[
             ['text' => '❌ Reject', 'callback_data' => 'cfg:arej:' . $payload['token']],
