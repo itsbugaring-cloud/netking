@@ -772,10 +772,12 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
-        if (($draft['photo_sn_verified'] ?? false) !== true) {
+        $typedSn = strtoupper(trim((string) ($draft['sn_ont'] ?? '')));
+        $captionSn = strtoupper(trim((string) ($draft['photo_sn_ont'] ?? '')));
+        if (($draft['photo_sn_verified'] ?? false) !== true || $typedSn === '' || $captionSn === '' || $typedSn !== $captionSn) {
             $this->sendMessage(
                 $chatId,
-                "⚠️ Validasi SN foto belum lolos.\nKirim ulang foto SN dengan caption: SN ONT: " . ($draft['sn_ont'] ?? '[isi-sn]') . ""
+                "⚠️ Validasi SN foto belum lolos.\nSN teks dan caption harus sama persis.\nKirim ulang foto SN dengan caption: SN ONT: " . ($draft['sn_ont'] ?? '[isi-sn]') . ""
             );
             return;
         }
