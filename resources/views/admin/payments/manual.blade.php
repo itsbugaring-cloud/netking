@@ -105,7 +105,8 @@
   }
   .manual-payment-page .form-select-sm + .select2-container--bootstrap-5 .select2-selection,
   .manual-payment-page .select2-container .select2-selection--single {
-    min-height: 38px;
+    min-height: 30px;
+    height: 30px;
   }
   .manual-payment-page .select2-container {
     width: 100% !important;
@@ -114,6 +115,9 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 28px;
+    padding-top: 0;
+    padding-bottom: 0;
   }
   .manual-payment-page .flatpickr-input[readonly] {
     background: var(--surface);
@@ -208,7 +212,7 @@
           {{-- Periode Bulan --}}
           <div class="form-group">
             <label for="periode_bulan">Bulan</label>
-            <select name="periode_bulan" id="periode_bulan" class="form-select form-select-sm" required>
+            <select name="periode_bulan" id="periode_bulan" class="form-select form-select-sm" data-hide-search required>
               @php
                 $months = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
               @endphp
@@ -221,7 +225,7 @@
           {{-- Periode Tahun --}}
           <div class="form-group">
             <label for="periode_tahun">Tahun</label>
-            <select name="periode_tahun" id="periode_tahun" class="form-select form-select-sm" required>
+            <select name="periode_tahun" id="periode_tahun" class="form-select form-select-sm" data-hide-search required>
               @for($y = 2024; $y <= 2027; $y++)
               <option value="{{ $y }}" {{ (old('periode_tahun', now()->year) == $y) ? 'selected' : '' }}>{{ $y }}</option>
               @endfor
@@ -249,7 +253,7 @@
           {{-- Rekening Tujuan --}}
           <div class="form-group">
             <label for="rekening_tujuan">Rekening</label>
-            <select name="rekening_tujuan" id="rekening_tujuan" class="form-select form-select-sm" required>
+            <select name="rekening_tujuan" id="rekening_tujuan" class="form-select form-select-sm" data-hide-search required>
               <option value="">Pilih rekening...</option>
               <option value="BRI" {{ old('rekening_tujuan') == 'BRI' ? 'selected' : '' }}>BRI</option>
               <option value="BNI" {{ old('rekening_tujuan') == 'BNI' ? 'selected' : '' }}>BNI</option>

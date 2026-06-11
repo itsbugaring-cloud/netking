@@ -26,7 +26,7 @@
     <div class="ms-panel-body py-3">
         <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
             <label for="area_id" style="font-size:.82rem;color:var(--txt-3);font-weight:600;">Filter Area</label>
-            <select name="area_id" id="area_id" class="form-select" style="max-width:280px;">
+            <select name="area_id" id="area_id" class="form-select" data-hide-search style="max-width:280px;">
                 <option value="">Semua Area</option>
                 @foreach($areas as $area)
                 <option value="{{ $area->id }}" {{ request('area_id') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>

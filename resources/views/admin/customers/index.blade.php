@@ -290,7 +290,7 @@
         <input type="hidden" name="search" value="{{ request('search') }}">
         <input type="hidden" name="status" value="{{ request('status') }}">
         <input type="hidden" name="per_page" value="{{ $perPage ?? 50 }}">
-        <select name="area_id" class="form-select form-select-sm" onchange="this.form.submit()">
+        <select name="area_id" class="form-select form-select-sm" data-hide-search onchange="this.form.submit()">
           <option value="">Semua Area</option>
           @foreach($areas as $area)
           <option value="{{ $area->id }}" {{ request('area_id') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
@@ -338,7 +338,7 @@
 
         <div class="d-flex align-items-center gap-2">
           <span style="font-size:.76rem;color:var(--txt-3);font-weight:500;">Tampilkan</span>
-          <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select name="per_page" class="form-select form-select-sm" data-hide-search onchange="this.form.submit()">
             <option value="25" @selected(($perPage ?? 50) == 25)>25</option>
             <option value="50" @selected(($perPage ?? 50) == 50)>50</option>
             <option value="100" @selected(($perPage ?? 50) == 100)>100</option>

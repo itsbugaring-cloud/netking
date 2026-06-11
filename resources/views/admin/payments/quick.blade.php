@@ -193,16 +193,17 @@
   }
   .quick-payment-page .form-select-sm + .select2-container--bootstrap-5 .select2-selection,
   .quick-payment-page .select2-container .select2-selection--single {
-    min-height: 38px;
+    min-height: 30px;
+    height: 30px;
   }
   .quick-payment-page .select2-container {
     width: 100% !important;
   }
   .quick-payment-page .select2-container .select2-selection--single .select2-selection__rendered {
-    white-space: normal;
-    line-height: 1.35;
-    padding-top: .38rem;
-    padding-bottom: .38rem;
+    white-space: nowrap;
+    line-height: 28px;
+    padding-top: 0;
+    padding-bottom: 0;
   }
   .quick-payment-page .select2-container--bootstrap-5 .select2-dropdown {
     min-width: 100% !important;
@@ -316,7 +317,7 @@
             {{-- Periode Bulan --}}
             <div class="form-group">
               <label for="periode_bulan">Bulan</label>
-              <select name="periode_bulan" id="periode_bulan" class="form-select form-select-sm" required>
+              <select name="periode_bulan" id="periode_bulan" class="form-select form-select-sm" data-hide-search required>
                 @php
                   $months = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
                 @endphp
@@ -329,7 +330,7 @@
             {{-- Periode Tahun --}}
             <div class="form-group">
               <label for="periode_tahun">Tahun</label>
-              <select name="periode_tahun" id="periode_tahun" class="form-select form-select-sm" required>
+              <select name="periode_tahun" id="periode_tahun" class="form-select form-select-sm" data-hide-search required>
                 @for($y = 2024; $y <= 2027; $y++)
                 <option value="{{ $y }}" {{ (old('periode_tahun', now()->year) == $y) ? 'selected' : '' }}>{{ $y }}</option>
                 @endfor
@@ -357,7 +358,7 @@
             {{-- Rekening Tujuan --}}
             <div class="form-group">
               <label for="rekening_tujuan">Rekening</label>
-              <select name="rekening_tujuan" id="rekening_tujuan" class="form-select form-select-sm" required>
+              <select name="rekening_tujuan" id="rekening_tujuan" class="form-select form-select-sm" data-hide-search required>
                 <option value="">Pilih rekening...</option>
                 <option value="BRI" {{ old('rekening_tujuan') == 'BRI' ? 'selected' : '' }}>BRI</option>
                 <option value="BNI" {{ old('rekening_tujuan') == 'BNI' ? 'selected' : '' }}>BNI</option>
@@ -412,7 +413,7 @@
       <form method="GET" action="{{ route('admin.payments.quick') }}" class="manual-toolbar">
         <div class="field">
           <div class="field-label">Bulan</div>
-          <select name="manual_month" class="form-select form-select-sm">
+          <select name="manual_month" class="form-select form-select-sm" data-hide-search>
             @php $months = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; @endphp
             @for($m = 1; $m <= 12; $m++)
             <option value="{{ $m }}" {{ (int) ($manualMonth ?? now()->month) === $m ? 'selected' : '' }}>{{ $months[$m] }}</option>
@@ -421,7 +422,7 @@
         </div>
         <div class="field">
           <div class="field-label">Tahun</div>
-          <select name="manual_year" class="form-select form-select-sm">
+          <select name="manual_year" class="form-select form-select-sm" data-hide-search>
             @for($y = 2024; $y <= 2027; $y++)
             <option value="{{ $y }}" {{ (int) ($manualYear ?? now()->year) === $y ? 'selected' : '' }}>{{ $y }}</option>
             @endfor

@@ -43,7 +43,7 @@
       <form method="GET" action="{{ route('admin.reports.billing') }}" class="d-flex flex-wrap gap-2 align-items-end">
         <div>
           <label style="font-size:.75rem;font-weight:600;color:var(--txt-3);display:block;margin-bottom:4px;">Area</label>
-          <select name="area_id" class="form-select form-select-sm" style="min-width:150px;border-radius:8px;">
+          <select name="area_id" class="form-select form-select-sm" data-hide-search style="min-width:150px;border-radius:8px;">
             <option value="">Semua Area</option>
             @foreach($areas as $area)
               <option value="{{ $area->id }}" {{ request('area_id')==$area->id?'selected':'' }}>{{ $area->name }}</option>
@@ -52,7 +52,7 @@
         </div>
         <div>
           <label style="font-size:.75rem;font-weight:600;color:var(--txt-3);display:block;margin-bottom:4px;">Status Pelanggan</label>
-          <select name="status" class="form-select form-select-sm" style="min-width:150px;border-radius:8px;">
+          <select name="status" class="form-select form-select-sm" data-hide-search style="min-width:150px;border-radius:8px;">
             <option value="">Semua Status</option>
             <option value="active" {{ request('status')=='active'?'selected':'' }}>Aktif</option>
             <option value="suspended" {{ request('status')=='suspended'?'selected':'' }}>Diisolir</option>
@@ -62,7 +62,7 @@
         </div>
         <div>
           <label style="font-size:.75rem;font-weight:600;color:var(--txt-3);display:block;margin-bottom:4px;">Status Tagihan</label>
-          <select name="payment_status" class="form-select form-select-sm" style="min-width:150px;border-radius:8px;">
+          <select name="payment_status" class="form-select form-select-sm" data-hide-search style="min-width:150px;border-radius:8px;">
             <option value="">Semua</option>
             <option value="pending" {{ request('payment_status')=='pending'?'selected':'' }}>Ada Pending</option>
             <option value="approved" {{ request('payment_status')=='approved'?'selected':'' }}>Sudah Bayar</option>
