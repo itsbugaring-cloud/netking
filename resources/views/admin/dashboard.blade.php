@@ -18,6 +18,100 @@
     gap: 18px;
   }
 
+  .ops-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    background:
+      radial-gradient(circle at top right, rgba(91, 99, 211, .14), transparent 26%),
+      radial-gradient(circle at bottom left, rgba(22, 163, 74, .10), transparent 28%),
+      linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
+    box-shadow: 0 18px 40px rgba(15, 23, 42, .06);
+    padding: 18px;
+  }
+
+  .ops-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto -20% -55% auto;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(91, 99, 211, .12), transparent 70%);
+    filter: blur(8px);
+    pointer-events: none;
+  }
+
+  .ops-hero-top {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+    z-index: 1;
+  }
+
+  .ops-hero-copy {
+    max-width: 760px;
+  }
+
+  .ops-hero-title {
+    margin: 0;
+    font-size: 1.95rem;
+    line-height: 1.02;
+    letter-spacing: -.04em;
+    color: var(--txt);
+    font-weight: 800;
+  }
+
+  .ops-hero-desc {
+    margin-top: 10px;
+    font-size: .9rem;
+    color: var(--txt-3);
+    max-width: 760px;
+  }
+
+  .ops-hero-metrics {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .ops-hero-metric {
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--blue) 12%, var(--border));
+    background: color-mix(in srgb, var(--surface) 84%, white);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+    min-height: 88px;
+  }
+
+  .ops-hero-metric-label {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--txt-3);
+    margin-bottom: 8px;
+  }
+
+  .ops-hero-metric-value {
+    font-size: 1.35rem;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -.04em;
+    color: var(--txt);
+  }
+
+  .ops-hero-metric-note {
+    font-size: .76rem;
+    color: var(--txt-3);
+    margin-top: 6px;
+  }
+
   .ops-head {
     display: flex;
     align-items: flex-start;
@@ -81,12 +175,13 @@
   .ops-kpi {
     border: 1px solid var(--border);
     background: var(--surface);
-    border-radius: 16px;
-    padding: 16px 18px;
-    min-height: 118px;
+    border-radius: 18px;
+    padding: 17px 18px;
+    min-height: 126px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .045);
   }
 
   .ops-kpi-top {
@@ -132,6 +227,18 @@
     flex-shrink: 0;
   }
 
+  .ops-kpi::before {
+    content: "";
+    width: 44px;
+    height: 4px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--blue) 30%, var(--border));
+  }
+
+  .ops-kpi:nth-child(2)::before { background: color-mix(in srgb, var(--green) 30%, var(--border)); }
+  .ops-kpi:nth-child(3)::before { background: color-mix(in srgb, var(--orange, #f97316) 32%, var(--border)); }
+  .ops-kpi:nth-child(4)::before { background: color-mix(in srgb, #5b63d3 32%, var(--border)); }
+
   .ops-kpi-icon i,
   .ops-pill i,
   .ops-quick-link i {
@@ -152,8 +259,9 @@
   .ops-panel {
     border: 1px solid var(--border);
     background: var(--surface);
-    border-radius: 18px;
+    border-radius: 20px;
     overflow: hidden;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, .045);
   }
 
   .ops-panel-head {
@@ -183,6 +291,10 @@
     padding: 18px;
   }
 
+  .ops-panel-body.compact {
+    padding-top: 16px;
+  }
+
   .ops-network-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -199,6 +311,7 @@
     flex-direction: column;
     justify-content: space-between;
     gap: 12px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
   }
 
   .ops-network-top {
@@ -421,13 +534,14 @@
     border-radius: 14px;
     color: var(--txt);
     text-decoration: none;
-    transition: border-color .15s ease, transform .15s ease;
+    transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
   }
 
   .ops-quick-link:hover {
     color: var(--txt);
     border-color: color-mix(in srgb, var(--blue) 26%, var(--border));
     transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(91, 99, 211, .08);
   }
 
   .ops-quick-label {
@@ -447,7 +561,32 @@
     font-size: .84rem;
   }
 
+  .ops-section-intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .ops-section-kicker {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--txt-3);
+  }
+
+  .ops-section-hint {
+    font-size: .78rem;
+    color: var(--txt-3);
+  }
+
   @media (max-width: 1199.98px) {
+    .ops-hero-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .ops-kpis,
     .ops-network-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -475,6 +614,23 @@
       padding: 14px;
     }
 
+    .ops-hero {
+      padding: 14px;
+      border-radius: 20px;
+    }
+
+    .ops-hero-top {
+      flex-direction: column;
+    }
+
+    .ops-hero-title {
+      font-size: 1.55rem;
+    }
+
+    .ops-hero-metrics {
+      grid-template-columns: 1fr;
+    }
+
     .ops-chart,
     .ops-mini-chart {
       height: 260px;
@@ -494,19 +650,44 @@
 @endphp
 
 <div class="ops-shell dashboard-page">
-  <div class="ops-head">
-    <div>
-      <div class="ops-eyebrow">Ringkasan Operasional</div>
-      <h1 class="ops-title">Dashboard</h1>
+  <section class="ops-hero">
+    <div class="ops-hero-top">
+      <div class="ops-hero-copy">
+        <div class="ops-eyebrow">Ringkasan Operasional</div>
+        <h1 class="ops-hero-title">Dashboard</h1>
+        <div class="ops-hero-desc">Pantau pelanggan, pembayaran, dan kesehatan jaringan dalam satu tampilan yang lebih padat, lebih cepat dibaca, dan lebih terasa seperti pusat kendali.</div>
+      </div>
+      <div class="ops-head-actions">
+        <span class="ops-pill"><i class='bx bx-time'></i> Auto-refresh 30 dtk</span>
+        <button class="ms-btn-secondary" type="button" onclick="location.reload()">
+          <i class='bx bx-refresh'></i>
+          Refresh
+        </button>
+      </div>
     </div>
-    <div class="ops-head-actions">
-      <span class="ops-pill"><i class='bx bx-time'></i> Auto-refresh 30 dtk</span>
-      <button class="ms-btn-secondary" type="button" onclick="location.reload()">
-        <i class='bx bx-refresh'></i>
-        Refresh
-      </button>
+    <div class="ops-hero-metrics">
+      <div class="ops-hero-metric">
+        <div class="ops-hero-metric-label">Area aktif</div>
+        <div class="ops-hero-metric-value">{{ number_format($stats['total_areas'] ?? 0) }}</div>
+        <div class="ops-hero-metric-note">Wilayah layanan terdaftar</div>
+      </div>
+      <div class="ops-hero-metric">
+        <div class="ops-hero-metric-label">Pelanggan aktif</div>
+        <div class="ops-hero-metric-value">{{ number_format($stats['active_customers'] ?? 0) }}</div>
+        <div class="ops-hero-metric-note">{{ $activeRate }}% tingkat aktif</div>
+      </div>
+      <div class="ops-hero-metric">
+        <div class="ops-hero-metric-label">Pembayaran pending</div>
+        <div class="ops-hero-metric-value">{{ number_format($stats['pending_payments'] ?? 0) }}</div>
+        <div class="ops-hero-metric-note">Butuh review / approval</div>
+      </div>
+      <div class="ops-hero-metric">
+        <div class="ops-hero-metric-label">MRR bulanan</div>
+        <div class="ops-hero-metric-value">Rp {{ number_format($stats['mrr'] ?? 0, 0, ',', '.') }}</div>
+        <div class="ops-hero-metric-note">Perkiraan pendapatan langganan</div>
+      </div>
     </div>
-  </div>
+  </section>
 
   <div class="ops-kpis">
     {{-- Total Pelanggan --}}
@@ -583,10 +764,11 @@
     <div class="ops-panel-head">
       <div>
         <h2 class="ops-panel-title">Status jaringan</h2>
+        <div class="ops-panel-subtitle">Ringkasan cepat status OLT, area, dan pelanggan aktif.</div>
       </div>
       <span class="ops-pill" style="color:var(--ops-success);border-color:color-mix(in srgb,var(--ops-success) 22%,var(--border));"><i class='bx bx-pulse'></i> Live Monitoring</span>
     </div>
-    <div class="ops-panel-body">
+    <div class="ops-panel-body compact">
       <div class="ops-network-grid">
         <div class="ops-network-card">
           <div class="ops-network-top">
