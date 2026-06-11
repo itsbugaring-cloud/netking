@@ -5437,6 +5437,11 @@
     .workspace-shell .main .select2-container--bootstrap-5 .select2-dropdown {
       padding: .25rem !important;
       border-radius: 8px !important;
+      margin-top: 4px !important;
+      overflow: hidden !important;
+    }
+    .workspace-shell .main .select2-search--dropdown {
+      padding: 0 0 .25rem 0 !important;
     }
     .workspace-shell .main .select2-search--dropdown .select2-search__field,
     .workspace-shell .main .select2-container--bootstrap-5 .select2-search .select2-search__field {
@@ -5445,6 +5450,10 @@
       font-size: .75rem !important;
       padding: .2rem .55rem !important;
       border-radius: 6px !important;
+      margin: 0 !important;
+    }
+    .workspace-shell .main .select2-results > .select2-results__options {
+      max-height: 260px !important;
     }
     .workspace-shell .main .select2-results__option {
       font-size: .78rem !important;

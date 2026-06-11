@@ -43,7 +43,7 @@
             <td>{{ $c->name }}</td>
             <td>{{ $c->phone ?? '' }}</td>
             <td>{{ $c->package?->name ?? '-' }}</td>
-            <td>{{ (int) ($c->package_price ?: ($c->package?->price ?? 0)) }}</td>
+            <td>{{ (int) round((float) ($c->paid_total ?? $latestPayment?->jumlah ?? 0)) }}</td>
             <td>{{ $statusLabel }}</td>
             <td>{{ $c->billing_start_date?->format('d/m/Y') ?? '' }}</td>
             <td>{{ $latestPayment?->approved_at?->format('d/m/Y') ?? '' }}</td>

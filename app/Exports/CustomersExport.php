@@ -26,6 +26,8 @@ class CustomersExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
     public function view(): View
     {
         $query = Customer::with(['partner', 'area', 'package'])
+            ->withSum(['payments as paid_total' => fn($q) => $q->where('status', 'approved')], 'jumlah')
+            ->withSum(['payments as pending_total' => fn($q) => $q->where('status', 'pending')], 'jumlah')
             ->with(['latestPayment' => function ($q) {
                 $q->with('approvedBy:id,name');
             }]);
@@ -94,8 +96,8 @@ class CustomersExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
         $sheet->freezePane('A2');
         $sheet->getRowDimension(1)->setRowHeight(24);
 
-        // Number format for currency column G (Bayar Rp)
-        $sheet->getStyle("G2:G{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
+        // Number format for currency column H (Bayar Rp)
+        $sheet->getStyle("H2:H{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
 
         return [];
     }
