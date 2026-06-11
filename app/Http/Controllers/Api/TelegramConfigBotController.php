@@ -576,6 +576,24 @@ class TelegramConfigBotController extends Controller
         return (string) $area->name;
     }
 
+    private function areaButtonLabel(?Area $area): string
+    {
+        if (!$area) {
+            return 'Router';
+        }
+
+        $label = $this->areaDisplayName($area);
+        $label = preg_replace('/\s+/', ' ', trim($label)) ?? $label;
+        $label = Str::limit($label, 24, '');
+
+        $vlan = trim((string) ($area->vlan_pppoe ?? ''));
+        if ($vlan !== '') {
+            return "◈ {$label} • V{$vlan}";
+        }
+
+        return "◈ {$label}";
+    }
+
     private function promptCurrentField(string $chatId, array $state): void
     {
         $this->clearPromptMessage($chatId);
@@ -592,13 +610,12 @@ class TelegramConfigBotController extends Controller
         if ($field === 'area_id') {
             $areas = Area::query()
                 ->orderBy('name')
-                ->get(['id', 'name', 'router_identity']);
+                ->get(['id', 'name', 'router_identity', 'vlan_pppoe']);
 
             $buttons = [];
             $row = [];
-            foreach ($areas as $i => $area) {
-                $label = $area->router_identity ?: $area->name;
-                $row[] = ['text' => '🔹 ' . $label, 'callback_data' => 'cfg:area:' . $area->id];
+            foreach ($areas as $area) {
+                $row[] = ['text' => $this->areaButtonLabel($area), 'callback_data' => 'cfg:area:' . $area->id];
                 if (count($row) === 2) {
                     $buttons[] = $row;
                     $row = [];
@@ -610,7 +627,7 @@ class TelegramConfigBotController extends Controller
 
             $msgId = $this->sendMessage(
                 $chatId,
-                "{$progress}\n\nPilih AREA:",
+                "⚡ PILIH MIKROTIK\n{$progress}\nRouter tujuan dulu, baru lanjut isi data.",
                 ['reply_markup' => ['inline_keyboard' => $buttons]]
             );
             $this->rememberPromptMessage($chatId, $msgId);
@@ -640,7 +657,7 @@ class TelegramConfigBotController extends Controller
 
             $msgId = $this->sendMessage(
                 $chatId,
-                "{$progress}\n\nPilih PAKET/PROFILE Mbps:",
+                "📦 PILIH PROFILE\n{$progress}\nPilih paket yang aktif di router ini.",
                 ['reply_markup' => ['inline_keyboard' => $buttons]]
             );
             $this->rememberPromptMessage($chatId, $msgId);
