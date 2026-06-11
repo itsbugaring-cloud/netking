@@ -92,6 +92,50 @@
     border-color: color-mix(in srgb, var(--red) 22%, var(--border));
   }
   .cust-action-btn:hover { opacity: .75; }
+  .cust-action-btn[data-tooltip] {
+    position: relative;
+  }
+  .cust-action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%) scale(.92);
+    transform-origin: bottom center;
+    padding: .38rem .55rem;
+    border-radius: 8px;
+    background: #1f2937;
+    color: #f8fafc;
+    font-size: .72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .2);
+    transition: opacity .18s ease, transform .18s ease;
+    z-index: 20;
+  }
+  .cust-action-btn[data-tooltip]::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 4px);
+    width: 9px;
+    height: 9px;
+    background: #1f2937;
+    transform: translateX(-50%) rotate(45deg) scale(.92);
+    opacity: 0;
+    transition: opacity .18s ease, transform .18s ease;
+    pointer-events: none;
+    z-index: 19;
+  }
+  .cust-action-btn[data-tooltip]:hover::after,
+  .cust-action-btn[data-tooltip]:hover::before,
+  .cust-action-btn[data-tooltip]:focus-visible::after,
+  .cust-action-btn[data-tooltip]:focus-visible::before {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
 
   /* ── Code badge PPPoE ───────────────────────────────────────────────── */
   #customers-table code {
@@ -374,19 +418,19 @@
               <td style="color:var(--txt-3);white-space:nowrap;">{{ ($customer->billing_start_date ?? $customer->created_at)->format('d M Y') }}</td>
               <td>
                 <div class="d-flex gap-1">
-                  <a href="{{ route('admin.payments.manual', $customer) }}" class="cust-action-btn" title="Tandai Bayar" style="color:#16a34a;background:rgba(22,163,106,.1);border-color:rgba(22,163,106,.22);">
+                  <a href="{{ route('admin.payments.manual', $customer) }}" class="cust-action-btn" data-tooltip="Tandai Bayar" title="Tandai Bayar" style="color:#16a34a;background:rgba(22,163,106,.1);border-color:rgba(22,163,106,.22);">
                     <i class='bx bx-money'></i>
                   </a>
-                  <a href="{{ route('admin.customers.show', $customer) }}" class="cust-action-btn view" title="Lihat Detail">
+                  <a href="{{ route('admin.customers.show', $customer) }}" class="cust-action-btn view" data-tooltip="Lihat Detail" title="Lihat Detail">
                     <i class='bx bx-show'></i>
                   </a>
                   @unless($isFinance)
-                  <a href="{{ route('admin.customers.edit', $customer) }}" class="cust-action-btn edit" title="Edit">
+                  <a href="{{ route('admin.customers.edit', $customer) }}" class="cust-action-btn edit" data-tooltip="Edit" title="Edit">
                     <i class='bx bx-edit'></i>
                   </a>
                   <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" class="m-0" data-confirm="Hapus {{ $customer->name }}?">
                     @csrf @method('DELETE')
-                    <button type="submit" class="cust-action-btn delete" title="Hapus">
+                    <button type="submit" class="cust-action-btn delete" data-tooltip="Hapus" title="Hapus">
                       <i class='bx bx-trash'></i>
                     </button>
                   </form>
