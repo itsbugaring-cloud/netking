@@ -209,6 +209,27 @@
         </div>
       </div>
 
+      <div class="ms-panel mb-3">
+        <div class="ms-panel-head">
+          <h5 class="ms-panel-title"><i class='bx bx-image'></i> Foto SN</h5>
+        </div>
+        <div class="ms-panel-body">
+          @if($invUnit->photos->isNotEmpty())
+            <div style="display:grid;grid-template-columns:1fr;gap:12px;">
+              @foreach($invUnit->photos as $photo)
+                <a href="{{ $photo->url }}" target="_blank" rel="noopener">
+                  <img src="{{ $photo->url }}" alt="Foto SN {{ $invUnit->serial_number }}" style="width:100%;border-radius:14px;border:1px solid var(--border);background:var(--surface-2);">
+                </a>
+              @endforeach
+            </div>
+          @else
+            <div style="font-size:.84rem;color:var(--txt-3);">
+              Belum ada foto SN yang tersimpan untuk unit ini.
+            </div>
+          @endif
+        </div>
+      </div>
+
       {{-- Pasang Form --}}
       <div class="ms-panel mb-3">
         <div class="ms-panel-head">

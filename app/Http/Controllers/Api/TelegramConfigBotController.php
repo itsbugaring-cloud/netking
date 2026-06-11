@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Customer;
+use App\Models\InvUnit;
+use App\Models\InvUnitPhoto;
 use App\Models\Package;
 use App\Models\Setting;
 use App\Models\User;
@@ -775,6 +777,14 @@ class TelegramConfigBotController extends Controller
         $state['draft']['photo_sn_matched'] = $typedSn === $ocrSn;
         $state['draft']['photo_sn_verified'] = $typedSn === $ocrSn;
 
+        if ($typedSn === $ocrSn) {
+            $storedPath = $this->storeSnPhotoToPublic((string) $largest['file_id'], $chatId, $typedSn);
+            if ($storedPath !== null) {
+                $state['draft']['photo_storage_path'] = $storedPath;
+                $this->attachSnPhotoToInventory($typedSn, $storedPath);
+            }
+        }
+
         $state['updated_at'] = now()->toDateTimeString();
         $this->saveState($chatId, $state);
 
@@ -1225,6 +1235,11 @@ class TelegramConfigBotController extends Controller
                     $ont->update(['customer_id' => $customer->id]);
                     $customer->update(['ont_sn' => $ont->serial_number]);
                 }
+            }
+
+            $photoPath = trim((string) ($draft['photo_storage_path'] ?? ''));
+            if ($sn !== '' && $photoPath !== '') {
+                $this->attachSnPhotoToInventory($sn, $photoPath);
             }
 
             return $customer;
@@ -1931,6 +1946,75 @@ class TelegramConfigBotController extends Controller
         }
 
         return "https://api.telegram.org/file/bot{$token}/{$filePath}";
+    }
+
+    private function storeSnPhotoToPublic(string $fileId, string $chatId, string $sn): ?string
+    {
+        $photoUrl = $this->resolveTelegramFileUrl($fileId);
+        if ($photoUrl === null) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(15)->get($photoUrl);
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $extension = pathinfo(parse_url($photoUrl, PHP_URL_PATH) ?: '', PATHINFO_EXTENSION);
+            $extension = $extension !== '' ? strtolower($extension) : 'jpg';
+            $safeSn = preg_replace('/[^A-Z0-9]/', '', strtoupper($sn)) ?: 'SN';
+            $filename = now()->format('Ymd_His') . '_' . $chatId . '_' . $safeSn . '.' . $extension;
+            $path = 'telegram-config-bot/sn-photos/' . now()->format('Y/m') . '/' . $filename;
+
+            Storage::disk('public')->put($path, $response->body());
+
+            return $path;
+        } catch (\Throwable $e) {
+            Log::warning('telegram_sn_photo_store_failed', [
+                'error' => $e->getMessage(),
+                'file_id' => $fileId,
+                'chat_id' => $chatId,
+            ]);
+            return null;
+        }
+    }
+
+    private function attachSnPhotoToInventory(string $sn, string $photoPath): void
+    {
+        $normalizedSn = preg_replace('/[^A-Z0-9]/', '', strtoupper($sn));
+        if ($normalizedSn === '' || trim($photoPath) === '') {
+            return;
+        }
+
+        try {
+            $unit = InvUnit::query()
+                ->whereRaw('REPLACE(UPPER(serial_number), "-", "") = ?', [$normalizedSn])
+                ->first();
+
+            if (!$unit) {
+                return;
+            }
+
+            $exists = InvUnitPhoto::query()
+                ->where('unit_id', $unit->id)
+                ->where('path', $photoPath)
+                ->exists();
+
+            if (!$exists) {
+                InvUnitPhoto::create([
+                    'unit_id' => $unit->id,
+                    'path' => $photoPath,
+                    'created_at' => now(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('telegram_inventory_photo_attach_failed', [
+                'error' => $e->getMessage(),
+                'sn' => $sn,
+                'path' => $photoPath,
+            ]);
+        }
     }
 
     private function validateFieldValue(string $field, string $value, array $state): ?string

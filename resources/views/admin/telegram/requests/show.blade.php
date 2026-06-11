@@ -197,7 +197,12 @@
             </div>
             <div class="tg-summary-item" style="grid-column: 1 / -1;">
               <div class="tg-summary-label">Koordinat</div>
-              <div class="tg-summary-value">{{ data_get($payload, 'draft.coordinates', '-') }}</div>
+              <div class="tg-summary-value">
+                {{ data_get($payload, 'draft.coordinates', '-') }}
+                @if(data_get($payload, 'draft.latitude') !== null && data_get($payload, 'draft.longitude') !== null)
+                  <a href="https://www.google.com/maps?q={{ data_get($payload, 'draft.latitude') }},{{ data_get($payload, 'draft.longitude') }}" target="_blank" rel="noopener" style="margin-left:8px;font-weight:600;">Buka Maps</a>
+                @endif
+              </div>
             </div>
           </div>
         </div>
@@ -277,6 +282,21 @@
           @endif
         </div>
       </div>
+
+      @if(data_get($payload, 'draft.latitude') !== null && data_get($payload, 'draft.longitude') !== null)
+      <div class="tg-card">
+        <div class="tg-card-head">
+          <h2 class="tg-card-title">Maps Lokasi</h2>
+        </div>
+        <div class="tg-card-body">
+          <iframe
+            src="https://www.google.com/maps?q={{ data_get($payload, 'draft.latitude') }},{{ data_get($payload, 'draft.longitude') }}&z=18&output=embed"
+            style="width:100%;height:260px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+      @endif
 
       <div class="tg-card">
         <div class="tg-card-head">

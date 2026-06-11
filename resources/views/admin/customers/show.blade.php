@@ -136,6 +136,21 @@
                 @endif
             </div>
         </div>
+
+        @if($customer->latitude !== null && $customer->longitude !== null)
+        <div class="card mt-3" style="border:1px solid #e9e8ef; border-radius:18px; overflow:hidden;">
+            <div class="card-header" style="background:#fff; border-bottom:1px solid #f0eff5; font-weight:700; color:#1e293b;">
+                <i class='bx bx-map me-1'></i>Lokasi Pelanggan
+            </div>
+            <div class="card-body p-2">
+                <iframe
+                    src="https://www.google.com/maps?q={{ $customer->latitude }},{{ $customer->longitude }}&z=18&output=embed"
+                    style="width:100%;height:260px;border:0;border-radius:14px;"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+        @endif
     </div>
     @unless($isFinance)
     <form action="{{ route('admin.customers.enable-pppoe', $customer) }}" method="POST" style="flex-shrink:0;">

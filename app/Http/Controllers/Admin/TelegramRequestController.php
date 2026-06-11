@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Customer;
+use App\Models\InvUnit;
+use App\Models\InvUnitPhoto;
 use App\Models\Ont;
 use App\Models\User;
 use App\Services\MikroTikService;
@@ -111,7 +113,7 @@ class TelegramRequestController extends Controller
         return view('admin.telegram.requests.show', [
             'payload' => $payload,
             'ref' => $ref,
-            'hasSnPhoto' => trim((string) data_get($payload, 'draft.photo_file_id', '')) !== '',
+            'hasSnPhoto' => trim((string) data_get($payload, 'draft.photo_file_id', '')) !== '' || trim((string) data_get($payload, 'draft.photo_storage_path', '')) !== '',
         ]);
     }
 
@@ -120,6 +122,13 @@ class TelegramRequestController extends Controller
         $payload = $this->load($ref);
         if ($payload === null) {
             abort(404, 'Request tidak ditemukan.');
+        }
+
+        $storedPath = trim((string) data_get($payload, 'draft.photo_storage_path', ''));
+        if ($storedPath !== '' && Storage::disk('public')->exists($storedPath)) {
+            return response()->file(Storage::disk('public')->path($storedPath), [
+                'Cache-Control' => 'private, max-age=300',
+            ]);
         }
 
         $photoUrl = $this->resolveTelegramPhotoUrl((string) data_get($payload, 'draft.photo_file_id', ''));
@@ -278,6 +287,8 @@ class TelegramRequestController extends Controller
             $billingStart,
             $phone,
             $address,
+            $latitude,
+            $longitude,
             $portalRaw
         ) {
             $customer = Customer::create([
@@ -317,6 +328,11 @@ class TelegramRequestController extends Controller
                     $ont->update(['customer_id' => $customer->id]);
                     $customer->update(['ont_sn' => $ont->serial_number]);
                 }
+            }
+
+            $photoPath = trim((string) ($draft['photo_storage_path'] ?? ''));
+            if ($sn !== '' && $photoPath !== '') {
+                $this->attachSnPhotoToInventory($sn, $photoPath);
             }
 
             return $customer;
@@ -387,6 +403,35 @@ class TelegramRequestController extends Controller
     {
         $sn = strtoupper(trim($sn));
         return str_replace('-', '', $sn);
+    }
+
+    private function attachSnPhotoToInventory(string $sn, string $photoPath): void
+    {
+        $normalizedSn = $this->normalizeSn($sn);
+        if ($normalizedSn === '' || trim($photoPath) === '') {
+            return;
+        }
+
+        $unit = InvUnit::query()
+            ->whereRaw('REPLACE(UPPER(serial_number), "-", "") = ?', [$normalizedSn])
+            ->first();
+
+        if (!$unit) {
+            return;
+        }
+
+        $exists = InvUnitPhoto::query()
+            ->where('unit_id', $unit->id)
+            ->where('path', $photoPath)
+            ->exists();
+
+        if (!$exists) {
+            InvUnitPhoto::create([
+                'unit_id' => $unit->id,
+                'path' => $photoPath,
+                'created_at' => now(),
+            ]);
+        }
     }
 
     private function resolveTelegramPhotoUrl(string $fileId): ?string
