@@ -361,8 +361,10 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
+        $areaLabel = $this->areaDisplayName($area);
         $state['draft']['area_id'] = $area->id;
         $state['draft']['area_name'] = $area->name;
+        $state['draft']['area_label'] = $areaLabel;
         $state['draft']['area_vlan_pppoe'] = $area->vlan_pppoe;
 
         if (($state['edit_field'] ?? '') === 'area_id') {
@@ -372,7 +374,7 @@ class TelegramConfigBotController extends Controller
             $state['updated_at'] = now()->toDateTimeString();
             $this->saveState($chatId, $state);
             $areaVlan = trim((string) ($area->vlan_pppoe ?? ''));
-            $msg = "✅ {$area->name}";
+            $msg = "✅ {$areaLabel}";
             if ($areaVlan !== '') {
                 $msg .= "\nVLAN PPPoE: {$areaVlan}";
             }
@@ -392,7 +394,7 @@ class TelegramConfigBotController extends Controller
         $this->saveState($chatId, $state);
 
         $areaVlan = trim((string) ($area->vlan_pppoe ?? ''));
-        $msg = "✅ {$area->name}";
+        $msg = "✅ {$areaLabel}";
         if ($areaVlan !== '') {
             $msg .= "\nVLAN PPPoE: {$areaVlan}";
         }
@@ -560,6 +562,20 @@ class TelegramConfigBotController extends Controller
         $this->promptCurrentField($chatId, $state);
     }
 
+    private function areaDisplayName(?Area $area): string
+    {
+        if (!$area) {
+            return '-';
+        }
+
+        $routerIdentity = trim((string) ($area->router_identity ?? ''));
+        if ($routerIdentity !== '') {
+            return $routerIdentity;
+        }
+
+        return (string) $area->name;
+    }
+
     private function promptCurrentField(string $chatId, array $state): void
     {
         $this->clearPromptMessage($chatId);
@@ -640,7 +656,7 @@ class TelegramConfigBotController extends Controller
 
         if ($field === 'pppoe_user') {
             $lastPppoe = $this->getLastPppoeByArea((int) ($state['draft']['area_id'] ?? 0));
-            $areaName = (string) ($state['draft']['area_name'] ?? '-');
+            $areaName = (string) ($state['draft']['area_label'] ?? $state['draft']['area_name'] ?? '-');
             $areaVlan = trim((string) ($state['draft']['area_vlan_pppoe'] ?? ''));
             $hint = $lastPppoe !== null
                 ? "\nArea: {$areaName}\nHint terakhir: {$lastPppoe['pppoe_user']} ({$lastPppoe['name']})"
@@ -785,7 +801,7 @@ class TelegramConfigBotController extends Controller
                 'online' => null,
             ],
             'resolved_router' => [
-                'area_name' => $area?->name,
+                'area_name' => $draft['area_label'] ?? $area?->router_identity ?? $area?->name,
                 'router_ip' => $area?->router_ip,
                 'router_user' => $area?->router_user,
                 'mikrotik_profile' => $draft['mikrotik_profile'] ?? null,
@@ -834,7 +850,7 @@ class TelegramConfigBotController extends Controller
         // Notify admin via Telegram
         $adminChatId = config('services.telegram_config.admin_chat_id', env('TELEGRAM_CONFIG_ADMIN_CHAT_ID'));
         if ($adminChatId) {
-            $areaName = $draft['area_name'] ?? '-';
+            $areaName = $draft['area_label'] ?? $draft['area_name'] ?? '-';
             $customerName = $draft['nama'] ?? '-';
             $pppoeUser = $draft['pppoe_user'] ?? '-';
             $paketName = $draft['paket_name'] ?? ($draft['paket_kode'] ?? '-');
@@ -1125,7 +1141,7 @@ class TelegramConfigBotController extends Controller
         $lines = [
             "┌ Draft Siap Cek",
             '',
-            '├ Area: ' . ($draft['area_name'] ?? '-'),
+            '├ Area: ' . ($draft['area_label'] ?? $draft['area_name'] ?? '-'),
             '├ VLAN PPPoE: ' . ($areaVlan !== '' ? $areaVlan : '-'),
             '├ Nama: ' . ($draft['nama'] ?? '-'),
             '├ No HP: ' . ($draft['no_hp'] ?? '-'),
@@ -1368,7 +1384,7 @@ class TelegramConfigBotController extends Controller
         $draft = (array) ($payload['draft'] ?? []);
         $price = number_format((int) ($draft['harga'] ?? 0), 0, ',', '.');
         $text = "📥 REQUEST BARU\n" .
-            "Area: " . ($draft['area_name'] ?? '-') . "\n" .
+            "Area: " . ($draft['area_label'] ?? $draft['area_name'] ?? '-') . "\n" .
             "Nama: " . ($draft['nama'] ?? '-') . "\n" .
             "PPPoE: " . ($draft['pppoe_user'] ?? '-') . "\n" .
             "SN: " . ($draft['sn_ont'] ?? '-') . "\n" .
@@ -1721,7 +1737,7 @@ class TelegramConfigBotController extends Controller
                 'status' => (string) ($data['status'] ?? '-'),
                 'submitted_at' => (string) ($data['submitted_at'] ?? ''),
                 'pppoe_user' => (string) data_get($data, 'draft.pppoe_user', '-'),
-                'area_name' => (string) data_get($data, 'draft.area_name', '-'),
+                'area_name' => (string) (data_get($data, 'draft.area_label') ?: data_get($data, 'draft.area_name', '-')),
             ];
         }
 
