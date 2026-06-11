@@ -46,13 +46,17 @@ class SyncAreaVlans extends Command
 
                 // Check if that interface is really a PPPoE-facing VLAN.
                 // Better to leave it undetected than accidentally store VLAN MGMT as VLAN PPPoE.
-                $vlanPppoe = $this->resolvePppoeVlan($mikrotik, $pppoeInterface);
+                $pppoeVlan = $this->resolvePppoeVlan($mikrotik, $pppoeInterface);
+                $vlanPppoe = $pppoeVlan['vlan_id'] ?? null;
 
                 // Try to find MGMT VLAN (look for interface with "mgmt" or "management" in name/comment)
                 $vlanMgmt = $this->findMgmtVlan($mikrotik);
 
                 $this->info("  VLAN PPPoE: " . ($vlanPppoe ?: 'not detected'));
                 $this->info("  VLAN MGMT:  " . ($vlanMgmt ?: 'not detected'));
+                if (!empty($pppoeVlan['warning'])) {
+                    $this->warn("  ⚠ " . $pppoeVlan['warning']);
+                }
 
                 if ($apply && ($vlanPppoe || $vlanMgmt)) {
                     $updateData = [];
@@ -99,7 +103,7 @@ class SyncAreaVlans extends Command
         }
     }
 
-    private function getVlanId(MikroTikService $mikrotik, ?string $interfaceName): ?string
+    private function getVlanDetails(MikroTikService $mikrotik, ?string $interfaceName): ?array
     {
         if (!$interfaceName) return null;
         if ($this->looksLikeMgmt($interfaceName)) return null;
@@ -115,7 +119,11 @@ class SyncAreaVlans extends Command
             foreach ($vlans as $vlan) {
                 $name = strtolower(trim((string) ($vlan['name'] ?? '')));
                 if ($name === $target && isset($vlan['vlan-id'])) {
-                    return (string) $vlan['vlan-id'];
+                    return [
+                        'name' => (string) ($vlan['name'] ?? ''),
+                        'vlan_id' => (string) $vlan['vlan-id'],
+                        'comment' => (string) ($vlan['comment'] ?? ''),
+                    ];
                 }
             }
 
@@ -125,13 +133,43 @@ class SyncAreaVlans extends Command
         }
     }
 
-    private function resolvePppoeVlan(MikroTikService $mikrotik, ?string $pppoeInterface): ?string
+    private function resolvePppoeVlan(MikroTikService $mikrotik, ?string $pppoeInterface): array
     {
         if (!$pppoeInterface || $this->looksLikeMgmt($pppoeInterface)) {
+            return ['vlan_id' => null];
+        }
+
+        $details = $this->getVlanDetails($mikrotik, $pppoeInterface);
+        if ($details === null) {
+            return ['vlan_id' => null];
+        }
+
+        $warning = null;
+        $numberFromName = $this->extractVlanNumberFromName($pppoeInterface);
+        $vlanId = (string) ($details['vlan_id'] ?? '');
+
+        if ($numberFromName !== null && $vlanId !== '' && $numberFromName !== $vlanId) {
+            $warning = "Nama interface {$pppoeInterface} mengarah ke vlan-id live {$vlanId}. Cek penamaan/config VLAN di MikroTik.";
+        }
+
+        return [
+            'vlan_id' => $vlanId !== '' ? $vlanId : null,
+            'warning' => $warning,
+        ];
+    }
+
+    private function extractVlanNumberFromName(?string $name): ?string
+    {
+        $value = trim((string) $name);
+        if ($value === '') {
             return null;
         }
 
-        return $this->getVlanId($mikrotik, $pppoeInterface);
+        if (preg_match('/^vlan[_-]?(\d+)/i', $value, $m)) {
+            return (string) $m[1];
+        }
+
+        return null;
     }
 
     private function pickPppoeInterface(array $pppoeServers): ?string
