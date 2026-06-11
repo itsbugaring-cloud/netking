@@ -11,6 +11,7 @@ use App\Services\MikroTikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use RouterOS\Query;
 
 class AreaController extends Controller
 {
@@ -96,11 +97,19 @@ class AreaController extends Controller
             ]);
         }
 
-        // Save router identity
+        // Save router identity + auto-detect VLANs
         $mikrotik = MikroTikService::forArea($area);
         $test = $mikrotik->testConnection();
         if ($test['success'] ?? false) {
-            $area->update(['router_identity' => $test['identity'] ?? null]);
+            $syncFields = ['router_identity' => $test['identity'] ?? null];
+            $vlanData = $this->detectAreaVlans($mikrotik);
+            if (!empty($vlanData['vlan_pppoe'])) {
+                $syncFields['vlan_pppoe'] = $vlanData['vlan_pppoe'];
+            }
+            if (!empty($vlanData['vlan_mgmt'])) {
+                $syncFields['vlan_mgmt'] = $vlanData['vlan_mgmt'];
+            }
+            $area->update($syncFields);
         }
 
         $syncMsg = $this->autoSyncPppoe($area);
@@ -127,7 +136,7 @@ class AreaController extends Controller
     {
         $request->validate([
             'name'                   => 'required|string|max:255',
-            'router_ip'              => "required|ip|unique:areas,router_ip,{$area->id}",
+            'router_ip'              => "required|string|max:255|unique:areas,router_ip,{$area->id}",
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'nullable|string|max:255',
             'pools'                  => 'required|array|min:1',
@@ -162,6 +171,20 @@ class AreaController extends Controller
                 'ip_pool_end'   => $pool['ip_pool_end'],
                 'sort_order'    => $i,
             ]);
+        }
+
+        $mikrotik = MikroTikService::forArea($area);
+        $test = $mikrotik->testConnection();
+        if ($test['success'] ?? false) {
+            $syncFields = ['router_identity' => $test['identity'] ?? null];
+            $vlanData = $this->detectAreaVlans($mikrotik);
+            if (!empty($vlanData['vlan_pppoe'])) {
+                $syncFields['vlan_pppoe'] = $vlanData['vlan_pppoe'];
+            }
+            if (!empty($vlanData['vlan_mgmt'])) {
+                $syncFields['vlan_mgmt'] = $vlanData['vlan_mgmt'];
+            }
+            $area->update($syncFields);
         }
 
         $syncMsg = $this->autoSyncPppoe($area);
@@ -328,6 +351,154 @@ class AreaController extends Controller
         } catch (\Throwable $e) {
             return 'Sync error: ' . Str::limit($e->getMessage(), 80);
         }
+    }
+
+    private function detectAreaVlans(MikroTikService $mikrotik): array
+    {
+        try {
+            if (!$mikrotik->isConnected()) {
+                return [];
+            }
+
+            $pppoeServers = $this->queryRouter($mikrotik, '/interface/pppoe-server/server/print', 'interface');
+            $pppoeInterface = $this->pickPppoeInterface($pppoeServers);
+            $pppoeVlan = $this->resolvePppoeVlan($mikrotik, $pppoeInterface);
+
+            return [
+                'vlan_pppoe' => $pppoeVlan['vlan_id'] ?? null,
+                'vlan_mgmt' => $this->findMgmtVlan($mikrotik),
+            ];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    private function queryRouter(MikroTikService $mikrotik, string $path, string $proplist): array
+    {
+        try {
+            $client = $this->getClient($mikrotik);
+            $query = new Query($path);
+            $query->equal('.proplist', $proplist);
+            return $client->query($query)->read();
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    private function getClient(MikroTikService $mikrotik)
+    {
+        $ref = new \ReflectionClass($mikrotik);
+        $prop = $ref->getProperty('client');
+        $prop->setAccessible(true);
+        return $prop->getValue($mikrotik);
+    }
+
+    private function pickPppoeInterface(array $pppoeServers): ?string
+    {
+        $best = null;
+        $bestScore = PHP_INT_MIN;
+
+        foreach ($pppoeServers as $server) {
+            $name = trim((string) ($server['interface'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $score = 0;
+            if ($this->looksLikePppoe($name)) {
+                $score += 100;
+            }
+            if ($this->looksLikeMgmt($name)) {
+                $score -= 1000;
+            }
+            if (preg_match('/\bvlan\b/i', $name)) {
+                $score += 10;
+            }
+
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $name;
+            }
+        }
+
+        return $best !== null && !$this->looksLikeMgmt($best) ? $best : null;
+    }
+
+    private function resolvePppoeVlan(MikroTikService $mikrotik, ?string $pppoeInterface): array
+    {
+        if (!$pppoeInterface || $this->looksLikeMgmt($pppoeInterface)) {
+            return ['vlan_id' => null];
+        }
+
+        $details = $this->getVlanDetails($mikrotik, $pppoeInterface);
+        if ($details === null) {
+            return ['vlan_id' => null];
+        }
+
+        return ['vlan_id' => (string) ($details['vlan_id'] ?? '') ?: null];
+    }
+
+    private function getVlanDetails(MikroTikService $mikrotik, ?string $interfaceName): ?array
+    {
+        if (!$interfaceName || $this->looksLikeMgmt($interfaceName)) {
+            return null;
+        }
+
+        try {
+            $client = $this->getClient($mikrotik);
+            $query = new Query('/interface/vlan/print');
+            $query->equal('.proplist', 'name,vlan-id,interface,comment');
+            $vlans = $client->query($query)->read();
+
+            $target = strtolower(trim((string) $interfaceName));
+            foreach ($vlans as $vlan) {
+                $name = strtolower(trim((string) ($vlan['name'] ?? '')));
+                if ($name === $target && isset($vlan['vlan-id'])) {
+                    return [
+                        'name' => (string) ($vlan['name'] ?? ''),
+                        'vlan_id' => (string) $vlan['vlan-id'],
+                        'comment' => (string) ($vlan['comment'] ?? ''),
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+
+        return null;
+    }
+
+    private function findMgmtVlan(MikroTikService $mikrotik): ?string
+    {
+        try {
+            $client = $this->getClient($mikrotik);
+            $query = new Query('/interface/vlan/print');
+            $query->equal('.proplist', 'name,vlan-id,comment');
+            $vlans = $client->query($query)->read();
+
+            foreach ($vlans as $vlan) {
+                $name = strtolower((string) ($vlan['name'] ?? ''));
+                $comment = strtolower((string) ($vlan['comment'] ?? ''));
+                if (str_contains($name, 'mgmt') || str_contains($name, 'management') ||
+                    str_contains($comment, 'mgmt') || str_contains($comment, 'management')) {
+                    return (string) ($vlan['vlan-id'] ?? '');
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+
+        return null;
+    }
+
+    private function looksLikeMgmt(?string $name): bool
+    {
+        $value = strtolower(trim((string) $name));
+        return $value !== '' && (str_contains($value, 'mgmt') || str_contains($value, 'management'));
+    }
+
+    private function looksLikePppoe(?string $name): bool
+    {
+        $value = strtolower(trim((string) $name));
+        return $value !== '' && str_contains($value, 'pppoe');
     }
 }
 
