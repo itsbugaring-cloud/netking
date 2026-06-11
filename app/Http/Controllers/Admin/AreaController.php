@@ -97,25 +97,12 @@ class AreaController extends Controller
             ]);
         }
 
-        // Save router identity + auto-detect VLANs
-        $mikrotik = MikroTikService::forArea($area);
-        $test = $mikrotik->testConnection();
-        if ($test['success'] ?? false) {
-            $syncFields = ['router_identity' => $test['identity'] ?? null];
-            $vlanData = $this->detectAreaVlans($mikrotik);
-            if (!empty($vlanData['vlan_pppoe'])) {
-                $syncFields['vlan_pppoe'] = $vlanData['vlan_pppoe'];
-            }
-            if (!empty($vlanData['vlan_mgmt'])) {
-                $syncFields['vlan_mgmt'] = $vlanData['vlan_mgmt'];
-            }
-            $area->update($syncFields);
-        }
+        $routerSyncSummary = $this->syncAreaRouterMetadata($area);
 
         $syncMsg = $this->autoSyncPppoe($area);
 
         return redirect()->route('admin.areas.index')
-            ->with('success', "Area created. {$syncMsg}");
+            ->with('success', "Area created. {$syncMsg} {$routerSyncSummary}");
     }
 
     public function show(Area $area)
@@ -173,24 +160,12 @@ class AreaController extends Controller
             ]);
         }
 
-        $mikrotik = MikroTikService::forArea($area);
-        $test = $mikrotik->testConnection();
-        if ($test['success'] ?? false) {
-            $syncFields = ['router_identity' => $test['identity'] ?? null];
-            $vlanData = $this->detectAreaVlans($mikrotik);
-            if (!empty($vlanData['vlan_pppoe'])) {
-                $syncFields['vlan_pppoe'] = $vlanData['vlan_pppoe'];
-            }
-            if (!empty($vlanData['vlan_mgmt'])) {
-                $syncFields['vlan_mgmt'] = $vlanData['vlan_mgmt'];
-            }
-            $area->update($syncFields);
-        }
+        $routerSyncSummary = $this->syncAreaRouterMetadata($area);
 
         $syncMsg = $this->autoSyncPppoe($area);
 
         return redirect()->route('admin.areas.index')
-            ->with('success', "Area updated. {$syncMsg}");
+            ->with('success', "Area updated. {$syncMsg} {$routerSyncSummary}");
     }
 
     public function destroy(Area $area)
@@ -350,6 +325,35 @@ class AreaController extends Controller
             return "PPPoE sync: +{$created} customer, {$skipped} exist, +{$profilesSynced} packages.";
         } catch (\Throwable $e) {
             return 'Sync error: ' . Str::limit($e->getMessage(), 80);
+        }
+    }
+
+    private function syncAreaRouterMetadata(Area $area): string
+    {
+        try {
+            $mikrotik = MikroTikService::forArea($area);
+            $test = $mikrotik->testConnection();
+            if (($test['success'] ?? false) !== true) {
+                return 'Router metadata: koneksi gagal, identity/VLAN belum terdeteksi.';
+            }
+
+            $syncFields = ['router_identity' => $test['identity'] ?? null];
+            $vlanData = $this->detectAreaVlans($mikrotik);
+            if (!empty($vlanData['vlan_pppoe'])) {
+                $syncFields['vlan_pppoe'] = $vlanData['vlan_pppoe'];
+            }
+            if (!empty($vlanData['vlan_mgmt'])) {
+                $syncFields['vlan_mgmt'] = $vlanData['vlan_mgmt'];
+            }
+            $area->update($syncFields);
+
+            $identity = trim((string) ($syncFields['router_identity'] ?? '')) ?: '-';
+            $vlanPppoe = trim((string) ($syncFields['vlan_pppoe'] ?? '')) ?: 'belum kebaca';
+            $vlanMgmt = trim((string) ($syncFields['vlan_mgmt'] ?? '')) ?: 'belum kebaca';
+
+            return "Router metadata: identity {$identity}, VLAN PPPoE {$vlanPppoe}, VLAN MGMT {$vlanMgmt}.";
+        } catch (\Throwable $e) {
+            return 'Router metadata: sync gagal (' . Str::limit($e->getMessage(), 80) . ').';
         }
     }
 
