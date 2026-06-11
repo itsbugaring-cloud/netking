@@ -44,8 +44,9 @@ class SyncAreaVlans extends Command
                 $pppoeInterface = $this->pickPppoeInterface($pppoeServers);
                 $this->line("  PPPoE Server interface: {$pppoeInterface}");
 
-                // Check if that interface is a VLAN
-                $vlanPppoe = $this->getVlanId($mikrotik, $pppoeInterface);
+                // Check if that interface is really a PPPoE-facing VLAN.
+                // Better to leave it undetected than accidentally store VLAN MGMT as VLAN PPPoE.
+                $vlanPppoe = $this->resolvePppoeVlan($mikrotik, $pppoeInterface);
 
                 // Try to find MGMT VLAN (look for interface with "mgmt" or "management" in name/comment)
                 $vlanMgmt = $this->findMgmtVlan($mikrotik);
@@ -136,6 +137,65 @@ class SyncAreaVlans extends Command
         }
     }
 
+    private function resolvePppoeVlan(MikroTikService $mikrotik, ?string $pppoeInterface): ?string
+    {
+        if (!$pppoeInterface || $this->looksLikeMgmt($pppoeInterface)) {
+            return null;
+        }
+
+        $directVlan = $this->getVlanId($mikrotik, $pppoeInterface);
+        if ($directVlan !== null) {
+            return $directVlan;
+        }
+
+        try {
+            $client = $this->getClient($mikrotik);
+            $query = new Query('/interface/vlan/print');
+            $query->equal('.proplist', 'name,vlan-id,comment');
+            $vlans = $client->query($query)->read();
+
+            $best = null;
+            $bestScore = -1;
+
+            foreach ($vlans as $vlan) {
+                $name = trim((string) ($vlan['name'] ?? ''));
+                $comment = trim((string) ($vlan['comment'] ?? ''));
+                $vlanId = trim((string) ($vlan['vlan-id'] ?? ''));
+
+                if ($name === '' || $vlanId === '') {
+                    continue;
+                }
+
+                if ($this->looksLikeMgmt($name) || $this->looksLikeMgmt($comment)) {
+                    continue;
+                }
+
+                $score = 0;
+                if (strcasecmp($name, $pppoeInterface) === 0) {
+                    $score += 100;
+                }
+                if (str_contains(strtolower($name), 'pppoe')) {
+                    $score += 50;
+                }
+                if (str_contains(strtolower($comment), 'pppoe')) {
+                    $score += 30;
+                }
+                if (strcasecmp($name, $pppoeInterface) !== 0 && str_contains(strtolower($pppoeInterface), strtolower($name))) {
+                    $score += 15;
+                }
+
+                if ($score > $bestScore) {
+                    $bestScore = $score;
+                    $best = $vlanId;
+                }
+            }
+
+            return $bestScore > 0 ? $best : null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
     private function pickPppoeInterface(array $pppoeServers): ?string
     {
         if (empty($pppoeServers)) {
@@ -154,19 +214,32 @@ class SyncAreaVlans extends Command
             return null;
         }
 
+        $best = null;
+        $bestScore = PHP_INT_MIN;
+
         foreach ($interfaces as $name) {
-            if ($this->looksLikePppoe($name) && !$this->looksLikeMgmt($name)) {
-                return $name;
+            $score = 0;
+            if ($this->looksLikePppoe($name)) {
+                $score += 100;
+            }
+            if ($this->looksLikeMgmt($name)) {
+                $score -= 1000;
+            }
+            if (preg_match('/\bvlan\b/i', $name)) {
+                $score += 10;
+            }
+
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $name;
             }
         }
 
-        foreach ($interfaces as $name) {
-            if (!$this->looksLikeMgmt($name)) {
-                return $name;
-            }
+        if ($best !== null && !$this->looksLikeMgmt($best)) {
+            return $best;
         }
 
-        return $interfaces[0];
+        return null;
     }
 
     private function looksLikeMgmt(?string $name): bool
