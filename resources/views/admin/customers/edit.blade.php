@@ -75,6 +75,16 @@
                 <textarea name="address" class="form-control @error('address') is-invalid @enderror" rows="2">{{ old('address', $customer->address) }}</textarea>
                 @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
+              <div class="col-md-6">
+                <label class="form-label">Latitude</label>
+                <input type="number" step="0.00000001" name="latitude" class="form-control @error('latitude') is-invalid @enderror" value="{{ old('latitude', $customer->latitude) }}" placeholder="-6.12345678">
+                @error('latitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Longitude</label>
+                <input type="number" step="0.00000001" name="longitude" class="form-control @error('longitude') is-invalid @enderror" value="{{ old('longitude', $customer->longitude) }}" placeholder="107.12345678">
+                @error('longitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              </div>
             </div>
           </div>
         </div>

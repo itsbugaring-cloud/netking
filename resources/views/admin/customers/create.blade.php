@@ -42,6 +42,18 @@
                 @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
               <div class="col-md-6">
+                <label class="form-label">Latitude</label>
+                <input type="number" step="0.00000001" name="latitude" class="form-control @error('latitude') is-invalid @enderror" value="{{ old('latitude') }}" placeholder="-6.12345678">
+                <div class="form-text">Bisa diisi dari hasil share location bot.</div>
+                @error('latitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Longitude</label>
+                <input type="number" step="0.00000001" name="longitude" class="form-control @error('longitude') is-invalid @enderror" value="{{ old('longitude') }}" placeholder="107.12345678">
+                <div class="form-text">Format angka desimal koordinat rumah pelanggan.</div>
+                @error('longitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              </div>
+              <div class="col-md-6">
                 <label class="form-label">ONT Serial Number</label>
                 <input type="text" name="ont_sn" class="form-control @error('ont_sn') is-invalid @enderror" value="{{ old('ont_sn') }}" placeholder="cth. HWTC12345678">
                 @error('ont_sn')<div class="invalid-feedback">{{ $message }}</div>@enderror

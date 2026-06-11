@@ -327,6 +327,9 @@
                 ['ONT SN', $customer->ont_sn ? "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>{$customer->ont_sn}</code>" : 'N/A'],
                 ['Remote IP', "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>" . ($customer->remote_ip ?? 'Dinamis') . "</code> <button class='btn btn-sm btn-clipboard p-0 ms-1' data-clipboard-text='" . ($customer->remote_ip ?? ' Dinamis') . "' title='Salin' style='border:none;background:none;color:#94a3b8;cursor:pointer;'><i class='bx bx-copy'></i></button>" ],
                     ['Alamat', $customer->address ?? '-'],
+                    ['Koordinat', ($customer->latitude !== null && $customer->longitude !== null)
+                        ? "<code style='background:#f5f5f9;padding:2px 8px;border-radius:4px;font-size:0.8125rem;color:#2563eb;'>" . $customer->latitude . ', ' . $customer->longitude . "</code> <a href='https://www.google.com/maps?q=" . $customer->latitude . ',' . $customer->longitude . "' target='_blank' rel='noopener' style='margin-left:8px;color:#2563eb;font-weight:600;'>Buka Maps</a>"
+                        : '-'],
                     ['Bergabung', $customer->created_at->format('d M Y')],
                     ];
                     @endphp

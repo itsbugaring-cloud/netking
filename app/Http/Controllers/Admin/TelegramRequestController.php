@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\MikroTikService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -110,6 +111,30 @@ class TelegramRequestController extends Controller
         return view('admin.telegram.requests.show', [
             'payload' => $payload,
             'ref' => $ref,
+            'hasSnPhoto' => trim((string) data_get($payload, 'draft.photo_file_id', '')) !== '',
+        ]);
+    }
+
+    public function photo(string $ref)
+    {
+        $payload = $this->load($ref);
+        if ($payload === null) {
+            abort(404, 'Request tidak ditemukan.');
+        }
+
+        $photoUrl = $this->resolveTelegramPhotoUrl((string) data_get($payload, 'draft.photo_file_id', ''));
+        if ($photoUrl === null) {
+            abort(404, 'Foto SN belum tersedia.');
+        }
+
+        $response = Http::timeout(10)->get($photoUrl);
+        if (!$response->successful()) {
+            abort(404, 'Foto SN gagal diambil.');
+        }
+
+        return response($response->body(), 200, [
+            'Content-Type' => $response->header('Content-Type', 'image/jpeg'),
+            'Cache-Control' => 'private, max-age=300',
         ]);
     }
 
@@ -219,7 +244,9 @@ class TelegramRequestController extends Controller
         $pppoePass = trim((string) ($draft['pppoe_pass'] ?? 'netking'));
         $portalRaw = preg_replace('/[^0-9]/', '', (string) ($draft['no_hp'] ?? ''));
         $phone = trim((string) ($draft['no_hp'] ?? ''));
-        $address = trim((string) ($draft['lokasi'] ?? ''));
+        $address = trim((string) ($draft['address'] ?? $draft['lokasi'] ?? ''));
+        $latitude = isset($draft['latitude']) ? (float) $draft['latitude'] : null;
+        $longitude = isset($draft['longitude']) ? (float) $draft['longitude'] : null;
         $sn = $this->normalizeSn((string) ($draft['sn_ont'] ?? ''));
         $billingStart = (string) ($draft['tanggal_pasang'] ?? now()->toDateString());
         $packageId = (int) ($draft['paket_id'] ?? 0);
@@ -266,6 +293,8 @@ class TelegramRequestController extends Controller
                 'billing_start_date' => $billingStart,
                 'phone' => $phone !== '' ? $phone : null,
                 'address' => $address !== '' ? $address : null,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
                 'status' => 'provisioning',
                 'pppoe_pending_enable' => true,
             ]);
@@ -358,6 +387,38 @@ class TelegramRequestController extends Controller
     {
         $sn = strtoupper(trim($sn));
         return str_replace('-', '', $sn);
+    }
+
+    private function resolveTelegramPhotoUrl(string $fileId): ?string
+    {
+        $fileId = trim($fileId);
+        if ($fileId === '') {
+            return null;
+        }
+
+        $token = trim((string) (config('services.telegram_config.bot_token') ?: env('TELEGRAM_CONFIG_BOT_TOKEN', '')));
+        if ($token === '') {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(5)->get("https://api.telegram.org/bot{$token}/getFile", [
+                'file_id' => $fileId,
+            ]);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $filePath = trim((string) data_get($response->json(), 'result.file_path', ''));
+            if ($filePath === '') {
+                return null;
+            }
+
+            return "https://api.telegram.org/file/bot{$token}/{$filePath}";
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     private function pushSecretToMikrotik(array $request): array

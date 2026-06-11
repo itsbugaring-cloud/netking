@@ -191,6 +191,14 @@
               <div class="tg-summary-label">Paket</div>
               <div class="tg-summary-value">{{ data_get($payload, 'draft.paket_kode', '-') }} ({{ data_get($payload, 'draft.mikrotik_profile', '-') }})</div>
             </div>
+            <div class="tg-summary-item" style="grid-column: 1 / -1;">
+              <div class="tg-summary-label">Alamat</div>
+              <div class="tg-summary-value">{{ data_get($payload, 'draft.address', data_get($payload, 'draft.lokasi', '-')) }}</div>
+            </div>
+            <div class="tg-summary-item" style="grid-column: 1 / -1;">
+              <div class="tg-summary-label">Koordinat</div>
+              <div class="tg-summary-value">{{ data_get($payload, 'draft.coordinates', '-') }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -205,11 +213,14 @@
               <tr><th style="width:32%;">Area</th><td>{{ data_get($payload, 'draft.area_name', '-') }}</td></tr>
               <tr><th>Nama</th><td>{{ data_get($payload, 'draft.nama', '-') }}</td></tr>
               <tr><th>No HP</th><td>{{ data_get($payload, 'draft.no_hp', '-') }}</td></tr>
+              <tr><th>Alamat</th><td>{{ data_get($payload, 'draft.address', data_get($payload, 'draft.lokasi', '-')) }}</td></tr>
+              <tr><th>Koordinat</th><td>{{ data_get($payload, 'draft.coordinates', '-') }}</td></tr>
               <tr><th>SN ONT</th><td>{{ data_get($payload, 'draft.sn_ont', '-') }}</td></tr>
               <tr><th>PPPoE User</th><td><code>{{ data_get($payload, 'draft.pppoe_user', '-') }}</code></td></tr>
               <tr><th>Paket</th><td>{{ data_get($payload, 'draft.paket_kode', '-') }} ({{ data_get($payload, 'draft.mikrotik_profile', '-') }})</td></tr>
               <tr><th>Harga</th><td>Rp {{ number_format((float) data_get($payload, 'draft.harga', 0), 0, ',', '.') }}</td></tr>
               <tr><th>Tanggal Pasang</th><td>{{ data_get($payload, 'draft.tanggal_pasang', '-') }}</td></tr>
+              <tr><th>Foto SN</th><td><code>{{ data_get($payload, 'draft.photo_file_id', '-') }}</code></td></tr>
               <tr><th>Customer ID</th><td>{{ data_get($payload, 'customer_id', '-') }}</td></tr>
             </tbody>
           </table>
@@ -243,6 +254,27 @@
           <div><strong>Telegram ID:</strong> {{ data_get($payload, 'from.id', '-') }}</div>
           <div><strong>Chat ID:</strong> {{ data_get($payload, 'chat_id', '-') }}</div>
           <div><strong>Waktu Submit:</strong> {{ data_get($payload, 'submitted_at', '-') }}</div>
+        </div>
+      </div>
+
+      <div class="tg-card">
+        <div class="tg-card-head">
+          <h2 class="tg-card-title">Foto SN</h2>
+        </div>
+        <div class="tg-card-body">
+          @if($hasSnPhoto)
+            <a href="{{ route('admin.telegram.requests.photo', $ref) }}" target="_blank" rel="noopener">
+              <img src="{{ route('admin.telegram.requests.photo', $ref) }}" alt="Foto SN" style="width:100%; border-radius:14px; border:1px solid var(--border); background:var(--surface-2);">
+            </a>
+            <div class="mt-2" style="font-size:.78rem; color:var(--txt-3);">
+              Foto SN ini tersimpan di request bot dan bisa dibuka lagi dari halaman ini.
+            </div>
+          @else
+            <div style="font-size:.84rem; color:var(--txt-2);">
+              Preview foto belum tersedia dari website, tapi file ID-nya tetap tersimpan di request bot.
+            </div>
+            <div class="mt-2"><code>{{ data_get($payload, 'draft.photo_file_id', '-') }}</code></div>
+          @endif
         </div>
       </div>
 

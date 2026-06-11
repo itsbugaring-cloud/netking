@@ -166,6 +166,8 @@ class CustomerController extends Controller
             'billing_start_date' => 'required|date',
             'phone'           => 'nullable|string|max:20',
             'address'         => 'nullable|string|max:500',
+            'latitude'        => 'nullable|numeric|between:-90,90',
+            'longitude'       => 'nullable|numeric|between:-180,180',
             'odp_id'          => 'nullable|exists:odps,id',
             'odp_port'        => 'nullable|integer|min:1|max:128',
         ]);
@@ -248,6 +250,8 @@ class CustomerController extends Controller
             'ont_sn'          => 'nullable|string|max:255',
             'phone'           => 'nullable|string|max:20',
             'address'         => 'nullable|string|max:500',
+            'latitude'        => 'nullable|numeric|between:-90,90',
+            'longitude'       => 'nullable|numeric|between:-180,180',
             'odp_id'          => 'nullable|exists:odps,id',
             'odp_port'        => 'nullable|integer|min:1|max:128',
             'portal_password' => 'nullable|string|min:6',

@@ -32,6 +32,8 @@ class Customer extends Authenticatable
         'billing_due_day',
         'phone',
         'address',
+        'latitude',
+        'longitude',
         'status',
         'is_free',
         'is_isolated',
@@ -48,6 +50,8 @@ class Customer extends Authenticatable
 
     protected $casts = [
         'package_price' => 'decimal:2',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
         'billing_start_date' => 'date',
         'last_login_at' => 'datetime',
         'is_free' => 'boolean',

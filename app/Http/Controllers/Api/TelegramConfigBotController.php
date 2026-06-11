@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\Process\Process;
 
 class TelegramConfigBotController extends Controller
 {
@@ -26,6 +27,8 @@ class TelegramConfigBotController extends Controller
         'area_id',
         'nama',
         'no_hp',
+        'address',
+        'coordinates',
         'sn_ont',
         'pppoe_user',
         'paket_id',
@@ -86,6 +89,11 @@ class TelegramConfigBotController extends Controller
 
         if (isset($message['photo']) && is_array($message['photo'])) {
             $this->handlePhotoUpload($chatId, $message['photo'], (string) data_get($message, 'caption', ''), $incomingMessageId);
+            return;
+        }
+
+        if (isset($message['location']) && is_array($message['location'])) {
+            $this->handleLocationInput($chatId, $from, (array) $message['location'], $incomingMessageId);
             return;
         }
 
@@ -164,7 +172,7 @@ class TelegramConfigBotController extends Controller
         }
 
         if (in_array($textLc, ['📷 kirim foto sn', '📷 foto sn'], true) || str_contains($textLc, 'kirim foto sn')) {
-            $this->sendMessage($chatId, "📷 Kirim foto label SN ONT yang jelas.\nTambahkan caption: SN ONT: <serial> supaya bot bisa cocokkan anti typo.");
+            $this->sendMessage($chatId, "📷 Kirim foto label SN ONT yang jelas.\nBot akan baca serial langsung dari gambar, jadi nggak perlu caption lagi.");
             return;
         }
 
@@ -487,8 +495,18 @@ class TelegramConfigBotController extends Controller
             }
 
             $state['draft'][$editingField] = $value;
+            if ($editingField === 'coordinates') {
+                $parsed = $this->parseCoordinates($value);
+                $state['draft']['latitude'] = $parsed['latitude'] ?? null;
+                $state['draft']['longitude'] = $parsed['longitude'] ?? null;
+            }
             if ($editingField === 'sn_ont') {
                 $state['draft']['photo_sn_matched'] = false;
+                $state['draft']['photo_sn_verified'] = false;
+                $state['draft']['photo_sn_ont'] = null;
+                $state['draft']['photo_sn_ocr'] = null;
+                $state['draft']['photo_ocr_text'] = null;
+                $state['draft']['photo_ocr_error'] = null;
             }
 
             unset($state['edit_field']);
@@ -498,7 +516,7 @@ class TelegramConfigBotController extends Controller
 
             $msg = "✅ Field {$editingField} diperbarui.";
             if ($editingField === 'sn_ont') {
-                $msg .= "\n📷 Karena SN berubah, kirim ulang foto SN dengan caption: SN ONT: {$value}";
+                $msg .= "\n📷 Karena SN berubah, kirim ulang foto SN yang jelas supaya saya cek ulang dari gambar.";
             }
             $this->sendMessage($chatId, $msg);
             $this->sendDraftSummary($chatId, true);
@@ -528,6 +546,11 @@ class TelegramConfigBotController extends Controller
         }
 
         $state['draft'][$field] = $value;
+        if ($field === 'coordinates') {
+            $parsed = $this->parseCoordinates($value);
+            $state['draft']['latitude'] = $parsed['latitude'] ?? null;
+            $state['draft']['longitude'] = $parsed['longitude'] ?? null;
+        }
 
         if ($field === 'pppoe_user') {
             $duplicate = $this->findDuplicatePppoe(
@@ -663,6 +686,8 @@ class TelegramConfigBotController extends Controller
         $labels = [
             'nama' => '🧾 Masukkan NAMA pelanggan:',
             'no_hp' => '📱 Masukkan nomor HP:',
+            'address' => '📍 Masukkan alamat pelanggan:',
+            'coordinates' => "🛰️ Kirim titik koordinat rumah pelanggan:\nBisa share location Telegram atau ketik format: -6.123456, 107.123456",
             'sn_ont' => '🔌 Masukkan SN ONT:',
             'pppoe_user' => '🌐 Masukkan PPPoE User:',
         ];
@@ -706,28 +731,39 @@ class TelegramConfigBotController extends Controller
         $state = $this->getState($chatId);
         $state['draft'] = $state['draft'] ?? [];
         $typedSn = strtoupper(trim((string) ($state['draft']['sn_ont'] ?? '')));
-        $snFromCaption = $this->extractSnFromText($caption);
-        $captionSn = $snFromCaption !== null ? strtoupper($snFromCaption) : '';
 
         if ($typedSn === '') {
-            $this->sendMessage($chatId, "⚠️ SN ONT teks belum diisi. Isi SN dulu, lalu kirim foto lagi dengan caption SN ONT yang sama.");
+            $this->sendMessage($chatId, "⚠️ SN ONT teks belum diisi. Isi SN dulu, lalu kirim foto lagi.");
             return;
         }
-
-        if ($captionSn === '') {
-            $state['draft']['photo_sn_matched'] = false;
-            $state['draft']['photo_sn_verified'] = false;
-            $this->saveState($chatId, $state);
-            $this->sendMessage($chatId, "⚠️ Foto SN wajib pakai caption `SN ONT: {$typedSn}`.\nKalau caption kosong, foto ditolak.", ['parse_mode' => 'Markdown']);
-            return;
-        }
-
-        $state['draft']['photo_sn_ont'] = $captionSn;
 
         $state['draft']['photo_file_id'] = (string) $largest['file_id'];
         $state['draft']['photo_uploaded_at'] = now()->toDateTimeString();
-        $state['draft']['photo_sn_matched'] = $typedSn === $captionSn;
-        $state['draft']['photo_sn_verified'] = $typedSn === $captionSn;
+        $state['draft']['photo_sn_matched'] = false;
+        $state['draft']['photo_sn_verified'] = false;
+        $state['draft']['photo_sn_ont'] = null;
+        $state['draft']['photo_ocr_error'] = null;
+        $state['draft']['photo_ocr_text'] = null;
+        $state['draft']['photo_sn_ocr'] = null;
+
+        $ocr = $this->extractSnFromTelegramPhoto((string) $largest['file_id']);
+        if (($ocr['success'] ?? false) !== true) {
+            $state['draft']['photo_ocr_error'] = (string) ($ocr['error'] ?? 'OCR gagal membaca foto');
+            $state['updated_at'] = now()->toDateTimeString();
+            $this->saveState($chatId, $state);
+            $this->sendMessage(
+                $chatId,
+                "⚠️ Foto SN ditolak.\nSaya belum bisa baca serial dari gambar.\nAlasan: " . $state['draft']['photo_ocr_error'] . "\nKirim ulang foto yang lebih fokus dan dekat ke label SN."
+            );
+            return;
+        }
+
+        $ocrSn = strtoupper(trim((string) ($ocr['sn'] ?? '')));
+        $state['draft']['photo_ocr_text'] = (string) ($ocr['raw_text'] ?? '');
+        $state['draft']['photo_sn_ocr'] = $ocrSn !== '' ? $ocrSn : null;
+        $state['draft']['photo_sn_ont'] = $ocrSn !== '' ? $ocrSn : null;
+        $state['draft']['photo_sn_matched'] = $typedSn === $ocrSn;
+        $state['draft']['photo_sn_verified'] = $typedSn === $ocrSn;
 
         $state['updated_at'] = now()->toDateTimeString();
         $this->saveState($chatId, $state);
@@ -735,7 +771,7 @@ class TelegramConfigBotController extends Controller
         if (($state['draft']['photo_sn_matched'] ?? false) !== true) {
             $this->sendMessage(
                 $chatId,
-                "⚠️ SN di foto tidak cocok.\nSN teks: {$typedSn}\nSN caption foto: {$captionSn}\nKirim ulang foto dengan caption yang benar."
+                "⚠️ SN di foto tidak cocok.\nSN teks: {$typedSn}\nHasil baca foto: " . ($ocrSn !== '' ? $ocrSn : 'tidak terbaca') . "\nKirim ulang foto yang lebih jelas."
             );
             return;
         }
@@ -745,6 +781,68 @@ class TelegramConfigBotController extends Controller
         }
 
         $this->sendDraftSummary($chatId, true);
+    }
+
+    private function handleLocationInput(string $chatId, array $from, array $location, int $incomingMessageId = 0): void
+    {
+        $state = $this->getState($chatId);
+        if (($state['collecting'] ?? false) !== true) {
+            $this->sendMessage($chatId, "⚠️ Mode input belum aktif. Klik *Input* dulu ya.", ['parse_mode' => 'Markdown']);
+            return;
+        }
+
+        $fieldIndex = (int) ($state['field_index'] ?? 0);
+        $field = self::FLOW_FIELDS[$fieldIndex] ?? null;
+        $editingField = (string) ($state['edit_field'] ?? '');
+
+        if ($field !== 'coordinates' && $editingField !== 'coordinates') {
+            $this->sendMessage($chatId, "⚠️ Koordinat belum dibutuhkan di step ini.");
+            return;
+        }
+
+        $latitude = isset($location['latitude']) ? (float) $location['latitude'] : null;
+        $longitude = isset($location['longitude']) ? (float) $location['longitude'] : null;
+        if ($latitude === null || $longitude === null) {
+            $this->sendMessage($chatId, "⚠️ Titik lokasi tidak terbaca. Coba share location lagi.");
+            return;
+        }
+
+        $coordinateText = $this->formatCoordinates($latitude, $longitude);
+        $state['draft']['coordinates'] = $coordinateText;
+        $state['draft']['latitude'] = $latitude;
+        $state['draft']['longitude'] = $longitude;
+        $state['draft']['requested_by'] = [
+            'telegram_id' => (string) ($from['id'] ?? ''),
+            'telegram_username' => (string) ($from['username'] ?? ''),
+            'name' => (string) ($from['first_name'] ?? ''),
+        ];
+        $state['updated_at'] = now()->toDateTimeString();
+
+        if ($editingField === 'coordinates') {
+            unset($state['edit_field']);
+            $state['collecting'] = false;
+            $this->saveState($chatId, $state);
+            $this->sendMessage($chatId, "✅ Koordinat berhasil diperbarui: {$coordinateText}");
+            $this->sendDraftSummary($chatId, true);
+            return;
+        }
+
+        $state['field_index'] = $fieldIndex + 1;
+        $this->saveState($chatId, $state);
+
+        if ($incomingMessageId > 0) {
+            $this->deleteMessage($chatId, $incomingMessageId);
+        }
+
+        if ((int) $state['field_index'] >= count(self::FLOW_FIELDS)) {
+            $state['collecting'] = false;
+            $this->saveState($chatId, $state);
+            $this->sendDraftSummary($chatId, true);
+            return;
+        }
+
+        $this->sendMessage($chatId, "✅ Koordinat masuk: {$coordinateText}");
+        $this->promptCurrentField($chatId, $state);
     }
 
     private function submitDraft(string $chatId, array $from): void
@@ -773,11 +871,11 @@ class TelegramConfigBotController extends Controller
         }
 
         $typedSn = strtoupper(trim((string) ($draft['sn_ont'] ?? '')));
-        $captionSn = strtoupper(trim((string) ($draft['photo_sn_ont'] ?? '')));
-        if (($draft['photo_sn_verified'] ?? false) !== true || $typedSn === '' || $captionSn === '' || $typedSn !== $captionSn) {
+        $ocrSn = strtoupper(trim((string) ($draft['photo_sn_ocr'] ?? $draft['photo_sn_ont'] ?? '')));
+        if (($draft['photo_sn_verified'] ?? false) !== true || $typedSn === '' || $ocrSn === '' || $typedSn !== $ocrSn) {
             $this->sendMessage(
                 $chatId,
-                "⚠️ Validasi SN foto belum lolos.\nSN teks dan caption harus sama persis.\nKirim ulang foto SN dengan caption: SN ONT: " . ($draft['sn_ont'] ?? '[isi-sn]') . ""
+                "⚠️ Validasi SN foto belum lolos.\nSN teks: {$typedSn}\nHasil baca foto: " . ($ocrSn !== '' ? $ocrSn : 'tidak terbaca') . "\nKirim ulang foto SN yang lebih jelas."
             );
             return;
         }
@@ -890,6 +988,8 @@ class TelegramConfigBotController extends Controller
                 . "👷 PIC: {$fromName}" . ($fromUsername ? " (@{$fromUsername})" : '') . "\n"
                 . "📍 Area: {$areaName}\n"
                 . "👤 Nama: {$customerName}\n"
+                . "🏠 Alamat: " . ($draft['address'] ?? '-') . "\n"
+                . "🛰️ Koordinat: " . ($draft['coordinates'] ?? '-') . "\n"
                 . "🌐 PPPoE: `{$pppoeUser}`\n"
                 . "📦 Paket: {$paketName} (Rp {$harga})\n"
                 . "━━━━━━━━━━━━━━━\n"
@@ -1043,6 +1143,9 @@ class TelegramConfigBotController extends Controller
             $pppoeUser = trim((string) ($draft['pppoe_user'] ?? ''));
             $pppoePass = trim((string) ($draft['pppoe_pass'] ?? 'netking'));
             $phone = trim((string) ($draft['no_hp'] ?? ''));
+            $address = trim((string) ($draft['address'] ?? $draft['lokasi'] ?? ''));
+            $latitude = isset($draft['latitude']) ? (float) $draft['latitude'] : null;
+            $longitude = isset($draft['longitude']) ? (float) $draft['longitude'] : null;
             $sn = strtoupper(str_replace('-', '', trim((string) ($draft['sn_ont'] ?? ''))));
             $packageId = (int) ($draft['paket_id'] ?? 0);
             $packagePrice = (float) ($draft['harga'] ?? 0);
@@ -1088,6 +1191,9 @@ class TelegramConfigBotController extends Controller
                 'package_price' => $packagePrice,
                 'billing_start_date' => $billingStart,
                 'phone' => $phone !== '' ? $phone : null,
+                'address' => $address !== '' ? $address : null,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
                 'status' => 'active',
             ]);
 
@@ -1167,6 +1273,8 @@ class TelegramConfigBotController extends Controller
         $price = isset($draft['harga']) ? number_format((int) $draft['harga'], 0, ',', '.') : '-';
         $fotoOk = !empty($draft['photo_file_id']) ? '✅ Ada' : '❌ Belum';
         $snOk = (($draft['photo_sn_verified'] ?? false) ? '✅ Cocok' : '❌ Belum cocok');
+        $ocrSn = trim((string) ($draft['photo_sn_ocr'] ?? $draft['photo_sn_ont'] ?? ''));
+        $ocrErr = trim((string) ($draft['photo_ocr_error'] ?? ''));
         $areaVlan = trim((string) ($draft['area_vlan_pppoe'] ?? ''));
 
         $lines = [
@@ -1176,6 +1284,8 @@ class TelegramConfigBotController extends Controller
             '├ VLAN PPPoE: ' . ($areaVlan !== '' ? $areaVlan : '-'),
             '├ Nama: ' . ($draft['nama'] ?? '-'),
             '├ No HP: ' . ($draft['no_hp'] ?? '-'),
+            '├ Alamat: ' . ($draft['address'] ?? '-'),
+            '├ Koordinat: ' . ($draft['coordinates'] ?? '-'),
             '├ SN ONT: ' . ($draft['sn_ont'] ?? '-'),
             '├ PPPoE User: ' . ($draft['pppoe_user'] ?? '-'),
             '├ PPPoE Pass: ' . ($draft['pppoe_pass'] ?? self::DEFAULT_PPPOE_PASSWORD),
@@ -1188,8 +1298,13 @@ class TelegramConfigBotController extends Controller
             '• Username: @' . (data_get($draft, 'requested_by.telegram_username', '-') ?: '-'),
             '',
             'Foto SN: ' . $fotoOk,
+            'OCR SN: ' . ($ocrSn !== '' ? $ocrSn : '-'),
             'Validasi SN: ' . $snOk,
         ];
+
+        if ($ocrErr !== '') {
+            $lines[] = 'Catatan OCR: ' . $ocrErr;
+        }
 
         if (!empty($draft['photo_file_id'])) {
             $photoMsgId = $this->sendPhoto(
@@ -1215,7 +1330,11 @@ class TelegramConfigBotController extends Controller
                                 ['text' => '✏️ No HP', 'callback_data' => 'cfg:edit:no_hp'],
                             ],
                             [
+                                ['text' => '✏️ Alamat', 'callback_data' => 'cfg:edit:address'],
                                 ['text' => '✏️ SN ONT', 'callback_data' => 'cfg:edit:sn_ont'],
+                            ],
+                            [
+                                ['text' => '✏️ Koordinat', 'callback_data' => 'cfg:edit:coordinates'],
                                 ['text' => '✏️ PPPoE', 'callback_data' => 'cfg:edit:pppoe_user'],
                             ],
                             [
@@ -1223,7 +1342,10 @@ class TelegramConfigBotController extends Controller
                                 ['text' => '📦 Paket', 'callback_data' => 'cfg:edit:paket_id'],
                             ],
                             [
+                                ['text' => '📋 Draft', 'callback_data' => 'cfg:draft:open'],
                                 ['text' => '✅ Submit', 'callback_data' => 'cfg:submit:go'],
+                            ],
+                            [
                                 ['text' => '♻️ Reset', 'callback_data' => 'cfg:reset:all'],
                             ],
                         ],
@@ -1544,6 +1666,8 @@ class TelegramConfigBotController extends Controller
             "AREA: [pilih area]\n" .
             "NAMA: [nama pelanggan]\n" .
             "No HP: [08xxxxxxxxxx]\n" .
+            "Alamat: [alamat pelanggan]\n" .
+            "Koordinat: [-6.123456, 107.123456]\n" .
             "SN ONT: [contoh: CDTCAF1234AB]\n" .
             "PPPoE User: [contoh: N-010]\n" .
             "PPPoE Pass: netking\n" .
@@ -1552,8 +1676,9 @@ class TelegramConfigBotController extends Controller
             "Tips:\n" .
             "- PPPoE otomatis dicek duplikat per area.\n" .
             "- Tanggal pasang otomatis pakai tanggal hari ini.\n" .
+            "- Koordinat bisa share location atau ketik format lat,lng.\n" .
             "- Foto SN tetap wajib kirim lewat tombol 📷.\n" .
-            "- Saat kirim foto, pakai caption: SN ONT: [serial].";
+            "- Foto SN harus terbaca OCR dari gambar, jadi kirim yang fokus dan dekat.";
 
         $this->sendMessage(
             $chatId,
@@ -1570,7 +1695,7 @@ class TelegramConfigBotController extends Controller
 
     private function beginEditField(string $chatId, string $field): void
     {
-        $allowed = ['nama', 'no_hp', 'sn_ont', 'pppoe_user', 'area_id', 'paket_id'];
+        $allowed = ['nama', 'no_hp', 'address', 'coordinates', 'sn_ont', 'pppoe_user', 'area_id', 'paket_id'];
         if (!in_array($field, $allowed, true)) {
             $this->sendMessage($chatId, "⚠️ Field edit tidak valid.");
             return;
@@ -1601,6 +1726,11 @@ class TelegramConfigBotController extends Controller
             return strtoupper(preg_replace('/\s+/', '', $value) ?? '');
         }
 
+        if ($field === 'coordinates') {
+            $parsed = $this->parseCoordinates($value);
+            return $parsed ? $this->formatCoordinates($parsed['latitude'], $parsed['longitude']) : $value;
+        }
+
         if ($field === 'pppoe_user') {
             return strtoupper($value);
         }
@@ -1611,6 +1741,151 @@ class TelegramConfigBotController extends Controller
         }
 
         return $value;
+    }
+
+    private function parseCoordinates(string $value): ?array
+    {
+        $raw = trim($value);
+        if ($raw === '') {
+            return null;
+        }
+
+        $raw = preg_replace('/\s+/', ' ', $raw) ?? $raw;
+        if (!preg_match('/^\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*$/', $raw, $matches)) {
+            return null;
+        }
+
+        $latitude = (float) $matches[1];
+        $longitude = (float) $matches[2];
+        if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
+            return null;
+        }
+
+        return [
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+        ];
+    }
+
+    private function formatCoordinates(float $latitude, float $longitude): string
+    {
+        return number_format($latitude, 6, '.', '') . ', ' . number_format($longitude, 6, '.', '');
+    }
+
+    private function extractSnFromTelegramPhoto(string $fileId): array
+    {
+        $fileUrl = $this->resolveTelegramFileUrl($fileId);
+        if ($fileUrl === null) {
+            return ['success' => false, 'error' => 'File foto Telegram tidak bisa diambil'];
+        }
+
+        $tmpDir = storage_path('app/private/telegram-config-bot/tmp');
+        if (!is_dir($tmpDir) && !@mkdir($tmpDir, 0775, true) && !is_dir($tmpDir)) {
+            return ['success' => false, 'error' => 'Folder OCR sementara gagal dibuat'];
+        }
+
+        $tmpBase = tempnam($tmpDir, 'sn_');
+        if ($tmpBase === false) {
+            return ['success' => false, 'error' => 'Gagal membuat file sementara OCR'];
+        }
+
+        $tmpImage = $tmpBase . '.jpg';
+        @rename($tmpBase, $tmpImage);
+
+        try {
+            $download = Http::timeout(15)->get($fileUrl);
+            if (!$download->successful()) {
+                return ['success' => false, 'error' => 'Download foto Telegram gagal'];
+            }
+
+            file_put_contents($tmpImage, $download->body());
+
+            $attempts = [
+                ['--psm', '6'],
+                ['--psm', '7'],
+                ['--psm', '11'],
+            ];
+
+            $bestRaw = '';
+            foreach ($attempts as $args) {
+                $process = new Process([
+                    'tesseract',
+                    $tmpImage,
+                    'stdout',
+                    ...$args,
+                    '-c',
+                    'tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
+                ]);
+                $process->setTimeout(20);
+                $process->run();
+
+                if (!$process->isSuccessful()) {
+                    $error = trim($process->getErrorOutput());
+                    if (str_contains(strtolower($error), 'not recognized') || str_contains(strtolower($error), 'not found')) {
+                        return ['success' => false, 'error' => 'Tesseract OCR belum terpasang di server'];
+                    }
+                    continue;
+                }
+
+                $rawText = strtoupper(trim($process->getOutput()));
+                if ($rawText === '') {
+                    continue;
+                }
+
+                $bestRaw = $rawText;
+                $sn = $this->extractSnFromText($rawText);
+                if ($sn !== null) {
+                    return [
+                        'success' => true,
+                        'raw_text' => $rawText,
+                        'sn' => strtoupper($sn),
+                    ];
+                }
+            }
+
+            return [
+                'success' => false,
+                'error' => $bestRaw !== '' ? 'OCR belum menemukan serial SN yang valid' : 'OCR tidak membaca teks dari foto',
+                'raw_text' => $bestRaw,
+            ];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        } finally {
+            if (is_file($tmpImage)) {
+                @unlink($tmpImage);
+            }
+            if (is_file($tmpBase)) {
+                @unlink($tmpBase);
+            }
+        }
+    }
+
+    private function resolveTelegramFileUrl(string $fileId): ?string
+    {
+        $fileId = trim($fileId);
+        if ($fileId === '') {
+            return null;
+        }
+
+        $token = trim($this->cfg('telegram_config_bot_token', 'TELEGRAM_CONFIG_BOT_TOKEN', ''));
+        if ($token === '') {
+            return null;
+        }
+
+        $response = Http::timeout(10)->get("https://api.telegram.org/bot{$token}/getFile", [
+            'file_id' => $fileId,
+        ]);
+
+        if (!$response->successful()) {
+            return null;
+        }
+
+        $filePath = trim((string) data_get($response->json(), 'result.file_path', ''));
+        if ($filePath === '') {
+            return null;
+        }
+
+        return "https://api.telegram.org/file/bot{$token}/{$filePath}";
     }
 
     private function validateFieldValue(string $field, string $value, array $state): ?string

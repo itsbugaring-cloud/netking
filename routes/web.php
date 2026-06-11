@@ -371,6 +371,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/settings/telegram/send-test', [SettingsController::class, 'telegramSendTestMessage'])->name('settings.telegram.send-test');
         Route::get('/telegram/requests', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'index'])->name('telegram.requests.index');
         Route::get('/telegram/requests/{ref}', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'show'])->name('telegram.requests.show');
+        Route::get('/telegram/requests/{ref}/photo', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'photo'])->name('telegram.requests.photo');
         Route::post('/telegram/requests/{ref}/approve', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'approve'])->name('telegram.requests.approve');
         Route::post('/telegram/requests/{ref}/create-customer', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'createCustomer'])->name('telegram.requests.create-customer');
         Route::post('/telegram/requests/{ref}/push-mikrotik', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'pushMikrotik'])->name('telegram.requests.push-mikrotik');
