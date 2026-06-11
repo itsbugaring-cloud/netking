@@ -751,11 +751,14 @@ class TelegramConfigBotController extends Controller
         $state['draft']['photo_ocr_text'] = null;
         $state['draft']['photo_sn_ocr'] = null;
 
+        $loadingMessageId = $this->startProgressMessage($chatId, 'Membaca foto SN', '⏳ OCR sedang baca label SN...');
+
         $ocr = $this->extractSnFromTelegramPhoto((string) $largest['file_id']);
         if (($ocr['success'] ?? false) !== true) {
             $state['draft']['photo_ocr_error'] = (string) ($ocr['error'] ?? 'OCR gagal membaca foto');
             $state['updated_at'] = now()->toDateTimeString();
             $this->saveState($chatId, $state);
+            $this->finishProgressMessage($chatId, $loadingMessageId, false, 'OCR gagal');
             $this->sendMessage(
                 $chatId,
                 "⚠️ Foto SN ditolak.\nSaya belum bisa baca serial dari gambar.\nAlasan: " . $state['draft']['photo_ocr_error'] . "\nKirim ulang foto yang lebih fokus dan dekat ke label SN."
@@ -774,12 +777,15 @@ class TelegramConfigBotController extends Controller
         $this->saveState($chatId, $state);
 
         if (($state['draft']['photo_sn_matched'] ?? false) !== true) {
+            $this->finishProgressMessage($chatId, $loadingMessageId, false, 'SN tidak cocok');
             $this->sendMessage(
                 $chatId,
                 "⚠️ SN di foto tidak cocok.\nSN teks: {$typedSn}\nHasil baca foto: " . ($ocrSn !== '' ? $ocrSn : 'tidak terbaca') . "\nKirim ulang foto yang lebih jelas."
             );
             return;
         }
+
+        $this->finishProgressMessage($chatId, $loadingMessageId, true, 'SN cocok');
 
         if ($incomingMessageId > 0) {
             $this->deleteMessage($chatId, $incomingMessageId);
@@ -2471,6 +2477,44 @@ class TelegramConfigBotController extends Controller
 
         usleep(10000);
         $this->editMessageText($chatId, $msgId, "✅ {$title}\n██████ 100%");
+    }
+
+    private function startProgressMessage(string $chatId, string $label, string $detail = ''): ?int
+    {
+        $this->clearLoadingMessage($chatId);
+
+        $text = "⏳ {$label}\n██░░░░ 30%";
+        if ($detail !== '') {
+            $text .= "\n{$detail}";
+        }
+
+        $msgId = $this->sendMessage($chatId, $text, ['no_track' => true]);
+        if ($msgId === null || $msgId <= 0) {
+            return null;
+        }
+
+        $this->rememberLoadingMessage($chatId, $msgId);
+        return $msgId;
+    }
+
+    private function finishProgressMessage(string $chatId, ?int $messageId, bool $success, string $detail = ''): void
+    {
+        if ($messageId === null || $messageId <= 0) {
+            return;
+        }
+
+        $text = ($success ? '✅' : '⚠️') . ' OCR foto SN' . "\n" . ($success ? '██████ 100%' : '████░░ 70%');
+        if ($detail !== '') {
+            $text .= "\n{$detail}";
+        }
+
+        $this->editMessageText($chatId, $messageId, $text);
+
+        $state = $this->getState($chatId);
+        if ((int) ($state['last_loading_message_id'] ?? 0) === $messageId) {
+            $state['last_loading_message_id'] = 0;
+            $this->saveState($chatId, $state);
+        }
     }
 
     private function prettyLoadingLabel(string $label): string
