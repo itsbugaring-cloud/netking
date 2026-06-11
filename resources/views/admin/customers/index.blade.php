@@ -29,18 +29,39 @@
 
   /* ── Filter tabs ─────────────────────────────────────────────────────── */
   .cust-filter-tabs {
-    display: inline-flex; align-items: center; gap: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    padding: .35rem;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 8px 18px rgba(37, 99, 235, .08);
+    flex-wrap: wrap;
   }
   .cust-filter-tab {
-    display: inline-flex; align-items: center;
-    padding: .25rem .75rem; font-size: .78rem; font-weight: 500;
-    border-radius: 6px; border: none;
-    background: transparent; color: var(--txt-3);
-    cursor: pointer; transition: color .12s, background .12s;
-    white-space: nowrap; line-height: 1.5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 84px;
+    height: 34px;
+    padding: 0 .9rem;
+    font-size: .78rem;
+    font-weight: 600;
+    border-radius: 999px;
+    text-decoration: none;
+    background: transparent;
+    color: var(--txt-3);
+    transition: color .18s ease, background .18s ease, transform .18s ease;
+    white-space: nowrap;
+    line-height: 1;
   }
-  .cust-filter-tab:hover { color: var(--txt); background: var(--surface-2); }
-  .cust-filter-tab.active { color: var(--txt); font-weight: 600; background: var(--surface-2); }
+  .cust-filter-tab:hover { color: var(--txt); transform: translateY(-1px); }
+  .cust-filter-tab.active {
+    color: var(--blue);
+    background: color-mix(in srgb, var(--blue) 10%, var(--surface));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 18%, var(--border));
+  }
 
   /* ── Table cell sizing (sama seperti ONT inventory) ─────────────────── */
   #customers-table td { padding: .45rem .75rem !important; }
@@ -110,6 +131,20 @@
   }
   .nk-search-input::placeholder { color: var(--txt-3); }
 
+  .cust-status-toolbar {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    padding: .15rem 0 1rem;
+  }
+  .cust-status-note {
+    font-size:.76rem;
+    color:var(--txt-3);
+    font-weight:500;
+  }
+
   /* ── Bulk bar border ─────────────────────────────────────────────────── */
   #bulk-bar.ms-panel {
     border: 1px solid var(--border) !important;
@@ -117,12 +152,32 @@
     border-radius: 8px !important;
     box-shadow: 0 1px 4px rgba(0,0,0,.05) !important;
   }
+
+  @media (max-width: 700px) {
+    .cust-filter-tabs {
+      width: 100%;
+      justify-content: flex-start;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+    }
+    .cust-filter-tab {
+      flex: 0 0 auto;
+      min-width: 78px;
+    }
+  }
 </style>
 @endsection
 
 @section('content')
 @php
   $isFinance = (auth()->user()->role ?? null) === 'finance';
+  $statusTabs = [
+    '' => 'Semua',
+    'active' => 'Aktif',
+    'suspended' => 'Diisolir',
+    'provisioning' => 'Proses',
+    'failed' => 'Gagal',
+  ];
 @endphp
 <div class="ms-page customers-index-page">
   <div class="ms-page-head">
@@ -208,20 +263,33 @@
 
     {{-- Toolbar: Server-side search/filter --}}
     <div class="ms-panel-body pt-0 pb-0">
+      <div class="cust-status-toolbar">
+        <div class="cust-filter-tabs" role="tablist" aria-label="Filter status pelanggan">
+          @foreach($statusTabs as $value => $label)
+            @php
+              $isActiveTab = request('status', '') === $value;
+              $tabQuery = array_merge(request()->query(), ['status' => $value === '' ? null : $value]);
+              if ($value === '') {
+                unset($tabQuery['status']);
+              }
+            @endphp
+            <a href="{{ route('admin.customers.index', $tabQuery) }}"
+               class="cust-filter-tab {{ $isActiveTab ? 'active' : '' }}"
+               aria-selected="{{ $isActiveTab ? 'true' : 'false' }}">
+              {{ $label }}
+            </a>
+          @endforeach
+        </div>
+        <div class="cust-status-note">Filter cepat status pelanggan</div>
+      </div>
+
       <form method="GET" action="{{ route('admin.customers.index') }}" class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
         <div class="d-flex gap-3 flex-wrap align-items-center">
           <div class="nk-search-wrap">
             <i class='bx bx-search'></i>
             <input type="text" name="search" class="nk-search-input" value="{{ request('search') }}" placeholder="Cari nama, PPPoE, no HP, alamat...">
           </div>
-
-          <select name="status" class="form-select form-select-sm">
-            <option value="">Semua status</option>
-            <option value="active" @selected(request('status') === 'active')>Aktif</option>
-            <option value="suspended" @selected(request('status') === 'suspended')>Diisolir</option>
-            <option value="provisioning" @selected(request('status') === 'provisioning')>Dalam Proses</option>
-            <option value="failed" @selected(request('status') === 'failed')>Gagal</option>
-          </select>
+          <input type="hidden" name="status" value="{{ request('status') }}">
         </div>
 
         <div class="d-flex align-items-center gap-2">
