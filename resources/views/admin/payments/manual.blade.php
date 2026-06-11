@@ -89,32 +89,36 @@
     letter-spacing: .04em;
     margin-bottom: .35rem;
   }
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
+  .manual-payment-page .form-control,
+  .manual-payment-page .form-select {
     width: 100%;
-    padding: .5rem .75rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    color: var(--txt);
-    font-size: .875rem;
   }
-  .form-group textarea {
+  .manual-payment-page textarea.form-control {
     min-height: 80px;
     resize: vertical;
   }
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: var(--blue);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 15%, transparent);
-  }
   .radio-group {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     align-items: center;
+  }
+  .manual-payment-page .form-select-sm + .select2-container--bootstrap-5 .select2-selection,
+  .manual-payment-page .select2-container .select2-selection--single {
+    min-height: 38px;
+  }
+  .manual-payment-page .select2-container {
+    width: 100% !important;
+  }
+  .manual-payment-page .select2-container .select2-selection--single .select2-selection__rendered {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @media (max-width: 768px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
   }
   .radio-group label {
     display: inline-flex;
@@ -200,7 +204,7 @@
           {{-- Periode Bulan --}}
           <div class="form-group">
             <label for="periode_bulan">Bulan</label>
-            <select name="periode_bulan" id="periode_bulan" required>
+            <select name="periode_bulan" id="periode_bulan" class="form-select form-select-sm" required>
               @php
                 $months = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
               @endphp
@@ -213,7 +217,7 @@
           {{-- Periode Tahun --}}
           <div class="form-group">
             <label for="periode_tahun">Tahun</label>
-            <select name="periode_tahun" id="periode_tahun" required>
+            <select name="periode_tahun" id="periode_tahun" class="form-select form-select-sm" required>
               @for($y = 2024; $y <= 2027; $y++)
               <option value="{{ $y }}" {{ (old('periode_tahun', now()->year) == $y) ? 'selected' : '' }}>{{ $y }}</option>
               @endfor
@@ -223,7 +227,7 @@
           {{-- Jumlah --}}
           <div class="form-group">
             <label for="jumlah">Jumlah (Rp)</label>
-            <input type="number" name="jumlah" id="jumlah"
+            <input type="number" name="jumlah" id="jumlah" class="form-control"
                    value="{{ old('jumlah', $customer->is_free ? 0 : ($customer->package_price ?? $customer->package->price ?? 0)) }}"
                    min="0" step="1000" required>
           </div>
@@ -231,7 +235,7 @@
           {{-- Tanggal Bayar --}}
           <div class="form-group">
             <label for="tanggal_bayar">Tanggal Bayar</label>
-            <input type="date" name="tanggal_bayar" id="tanggal_bayar"
+            <input type="date" name="tanggal_bayar" id="tanggal_bayar" class="form-control"
                    value="{{ old('tanggal_bayar', date('Y-m-d')) }}"
                    required>
           </div>
@@ -239,7 +243,7 @@
           {{-- Rekening Tujuan --}}
           <div class="form-group">
             <label for="rekening_tujuan">Rekening</label>
-            <select name="rekening_tujuan" id="rekening_tujuan" required>
+            <select name="rekening_tujuan" id="rekening_tujuan" class="form-select form-select-sm" required>
               <option value="">Pilih rekening...</option>
               <option value="BRI" {{ old('rekening_tujuan') == 'BRI' ? 'selected' : '' }}>BRI</option>
               <option value="BNI" {{ old('rekening_tujuan') == 'BNI' ? 'selected' : '' }}>BNI</option>
@@ -268,7 +272,7 @@
           {{-- Catatan --}}
           <div class="form-group full-width">
             <label for="catatan">Catatan (opsional)</label>
-            <textarea name="catatan" id="catatan" placeholder="Catatan tambahan...">{{ old('catatan') }}</textarea>
+            <textarea name="catatan" id="catatan" class="form-control" placeholder="Catatan tambahan...">{{ old('catatan') }}</textarea>
           </div>
         </div>
         </fieldset>
