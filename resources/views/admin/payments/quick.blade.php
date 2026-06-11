@@ -349,6 +349,7 @@
               <label for="tanggal_bayar">Tanggal Bayar</label>
               <input type="text" name="tanggal_bayar" id="tanggal_bayar" class="form-control js-payment-date"
                      value="{{ old('tanggal_bayar', date('Y-m-d')) }}"
+                     data-default-date="{{ old('tanggal_bayar', date('Y-m-d')) }}"
                      autocomplete="off"
                      required>
             </div>
@@ -483,7 +484,7 @@
               <td>{{ $payment->rekening_tujuan }}</td>
               <td>
                 <div class="d-flex align-items-center gap-2">
-                  <input type="text" name="payment_dates[{{ $payment->id }}]" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" form="bulk-update-manual-payment-dates-form" class="form-control form-control-sm js-payment-date" style="min-width:145px;" autocomplete="off">
+                  <input type="text" name="payment_dates[{{ $payment->id }}]" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" data-default-date="{{ optional($payment->approved_at)->format('Y-m-d') }}" form="bulk-update-manual-payment-dates-form" class="form-control form-control-sm js-payment-date" style="min-width:145px;" autocomplete="off">
                   <form action="{{ route('admin.payments.manual-date', $payment) }}" method="POST" class="m-0">
                     @csrf
                     @method('PATCH')
@@ -508,15 +509,21 @@
   </div>
 </div>
 
+@section('scripts')
 <script>
   (function() {
     if (typeof flatpickr !== 'undefined') {
-      flatpickr('.js-payment-date', {
-        dateFormat: 'Y-m-d',
-        altInput: true,
-        altFormat: 'd/m/Y',
-        allowInput: false,
-        disableMobile: true,
+      document.querySelectorAll('.js-payment-date').forEach(function(el) {
+        if (el._flatpickr) return;
+        flatpickr(el, {
+          dateFormat: 'Y-m-d',
+          defaultDate: el.dataset.defaultDate || el.value || null,
+          altInput: true,
+          altInputClass: 'form-control',
+          altFormat: 'd/m/Y',
+          allowInput: false,
+          disableMobile: true,
+        });
       });
     }
 
@@ -542,4 +549,5 @@
     });
   })();
 </script>
+@endsection
 @endsection

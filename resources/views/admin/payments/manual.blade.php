@@ -241,6 +241,7 @@
             <label for="tanggal_bayar">Tanggal Bayar</label>
             <input type="text" name="tanggal_bayar" id="tanggal_bayar" class="form-control js-payment-date"
                     value="{{ old('tanggal_bayar', date('Y-m-d')) }}"
+                   data-default-date="{{ old('tanggal_bayar', date('Y-m-d')) }}"
                    autocomplete="off"
                     required>
           </div>
@@ -292,16 +293,23 @@
     </div>
   </div>
 </div>
+@section('scripts')
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  (function() {
     if (typeof flatpickr === 'undefined') return;
-    flatpickr('.js-payment-date', {
-      dateFormat: 'Y-m-d',
-      altInput: true,
-      altFormat: 'd/m/Y',
-      allowInput: false,
-      disableMobile: true,
+    document.querySelectorAll('.js-payment-date').forEach(function(el) {
+      if (el._flatpickr) return;
+      flatpickr(el, {
+        dateFormat: 'Y-m-d',
+        defaultDate: el.dataset.defaultDate || el.value || null,
+        altInput: true,
+        altInputClass: 'form-control',
+        altFormat: 'd/m/Y',
+        allowInput: false,
+        disableMobile: true,
+      });
     });
-  });
+  })();
 </script>
+@endsection
 @endsection
