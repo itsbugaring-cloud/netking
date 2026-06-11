@@ -21,6 +21,9 @@ class SyncAreaVlans extends Command
         $areas = Area::orderBy('name')->get();
         $updated = 0;
         $failed = 0;
+        $physicalAreas = [];
+        $mismatchAreas = [];
+        $failedAreas = [];
 
         foreach ($areas as $area) {
             $this->line("━━━ {$area->name} ({$area->router_ip}) ━━━");
@@ -30,6 +33,7 @@ class SyncAreaVlans extends Command
                 if (!$mikrotik->isConnected()) {
                     $this->error("  ✗ Cannot connect");
                     $failed++;
+                    $failedAreas[] = $area->name;
                     continue;
                 }
 
@@ -56,6 +60,7 @@ class SyncAreaVlans extends Command
                 $this->info("  VLAN MGMT:  " . ($vlanMgmt ?: 'not detected'));
                 if (!empty($pppoeVlan['warning'])) {
                     $this->warn("  ⚠ " . $pppoeVlan['warning']);
+                    $mismatchAreas[] = $area->name . " => " . $pppoeVlan['warning'];
                 }
 
                 if ($apply && ($vlanPppoe || $vlanMgmt)) {
@@ -67,11 +72,13 @@ class SyncAreaVlans extends Command
                     $updated++;
                 } elseif (!$vlanPppoe && !$vlanMgmt) {
                     $this->warn("  ⚠ No VLAN detected (PPPoE might be on physical interface, not VLAN)");
+                    $physicalAreas[] = $area->name;
                 }
 
             } catch (\Exception $e) {
                 $this->error("  ✗ Error: " . $e->getMessage());
                 $failed++;
+                $failedAreas[] = $area->name . " => " . $e->getMessage();
             }
 
             $this->newLine();
@@ -82,6 +89,23 @@ class SyncAreaVlans extends Command
         $this->line("Total areas: {$areas->count()}");
         $this->line("Updated: {$updated}");
         $this->line("Failed/No VLAN: {$failed}");
+
+        $this->newLine();
+        $this->info("═══ Audit Ringkas ═══");
+        $this->line("Tanpa VLAN: " . count($physicalAreas));
+        foreach ($physicalAreas as $name) {
+            $this->line("  - {$name}");
+        }
+
+        $this->line("Mismatch nama vs vlan-id: " . count($mismatchAreas));
+        foreach ($mismatchAreas as $item) {
+            $this->line("  - {$item}");
+        }
+
+        $this->line("Gagal konek/error: " . count($failedAreas));
+        foreach ($failedAreas as $item) {
+            $this->line("  - {$item}");
+        }
 
         if (!$apply) {
             $this->newLine();
