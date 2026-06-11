@@ -207,6 +207,10 @@
   .quick-payment-page .select2-container--bootstrap-5 .select2-dropdown {
     min-width: 100% !important;
   }
+  .quick-payment-page .flatpickr-input[readonly] {
+    background: var(--surface);
+    cursor: pointer;
+  }
   .manual-actions {
     display: flex;
     gap: .5rem;
@@ -343,8 +347,9 @@
             {{-- Tanggal Bayar --}}
             <div class="form-group">
               <label for="tanggal_bayar">Tanggal Bayar</label>
-              <input type="date" name="tanggal_bayar" id="tanggal_bayar" class="form-control"
+              <input type="text" name="tanggal_bayar" id="tanggal_bayar" class="form-control js-payment-date"
                      value="{{ old('tanggal_bayar', date('Y-m-d')) }}"
+                     autocomplete="off"
                      required>
             </div>
 
@@ -478,7 +483,7 @@
               <td>{{ $payment->rekening_tujuan }}</td>
               <td>
                 <div class="d-flex align-items-center gap-2">
-                  <input type="date" name="payment_dates[{{ $payment->id }}]" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" form="bulk-update-manual-payment-dates-form" class="form-control form-control-sm" style="min-width:145px;">
+                  <input type="text" name="payment_dates[{{ $payment->id }}]" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" form="bulk-update-manual-payment-dates-form" class="form-control form-control-sm js-payment-date" style="min-width:145px;" autocomplete="off">
                   <form action="{{ route('admin.payments.manual-date', $payment) }}" method="POST" class="m-0">
                     @csrf
                     @method('PATCH')
@@ -505,6 +510,16 @@
 
 <script>
   (function() {
+    if (typeof flatpickr !== 'undefined') {
+      flatpickr('.js-payment-date', {
+        dateFormat: 'Y-m-d',
+        altInput: true,
+        altFormat: 'd/m/Y',
+        allowInput: false,
+        disableMobile: true,
+      });
+    }
+
     var selectAll = document.getElementById('select-all-global-manual-payments');
     if (selectAll) {
       selectAll.addEventListener('change', function() {
@@ -518,7 +533,7 @@
       btn.addEventListener('click', function() {
         var wrap = btn.closest('td');
         if (!wrap) return;
-        var dateInput = wrap.querySelector('input[type="date"][name^="payment_dates["]');
+        var dateInput = wrap.querySelector('input[name^="payment_dates["]');
         var hiddenInput = wrap.querySelector('.single-date-mirror');
         if (dateInput && hiddenInput) {
           hiddenInput.value = dateInput.value;

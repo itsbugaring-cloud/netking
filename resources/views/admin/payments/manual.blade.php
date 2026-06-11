@@ -115,6 +115,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .manual-payment-page .flatpickr-input[readonly] {
+    background: var(--surface);
+    cursor: pointer;
+  }
   @media (max-width: 768px) {
     .form-grid {
       grid-template-columns: 1fr;
@@ -235,9 +239,10 @@
           {{-- Tanggal Bayar --}}
           <div class="form-group">
             <label for="tanggal_bayar">Tanggal Bayar</label>
-            <input type="date" name="tanggal_bayar" id="tanggal_bayar" class="form-control"
-                   value="{{ old('tanggal_bayar', date('Y-m-d')) }}"
-                   required>
+            <input type="text" name="tanggal_bayar" id="tanggal_bayar" class="form-control js-payment-date"
+                    value="{{ old('tanggal_bayar', date('Y-m-d')) }}"
+                   autocomplete="off"
+                    required>
           </div>
 
           {{-- Rekening Tujuan --}}
@@ -287,4 +292,16 @@
     </div>
   </div>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof flatpickr === 'undefined') return;
+    flatpickr('.js-payment-date', {
+      dateFormat: 'Y-m-d',
+      altInput: true,
+      altFormat: 'd/m/Y',
+      allowInput: false,
+      disableMobile: true,
+    });
+  });
+</script>
 @endsection
