@@ -5439,6 +5439,8 @@
       border-radius: 8px !important;
       margin-top: 4px !important;
       overflow: hidden !important;
+      border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--border)) !important;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, .12) !important;
     }
     .workspace-shell .main .select2-search--dropdown {
       padding: 0 0 .25rem 0 !important;
@@ -5459,9 +5461,14 @@
       font-size: .78rem !important;
       line-height: 1.25 !important;
       padding: .38rem .55rem !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
+      border-radius: 6px !important;
+      white-space: normal !important;
+    }
+    .workspace-shell .main .select2-container .select2-selection__placeholder {
+      color: var(--txt-3) !important;
+    }
+    .workspace-shell .main .select2-container .select2-selection__arrow b {
+      border-width: 5px 4px 0 4px !important;
     }
     /* Tables: borderless everywhere */
     .workspace-shell .main .table,
@@ -5769,23 +5776,31 @@
     // Select2 init
     $(function() {
       if (typeof $.fn.select2 === 'undefined') return;
-      $('.form-select').not('.no-select2').not('[data-select2-id]').each(function() {
-        var $el = $(this);
+      function buildSelect2Options($el, extra) {
         var placeholder = $el.data('placeholder') ||
           $el.find('option[value=""]').first().text() || 'Pilih...';
-        $el.select2({
+        var optionCount = $el.find('option').length;
+        var hideSearch = $el.hasClass('form-select-sm') || $el.is('[data-hide-search]') || optionCount <= 8;
+        return Object.assign({
           theme: 'bootstrap-5',
           width: '100%',
           placeholder: placeholder,
-          allowClear: $el.find('option[value=""]').length > 0
-        });
+          allowClear: $el.find('option[value=""]').length > 0,
+          minimumResultsForSearch: hideSearch ? Infinity : 10
+        }, extra || {});
+      }
+
+      $('.form-select').not('.no-select2').not('[data-select2-id]').each(function() {
+        var $el = $(this);
+        $el.select2(buildSelect2Options($el));
       });
       document.querySelectorAll('.modal').forEach(function(modal) {
         modal.addEventListener('shown.bs.modal', function() {
-          $(modal).find('.form-select').not('.no-select2').not('[data-select2-id]').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            dropdownParent: $(modal)
+          $(modal).find('.form-select').not('.no-select2').not('[data-select2-id]').each(function() {
+            var $el = $(this);
+            $el.select2(buildSelect2Options($el, {
+              dropdownParent: $(modal)
+            }));
           });
         });
       });

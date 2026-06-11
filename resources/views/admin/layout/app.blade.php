@@ -124,6 +124,36 @@
         .select2-container--bootstrap-5 .select2-dropdown {
             border-radius: var(--nk-radius) !important;
             box-shadow: 0 4px 16px rgba(0,0,0,.1) !important;
+            border: 1px solid rgba(37,99,235,.14) !important;
+            overflow: hidden !important;
+            margin-top: 4px !important;
+            padding: .3rem !important;
+        }
+        .select2-container--bootstrap-5 .select2-search--dropdown {
+            padding: 0 0 .3rem 0 !important;
+        }
+        .select2-container--bootstrap-5 .select2-search__field {
+            min-height: var(--nk-height-sm) !important;
+            height: var(--nk-height-sm) !important;
+            border-radius: var(--nk-radius) !important;
+            font-size: .78rem !important;
+            padding: .25rem .65rem !important;
+            border: 1px solid var(--tblr-border-color, #dce1e7) !important;
+            box-shadow: none !important;
+        }
+        .select2-container--bootstrap-5 .select2-search__field:focus {
+            border-color: var(--nk-primary) !important;
+            box-shadow: 0 0 0 2px rgba(37,99,235,.12) !important;
+        }
+        .select2-container--bootstrap-5 .select2-results > .select2-results__options {
+            max-height: 260px !important;
+        }
+        .select2-container--bootstrap-5 .select2-results__option {
+            font-size: .78rem !important;
+            padding: .4rem .6rem !important;
+            border-radius: 6px !important;
+            line-height: 1.3 !important;
+            white-space: normal !important;
         }
         .select2-container--bootstrap-5 .select2-results__option--highlighted:not(.select2-results__option--selected) {
             background: rgba(37,99,235,.1) !important;
@@ -132,6 +162,13 @@
         .select2-container--bootstrap-5 .select2-results__option--selected {
             background: var(--nk-primary) !important;
             color: #fff !important;
+        }
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__placeholder {
+            color: #6b7280 !important;
+        }
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+            height: calc(var(--nk-height) - 2px) !important;
+            right: .4rem !important;
         }
 
         /* ── Buttons Unified ── */
@@ -216,14 +253,29 @@
     <script>
     $(function() {
         if (typeof $.fn.select2 === 'undefined') return;
+        function buildSelect2Options($el, extra) {
+            var placeholder = $el.data('placeholder') || $el.find('option[value=""]').first().text() || 'Pilih...';
+            var optionCount = $el.find('option').length;
+            var hideSearch = $el.hasClass('form-select-sm') || $el.is('[data-hide-search]') || optionCount <= 8;
+            return Object.assign({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: placeholder,
+                allowClear: $el.find('option[value=""]').length > 0,
+                minimumResultsForSearch: hideSearch ? Infinity : 10
+            }, extra || {});
+        }
+
         $('.form-select').not('.no-select2').not('[data-select2-id]').each(function() {
             var $el = $(this);
-            var placeholder = $el.data('placeholder') || $el.find('option[value=""]').first().text() || 'Pilih...';
-            $el.select2({ theme: 'bootstrap-5', width: '100%', placeholder: placeholder, allowClear: $el.find('option[value=""]').length > 0 });
+            $el.select2(buildSelect2Options($el));
         });
         document.querySelectorAll('.modal').forEach(function(modal) {
             modal.addEventListener('shown.bs.modal', function() {
-                $(modal).find('.form-select').not('.no-select2').not('[data-select2-id]').select2({ theme: 'bootstrap-5', width: '100%', dropdownParent: $(modal) });
+                $(modal).find('.form-select').not('.no-select2').not('[data-select2-id]').each(function() {
+                    var $el = $(this);
+                    $el.select2(buildSelect2Options($el, { dropdownParent: $(modal) }));
+                });
             });
         });
 
