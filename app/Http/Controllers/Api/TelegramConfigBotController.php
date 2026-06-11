@@ -586,11 +586,6 @@ class TelegramConfigBotController extends Controller
         $label = preg_replace('/\s+/', ' ', trim($label)) ?? $label;
         $label = Str::limit($label, 24, '');
 
-        $vlan = trim((string) ($area->vlan_pppoe ?? ''));
-        if ($vlan !== '') {
-            return "◈ {$label} • V{$vlan}";
-        }
-
         return "◈ {$label}";
     }
 
@@ -1633,6 +1628,16 @@ class TelegramConfigBotController extends Controller
             return null;
         }
 
+        $dbLatest = Customer::query()
+            ->select(['name', 'pppoe_user'])
+            ->where('area_id', $areaId)
+            ->whereNotNull('pppoe_user')
+            ->where('pppoe_user', '!=', '')
+            ->orderByDesc('id')
+            ->first();
+
+        $expectedPrefix = $this->detectAreaPppoePrefix($areaId, $dbLatest?->pppoe_user);
+
         // Prioritaskan data live dari MikroTik supaya hint "secret terakhir" akurat.
         $area = Area::query()->find($areaId);
         if ($area) {
@@ -1653,7 +1658,12 @@ class TelegramConfigBotController extends Controller
                             if ($name === '') {
                                 continue;
                             }
-                            $score = $this->routerSecretOrderScore($row, $name);
+
+                            if ($expectedPrefix !== null && !$this->pppoeMatchesPrefix($name, $expectedPrefix)) {
+                                continue;
+                            }
+
+                            $score = $this->routerSecretOrderScore($row, $name, $expectedPrefix);
                             if ($score >= $bestScore) {
                                 $bestScore = $score;
                                 $best = $row;
@@ -1674,39 +1684,68 @@ class TelegramConfigBotController extends Controller
             }
         }
 
-        $customer = Customer::query()
-            ->select(['name', 'pppoe_user'])
-            ->where('area_id', $areaId)
-            ->whereNotNull('pppoe_user')
-            ->where('pppoe_user', '!=', '')
-            ->orderByDesc('id')
-            ->first();
-
-        if (!$customer) {
+        if (!$dbLatest) {
             return null;
         }
 
         return [
-            'name' => (string) $customer->name,
-            'pppoe_user' => (string) $customer->pppoe_user,
+            'name' => (string) $dbLatest->name,
+            'pppoe_user' => (string) $dbLatest->pppoe_user,
             'source' => 'db',
         ];
     }
 
-    private function routerSecretOrderScore(array $row, string $name): int
+    private function detectAreaPppoePrefix(int $areaId, ?string $latestDbUser = null): ?string
     {
-        $idRaw = (string) ($row['.id'] ?? '');
-        if ($idRaw !== '' && preg_match('/\*([0-9A-Fa-f]+)/', $idRaw, $m)) {
-            $hex = $m[1];
-            // RouterOS internal id biasanya meningkat seiring pembuatan secret.
-            $idVal = intval(base_convert($hex, 16, 10));
-            if ($idVal > 0) {
-                return $idVal;
-            }
+        $latestDbUser = trim((string) $latestDbUser);
+        if ($latestDbUser !== '' && preg_match('/^([A-Z0-9]+)-\d+$/i', $latestDbUser, $m)) {
+            return strtoupper($m[1]);
+        }
+
+        $area = Area::query()->find($areaId, ['name', 'router_identity']);
+        if (!$area) {
+            return null;
+        }
+
+        $routerIdentity = trim((string) ($area->router_identity ?? ''));
+        if ($routerIdentity !== '' && preg_match('/^([A-Z0-9]+)-/i', $routerIdentity, $m)) {
+            return strtoupper($m[1]);
+        }
+
+        $areaName = trim((string) ($area->name ?? ''));
+        if ($areaName !== '' && preg_match('/^([A-Z0-9]+)[\s-]/i', $areaName, $m)) {
+            return strtoupper($m[1]);
+        }
+
+        return null;
+    }
+
+    private function pppoeMatchesPrefix(string $name, ?string $expectedPrefix): bool
+    {
+        if ($expectedPrefix === null || $expectedPrefix === '') {
+            return true;
+        }
+
+        return preg_match('/^' . preg_quote($expectedPrefix, '/') . '-\d+$/i', $name) === 1;
+    }
+
+    private function routerSecretOrderScore(array $row, string $name, ?string $expectedPrefix = null): int
+    {
+        if ($expectedPrefix !== null && preg_match('/^' . preg_quote($expectedPrefix, '/') . '-(\d+)$/i', $name, $m)) {
+            return (int) $m[1];
         }
 
         if (preg_match('/-(\d+)$/', $name, $m)) {
             return (int) $m[1];
+        }
+
+        $idRaw = (string) ($row['.id'] ?? '');
+        if ($idRaw !== '' && preg_match('/\*([0-9A-Fa-f]+)/', $idRaw, $m)) {
+            $hex = $m[1];
+            $idVal = intval(base_convert($hex, 16, 10));
+            if ($idVal > 0) {
+                return $idVal;
+            }
         }
 
         return 0;
