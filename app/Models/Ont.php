@@ -47,6 +47,11 @@ class Ont extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function assignmentHistories()
+    {
+        return $this->hasMany(OntAssignmentHistory::class);
+    }
+
     /**
      * Signal quality label based on Rx power (dBm)
      */

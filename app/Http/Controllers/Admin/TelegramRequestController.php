@@ -7,6 +7,7 @@ use App\Models\Area;
 use App\Models\Customer;
 use App\Models\InvUnit;
 use App\Models\InvUnitPhoto;
+use App\Models\OntAssignmentHistory;
 use App\Models\Ont;
 use App\Models\User;
 use App\Services\MikroTikService;
@@ -317,6 +318,9 @@ class TelegramRequestController extends Controller
                     ->first();
 
                 if ($ont) {
+                    $previousCustomerId = $ont->customer_id;
+                    $previousCustomer = $previousCustomerId ? Customer::find($previousCustomerId) : null;
+
                     if ($ont->customer_id && $ont->customer_id !== $customer->id) {
                         $prev = Customer::find($ont->customer_id);
                         if ($prev && $this->normalizeSn((string) $prev->ont_sn) === $sn) {
@@ -327,6 +331,18 @@ class TelegramRequestController extends Controller
                     Ont::where('customer_id', $customer->id)->where('id', '!=', $ont->id)->update(['customer_id' => null]);
                     $ont->update(['customer_id' => $customer->id]);
                     $customer->update(['ont_sn' => $ont->serial_number]);
+
+                    OntAssignmentHistory::record([
+                        'customer_id' => $customer->id,
+                        'previous_customer_id' => $previousCustomerId && $previousCustomerId !== $customer->id ? $previousCustomerId : null,
+                        'ont_id' => $ont->id,
+                        'inv_unit_id' => $this->resolveInventoryUnitIdBySn($ont->serial_number),
+                        'serial_number' => $ont->serial_number,
+                        'action' => $previousCustomerId && $previousCustomerId !== $customer->id ? 'moved' : 'linked',
+                        'source' => 'telegram_request',
+                        'created_by_user_id' => auth()->id(),
+                        'notes' => $previousCustomer ? 'ONT dipindah dari request admin ke ' . $customer->name : 'ONT dipasangkan dari request admin',
+                    ]);
                 }
             }
 
@@ -403,6 +419,18 @@ class TelegramRequestController extends Controller
     {
         $sn = strtoupper(trim($sn));
         return str_replace('-', '', $sn);
+    }
+
+    private function resolveInventoryUnitIdBySn(string $sn): ?int
+    {
+        $normalizedSn = $this->normalizeSn($sn);
+        if ($normalizedSn === '') {
+            return null;
+        }
+
+        return InvUnit::query()
+            ->whereRaw('REPLACE(UPPER(serial_number), "-", "") = ?', [$normalizedSn])
+            ->value('id');
     }
 
     private function attachSnPhotoToInventory(string $sn, string $photoPath): void

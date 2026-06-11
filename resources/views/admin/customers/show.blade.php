@@ -354,6 +354,37 @@
                         <span style="font-size:0.875rem; color:#1e293b;">{!! $field[1] !!}</span>
                     </div>
                     @endforeach
+
+                    @php
+                        $lastOntMove = $ontAssignmentHistories->first() ?? null;
+                    @endphp
+                    <div style="margin-top:1rem;padding:1rem;border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg, rgba(99,102,241,.06), transparent);">
+                        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-3);margin-bottom:.5rem;">ONT Tracking</div>
+                        <div class="d-flex justify-content-between gap-3 mb-2">
+                            <span style="font-size:.75rem;color:var(--txt-3);">ONT aktif</span>
+                            <span style="font-size:.82rem;color:var(--txt);font-weight:600;">{{ $customer->ont_sn ?? '-' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between gap-3 mb-2">
+                            <span style="font-size:.75rem;color:var(--txt-3);">Inventori cocok</span>
+                            <span style="font-size:.82rem;color:var(--txt);font-weight:600;">
+                                @if($invUnitMatch)
+                                    {{ $invUnitMatch->serial_number }}@if($invUnitMatch->lokasi) · {{ $invUnitMatch->lokasi->name }}@endif
+                                @else
+                                    -
+                                @endif
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between gap-3">
+                            <span style="font-size:.75rem;color:var(--txt-3);">Riwayat terakhir</span>
+                            <span style="font-size:.82rem;color:var(--txt);font-weight:600;">
+                                @if($lastOntMove)
+                                    {{ ucfirst($lastOntMove->action) }} · {{ $lastOntMove->created_at->diffForHumans() }}
+                                @else
+                                    -
+                                @endif
+                            </span>
+                        </div>
+                    </div>
             </div>
             @unless($isFinance)
             <div class="card-footer" style="border-top:1px solid #dbdade; padding:1rem 1.5rem;">
@@ -607,6 +638,38 @@
                             $paymentLogs = $customer->payments()->where('status', 'approved')->orderBy('approved_at', 'desc')->take(10)->get();
                         @endphp
                         <div style="max-height:400px;overflow-y:auto;">
+                            @forelse($ontAssignmentHistories as $ontHistory)
+                            <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border);background:rgba(99,102,241,.04);">
+                                <div style="width:28px;height:28px;border-radius:6px;background:rgba(99,102,241,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
+                                    <i class='bx bx-chip' style="font-size:.85rem;color:#6366f1;"></i>
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:.8rem;font-weight:600;color:var(--txt);">
+                                        ONT {{ strtoupper($ontHistory->action) }} · {{ $ontHistory->serial_number }}
+                                    </div>
+                                    <div style="font-size:.72rem;color:var(--txt-3);">
+                                        {{ $ontHistory->created_at->diffForHumans() }}
+                                        @if($ontHistory->previousCustomer)
+                                            · dari {{ $ontHistory->previousCustomer->name }}
+                                        @endif
+                                        · sumber {{ $ontHistory->source }}
+                                        @if($ontHistory->creator)
+                                            · oleh {{ $ontHistory->creator->name }}
+                                        @endif
+                                    </div>
+                                    @if($ontHistory->invUnit)
+                                    <div style="font-size:.7rem;color:var(--txt-3);margin-top:4px;">
+                                        Inventori: {{ $ontHistory->invUnit->serial_number }}
+                                    </div>
+                                    @endif
+                                    @if($ontHistory->notes)
+                                    <div style="font-size:.72rem;color:var(--txt-2);margin-top:4px;">{{ $ontHistory->notes }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                            @empty
+                            @endforelse
+
                             @forelse($logs as $log)
                             <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.625rem 1.25rem;border-bottom:1px solid var(--border);">
                                 @php

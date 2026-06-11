@@ -130,6 +130,11 @@ class Customer extends Authenticatable
         return $this->hasOne(Ont::class, 'customer_id');
     }
 
+    public function ontAssignmentHistories()
+    {
+        return $this->hasMany(OntAssignmentHistory::class);
+    }
+
     public function tickets()
     {
         return $this->hasMany(Ticket::class);

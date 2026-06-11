@@ -7,6 +7,7 @@ use App\Models\Area;
 use App\Models\Customer;
 use App\Models\InvUnit;
 use App\Models\InvUnitPhoto;
+use App\Models\OntAssignmentHistory;
 use App\Models\Package;
 use App\Models\Setting;
 use App\Models\User;
@@ -803,6 +804,11 @@ class TelegramConfigBotController extends Controller
             $this->deleteMessage($chatId, $incomingMessageId);
         }
 
+        $this->sendMessage(
+            $chatId,
+            "✅ Foto SN diterima.\nOCR: {$ocrSn}\nValidasi: cocok\nFoto tersimpan, draft siap dicek."
+        );
+
         $this->sendDraftSummary($chatId, true);
     }
 
@@ -1232,8 +1238,32 @@ class TelegramConfigBotController extends Controller
                 $ont = \App\Models\Ont::where('serial_number', 'LIKE', '%' . $sn . '%')
                     ->first();
                 if ($ont) {
+                    $previousCustomerId = $ont->customer_id;
+                    $previousCustomer = $previousCustomerId ? Customer::find($previousCustomerId) : null;
+
+                    if ($previousCustomer && $previousCustomer->id !== $customer->id) {
+                        $previousCustomerSn = preg_replace('/[^A-Z0-9]/', '', strtoupper((string) $previousCustomer->ont_sn));
+                        if ($previousCustomerSn === $sn) {
+                            $previousCustomer->update(['ont_sn' => null]);
+                        }
+                    }
+
+                    \App\Models\Ont::where('customer_id', $customer->id)
+                        ->where('id', '!=', $ont->id)
+                        ->update(['customer_id' => null]);
                     $ont->update(['customer_id' => $customer->id]);
                     $customer->update(['ont_sn' => $ont->serial_number]);
+
+                    $this->recordOntAssignmentHistory([
+                        'customer_id' => $customer->id,
+                        'previous_customer_id' => $previousCustomerId && $previousCustomerId !== $customer->id ? $previousCustomerId : null,
+                        'ont_id' => $ont->id,
+                        'inv_unit_id' => $this->resolveInventoryUnitIdBySn($ont->serial_number),
+                        'serial_number' => $ont->serial_number,
+                        'action' => $previousCustomerId && $previousCustomerId !== $customer->id ? 'moved' : 'linked',
+                        'source' => 'telegram_bot',
+                        'notes' => $previousCustomer ? 'ONT dipindah lewat bot dari ' . $previousCustomer->name : 'ONT dipasangkan lewat bot',
+                    ]);
                 }
             }
 
@@ -1346,17 +1376,8 @@ class TelegramConfigBotController extends Controller
             $lines[] = 'Langkah terakhir: kirim foto SN dulu lewat tombol 📷 Foto SN, lalu baru submit.';
         }
 
-        if (!empty($draft['photo_file_id'])) {
-            $photoMsgId = $this->sendPhoto(
-                $chatId,
-                (string) $draft['photo_file_id'],
-                implode("\n", $lines)
-            );
-            $this->rememberTransientMessage($chatId, $photoMsgId);
-        } else {
-            $summaryMsgId = $this->sendMessage($chatId, implode("\n", $lines));
-            $this->rememberTransientMessage($chatId, $summaryMsgId);
-        }
+        $summaryMsgId = $this->sendMessage($chatId, implode("\n", $lines));
+        $this->rememberTransientMessage($chatId, $summaryMsgId);
 
         if ($withActions) {
             $actionMsgId = $this->sendMessage(
@@ -2015,6 +2036,30 @@ class TelegramConfigBotController extends Controller
                 'path' => $photoPath,
             ]);
         }
+    }
+
+    private function recordOntAssignmentHistory(array $data): void
+    {
+        try {
+            OntAssignmentHistory::record($data);
+        } catch (\Throwable $e) {
+            Log::warning('ont_assignment_history_failed', [
+                'error' => $e->getMessage(),
+                'data' => $data,
+            ]);
+        }
+    }
+
+    private function resolveInventoryUnitIdBySn(string $sn): ?int
+    {
+        $normalizedSn = preg_replace('/[^A-Z0-9]/', '', strtoupper($sn));
+        if ($normalizedSn === '') {
+            return null;
+        }
+
+        return InvUnit::query()
+            ->whereRaw('REPLACE(UPPER(serial_number), "-", "") = ?', [$normalizedSn])
+            ->value('id');
     }
 
     private function validateFieldValue(string $field, string $value, array $state): ?string

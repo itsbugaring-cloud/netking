@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Customer;
 use App\Models\CustomerDevice;
+use App\Models\InvUnit;
 use App\Models\Odp;
 use App\Models\User;
 use App\Jobs\CreateMikrotikSecretJob;
@@ -188,8 +189,22 @@ class CustomerController extends Controller
     {
         $this->authorizeArea($customer);
         $customer->load(['partner', 'area', 'package', 'odp', 'ont', 'devices']);
+        $ontAssignmentHistories = $customer->ontAssignmentHistories()
+            ->with(['ont', 'previousCustomer', 'invUnit', 'creator'])
+            ->latest()
+            ->limit(8)
+            ->get();
 
-        return view('admin.customers.show', compact('customer'));
+        $invUnitMatch = null;
+        if (!empty($customer->ont_sn)) {
+            $normalizedSn = preg_replace('/[^A-Z0-9]/', '', strtoupper((string) $customer->ont_sn));
+            $invUnitMatch = InvUnit::query()
+                ->with('lokasi')
+                ->whereRaw('REPLACE(UPPER(serial_number), "-", "") = ?', [$normalizedSn])
+                ->first();
+        }
+
+        return view('admin.customers.show', compact('customer', 'ontAssignmentHistories', 'invUnitMatch'));
     }
 
     public function edit(Customer $customer)
