@@ -173,6 +173,9 @@ class ReportController extends Controller
         if ($request->filled('area_id'))    $query->where('area_id', $request->area_id);
         if ($request->filled('partner_id')) $query->where('partner_id', $request->partner_id);
         if ($request->filled('status'))     $query->where('status', $request->status);
+        if ($request->filled('payment_status')) {
+            $query->whereHas('payments', fn($q) => $q->where('status', $request->payment_status));
+        }
 
         $data = $query->orderBy('name')->get();
 

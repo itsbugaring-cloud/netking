@@ -36,6 +36,14 @@ class CustomersExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
         if ($this->request->filled('status')) {
             $query->where('status', $this->request->status);
         }
+        if ($this->request->filled('partner_id')) {
+            $query->where('partner_id', $this->request->partner_id);
+        }
+        if ($this->request->filled('payment_status')) {
+            $query->whereHas('payments', function ($q) {
+                $q->where('status', $this->request->payment_status);
+            });
+        }
 
         $customers = $query->orderBy('area_id')->orderBy('name')->get();
 

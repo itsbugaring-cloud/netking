@@ -450,16 +450,8 @@ function bulkDelete() {
   var ids = [];
   $('.row-check:checked').each(function() { ids.push($(this).val()); });
   if (!ids.length) return;
-  Swal.fire({
-    title: 'Hapus ' + ids.length + ' pelanggan?',
-    text: 'Data akan dihapus dari sistem. Akun PPPoE di router tidak akan terpengaruh.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#ef4444',
-    confirmButtonText: 'Ya, hapus!',
-    cancelButtonText: 'Batal'
-  }).then(function(result) {
-    if (result.isConfirmed) {
+  var message = 'Hapus ' + ids.length + ' pelanggan? Data di sistem akan dihapus. Akun PPPoE di router tidak akan terpengaruh.';
+  window._nkConfirm(message, function() {
       fetch('{{ route("admin.customers.bulkDelete") }}', {
         method: 'POST',
         headers: {
@@ -478,7 +470,6 @@ function bulkDelete() {
         }
       })
       .catch(() => toastr.error('Kesalahan jaringan'));
-    }
   });
 }
 
