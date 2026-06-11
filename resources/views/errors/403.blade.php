@@ -5,34 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>403 — Akses Ditolak | NETKING ISP</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
-  .wrap{text-align:center;max-width:500px;}
-  .code{font-size:8rem;font-weight:900;line-height:1;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-  .title{font-size:1.5rem;font-weight:700;margin:12px 0 8px;}
-  .msg{color:#94a3b8;font-size:.9375rem;line-height:1.6;margin-bottom:32px;}
-  .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
-  .btn{padding:10px 24px;border-radius:10px;font-weight:600;font-size:.875rem;text-decoration:none;transition:all .2s;}
-  .btn-primary{background:#6366f1;color:#fff;}
-  .btn-primary:hover{background:#4f46e5;color:#fff;}
-  .btn-ghost{background:rgba(255,255,255,.08);color:#94a3b8;border:1px solid rgba(255,255,255,.1);}
-  .btn-ghost:hover{background:rgba(255,255,255,.12);color:#f1f5f9;}
-  .icon{font-size:4rem;margin-bottom:8px;opacity:.3;}
-  .nk-logo{font-size:1rem;font-weight:800;letter-spacing:.05em;color:#6366f1;margin-bottom:40px;}
-  .nk-logo span{color:#f1f5f9;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#f6f8fc;--surface:#fff;--surface-2:#fefdf8;--border:#e5e7eb;--txt:#0f172a;--txt-2:#475569;--txt-3:#64748b;--amber:#d97706;--amber-soft:#fff7ed;--blue:#2563eb;--shadow:0 30px 70px rgba(15,23,42,.10);
+  }
+  body{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;background:radial-gradient(circle at top left, rgba(245,158,11,.10), transparent 34%),linear-gradient(180deg,#fffdf8 0%,#f6f8fc 100%);color:var(--txt);display:flex;align-items:center;justify-content:center;padding:24px}
+  .shell{width:min(100%,760px);background:linear-gradient(180deg,var(--surface) 0%,var(--surface-2) 100%);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);overflow:hidden}
+  .hero{padding:26px 28px 20px;border-bottom:1px solid var(--border)}
+  .brand{font-size:.78rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-3);margin-bottom:14px}
+  .title-row{display:flex;align-items:flex-start;gap:18px}
+  .badge{width:60px;height:60px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:var(--amber-soft);color:var(--amber);font-size:1.6rem;border:1px solid #fed7aa;flex-shrink:0}
+  .code{font-size:4.8rem;line-height:.9;font-weight:900;color:var(--amber);letter-spacing:-.05em}
+  .title{font-size:1.6rem;font-weight:800;margin:6px 0 8px}
+  .msg{font-size:.95rem;line-height:1.7;color:var(--txt-2);max-width:48ch}
+  .body{padding:24px 28px 28px}
+  .panel{border:1px solid var(--border);border-radius:20px;background:#fff;padding:18px 18px 16px;margin-bottom:18px}
+  .panel-kicker{font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-3);margin-bottom:10px}
+  .panel p{font-size:.9rem;line-height:1.7;color:var(--txt-2)}
+  .actions{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{height:42px;padding:0 18px;border-radius:14px;text-decoration:none;font-size:.87rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;transition:all .18s ease;border:1px solid transparent}
+  .btn-primary{background:var(--blue);color:#fff;box-shadow:0 10px 24px rgba(37,99,235,.16)}
+  .btn-primary:hover{transform:translateY(-1px);background:#1d4ed8;color:#fff}
+  .btn-ghost{background:#fff;color:var(--txt-2);border-color:var(--border)}
+  .btn-ghost:hover{background:#f8fafc;color:var(--txt)}
+  @media (max-width:640px){.hero,.body{padding:20px}.title-row{flex-direction:column}.code{font-size:4rem}.actions{flex-direction:column}.btn{width:100%}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="nk-logo">NET<span>KING</span> ISP</div>
-  <div class="icon">🔒</div>
-  <div class="code">403</div>
-  <div class="title">Akses Ditolak</div>
-  <div class="msg">Anda tidak memiliki izin untuk mengakses halaman ini.<br>Silakan hubungi administrator jika Anda yakin ini adalah kesalahan.</div>
-  <div class="actions">
-    <a href="/admin/dashboard" class="btn btn-primary">← Dashboard</a>
-    <a href="javascript:history.back()" class="btn btn-ghost">Kembali</a>
+  <div class="shell">
+    <div class="hero">
+      <div class="brand">NETKING ISP · Access Control</div>
+      <div class="title-row">
+        <div class="badge">🔒</div>
+        <div>
+          <div class="code">403</div>
+          <div class="title">Akses ke halaman ini ditolak</div>
+          <div class="msg">Akun yang sedang dipakai tidak punya izin untuk membuka halaman ini. Biasanya ini karena batas area, role pengguna, atau menu khusus admin.</div>
+        </div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="panel">
+        <div class="panel-kicker">Yang Bisa Dicoba</div>
+        <p>Kembali ke halaman sebelumnya, buka dashboard, atau minta hak akses tambahan kalau memang seharusnya kamu bisa membuka halaman ini.</p>
+      </div>
+      <div class="actions">
+        <a href="/admin/dashboard" class="btn btn-primary">Buka Dashboard</a>
+        <a href="javascript:history.back()" class="btn btn-ghost">Kembali</a>
+      </div>
+    </div>
   </div>
-</div>
 </body>
 </html>

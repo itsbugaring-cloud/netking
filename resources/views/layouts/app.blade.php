@@ -5726,14 +5726,6 @@
   <!-- MAIN CONTENT -->
   <main class="main">
 
-    @if($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show mb-3">
-      <strong><i class='bx bx-error-circle me-1'></i>Harap perbaiki:</strong>
-      <ul class="mb-0 mt-1 ps-3">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
-
     <x-admin-flash icon-set="boxicons" />
 
     @yield('content')
