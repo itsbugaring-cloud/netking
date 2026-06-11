@@ -155,9 +155,22 @@ class PackageController extends Controller
         foreach ($areas as $area) {
             try {
                 $mikrotik = \App\Services\MikroTikService::forArea($area);
+                if (!$mikrotik->isConnected()) {
+                    $errors[] = "{$area->name}: koneksi MikroTik gagal";
+                    continue;
+                }
+
                 $profiles = $mikrotik->getProfiles();
+                if (!is_array($profiles)) {
+                    $errors[] = "{$area->name}: data profile dari MikroTik tidak valid";
+                    continue;
+                }
 
                 foreach ($profiles as $profile) {
+                    if (!is_array($profile)) {
+                        continue;
+                    }
+
                     $name = $profile['name'] ?? null;
                     if (!$name || $name === 'default' || $name === 'default-encryption') continue;
 
@@ -202,7 +215,7 @@ class PackageController extends Controller
                         $created++;
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $errors[] = "{$area->name}: {$e->getMessage()}";
             }
         }

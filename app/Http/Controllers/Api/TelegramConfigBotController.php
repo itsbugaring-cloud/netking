@@ -1941,28 +1941,7 @@ class TelegramConfigBotController extends Controller
                     $all = $service->getAllSecrets();
                     if (($all['success'] ?? false) === true) {
                         $rows = is_array($all['data'] ?? null) ? $all['data'] : [];
-                        $best = null;
-                        $bestScore = -1;
-
-                        foreach ($rows as $row) {
-                            if (!is_array($row)) {
-                                continue;
-                            }
-                            $name = trim((string) ($row['name'] ?? ''));
-                            if ($name === '') {
-                                continue;
-                            }
-
-                            if ($expectedPrefix !== null && !$this->pppoeMatchesPrefix($name, $expectedPrefix)) {
-                                continue;
-                            }
-
-                            $score = $this->routerSecretOrderScore($row, $name, $expectedPrefix);
-                            if ($score >= $bestScore) {
-                                $bestScore = $score;
-                                $best = $row;
-                            }
-                        }
+                        $best = $this->pickLatestRouterSecret($rows, $expectedPrefix);
 
                         if (is_array($best)) {
                             return [
@@ -1987,6 +1966,55 @@ class TelegramConfigBotController extends Controller
             'pppoe_user' => (string) $dbLatest->pppoe_user,
             'source' => 'db',
         ];
+    }
+
+    private function pickLatestRouterSecret(array $rows, ?string $expectedPrefix = null): ?array
+    {
+        $prefixed = [];
+        $fallback = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $service = mb_strtolower(trim((string) ($row['service'] ?? 'pppoe')));
+            if ($service !== '' && $service !== 'pppoe') {
+                continue;
+            }
+
+            if (preg_match('/-\d+$/', $name) !== 1) {
+                continue;
+            }
+
+            $fallback[] = $row;
+            if ($expectedPrefix !== null && $this->pppoeMatchesPrefix($name, $expectedPrefix)) {
+                $prefixed[] = $row;
+            }
+        }
+
+        $candidates = !empty($prefixed) ? $prefixed : $fallback;
+        if (empty($candidates)) {
+            return null;
+        }
+
+        $best = null;
+        $bestScore = -1;
+        foreach ($candidates as $row) {
+            $name = trim((string) ($row['name'] ?? ''));
+            $score = $this->routerSecretOrderScore($row, $name, $expectedPrefix);
+            if ($score >= $bestScore) {
+                $bestScore = $score;
+                $best = $row;
+            }
+        }
+
+        return $best;
     }
 
     private function detectAreaPppoePrefix(int $areaId, ?string $latestDbUser = null): ?string
