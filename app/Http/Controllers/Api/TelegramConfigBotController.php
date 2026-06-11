@@ -705,27 +705,37 @@ class TelegramConfigBotController extends Controller
 
         $state = $this->getState($chatId);
         $state['draft'] = $state['draft'] ?? [];
+        $typedSn = strtoupper(trim((string) ($state['draft']['sn_ont'] ?? '')));
         $snFromCaption = $this->extractSnFromText($caption);
-        if ($snFromCaption !== null) {
-            $state['draft']['photo_sn_ont'] = $snFromCaption;
+        $captionSn = $snFromCaption !== null ? strtoupper($snFromCaption) : '';
+
+        if ($typedSn === '') {
+            $this->sendMessage($chatId, "⚠️ SN ONT teks belum diisi. Isi SN dulu, lalu kirim foto lagi dengan caption SN ONT yang sama.");
+            return;
         }
+
+        if ($captionSn === '') {
+            $state['draft']['photo_sn_matched'] = false;
+            $state['draft']['photo_sn_verified'] = false;
+            $this->saveState($chatId, $state);
+            $this->sendMessage($chatId, "⚠️ Foto SN wajib pakai caption `SN ONT: {$typedSn}`.\nKalau caption kosong, foto ditolak.", ['parse_mode' => 'Markdown']);
+            return;
+        }
+
+        $state['draft']['photo_sn_ont'] = $captionSn;
 
         $state['draft']['photo_file_id'] = (string) $largest['file_id'];
         $state['draft']['photo_uploaded_at'] = now()->toDateTimeString();
-        $state['draft']['photo_sn_matched'] = true;
-
-        $typedSn = (string) ($state['draft']['sn_ont'] ?? '');
-        if ($typedSn !== '' && !empty($state['draft']['photo_sn_ont'])) {
-            $state['draft']['photo_sn_matched'] = mb_strtoupper($typedSn) === mb_strtoupper((string) $state['draft']['photo_sn_ont']);
-        }
+        $state['draft']['photo_sn_matched'] = $typedSn === $captionSn;
+        $state['draft']['photo_sn_verified'] = $typedSn === $captionSn;
 
         $state['updated_at'] = now()->toDateTimeString();
         $this->saveState($chatId, $state);
 
-        if (($state['draft']['photo_sn_matched'] ?? true) !== true) {
+        if (($state['draft']['photo_sn_matched'] ?? false) !== true) {
             $this->sendMessage(
                 $chatId,
-                "⚠️ SN di foto tidak cocok.\nSN teks: {$typedSn}\nSN caption foto: {$state['draft']['photo_sn_ont']}\nKirim ulang foto dengan caption SN yang benar."
+                "⚠️ SN di foto tidak cocok.\nSN teks: {$typedSn}\nSN caption foto: {$captionSn}\nKirim ulang foto dengan caption yang benar."
             );
             return;
         }
@@ -762,7 +772,7 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
-        if (($draft['photo_sn_matched'] ?? false) !== true) {
+        if (($draft['photo_sn_verified'] ?? false) !== true) {
             $this->sendMessage(
                 $chatId,
                 "⚠️ Validasi SN foto belum lolos.\nKirim ulang foto SN dengan caption: SN ONT: " . ($draft['sn_ont'] ?? '[isi-sn]') . ""
@@ -1154,7 +1164,7 @@ class TelegramConfigBotController extends Controller
         $draft = (array) ($state['draft'] ?? []);
         $price = isset($draft['harga']) ? number_format((int) $draft['harga'], 0, ',', '.') : '-';
         $fotoOk = !empty($draft['photo_file_id']) ? '✅ Ada' : '❌ Belum';
-        $snOk = (($draft['photo_sn_matched'] ?? false) ? '✅ Cocok' : '❌ Belum cocok');
+        $snOk = (($draft['photo_sn_verified'] ?? false) ? '✅ Cocok' : '❌ Belum cocok');
         $areaVlan = trim((string) ($draft['area_vlan_pppoe'] ?? ''));
 
         $lines = [
