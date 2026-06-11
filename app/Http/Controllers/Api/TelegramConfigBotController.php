@@ -255,6 +255,11 @@ class TelegramConfigBotController extends Controller
             $this->sendDraftTemplate($chatId);
             return;
         }
+
+        if ($type === 'photo') {
+            $this->promptSnPhotoUpload($chatId);
+            return;
+        }
         
         if ($type === 'guide') {
             $this->sendMessage($chatId, "Guide saya nonaktifkan dulu ya. Langsung pakai menu *Input* aja.", ['parse_mode' => 'Markdown']);
@@ -1306,6 +1311,11 @@ class TelegramConfigBotController extends Controller
             $lines[] = 'Catatan OCR: ' . $ocrErr;
         }
 
+        if (empty($draft['photo_file_id'])) {
+            $lines[] = '';
+            $lines[] = 'Langkah terakhir: kirim foto SN dulu lewat tombol 📷 Foto SN, lalu baru submit.';
+        }
+
         if (!empty($draft['photo_file_id'])) {
             $photoMsgId = $this->sendPhoto(
                 $chatId,
@@ -1342,7 +1352,10 @@ class TelegramConfigBotController extends Controller
                                 ['text' => '📦 Paket', 'callback_data' => 'cfg:edit:paket_id'],
                             ],
                             [
+                                ['text' => '📷 Foto SN', 'callback_data' => 'cfg:photo:upload'],
                                 ['text' => '📋 Draft', 'callback_data' => 'cfg:draft:open'],
+                            ],
+                            [
                                 ['text' => '✅ Submit', 'callback_data' => 'cfg:submit:go'],
                             ],
                             [
@@ -1690,6 +1703,23 @@ class TelegramConfigBotController extends Controller
                     ]],
                 ],
             ]
+        );
+    }
+
+    private function promptSnPhotoUpload(string $chatId): void
+    {
+        $state = $this->getState($chatId);
+        $draft = (array) ($state['draft'] ?? []);
+        $typedSn = trim((string) ($draft['sn_ont'] ?? ''));
+
+        if ($typedSn === '') {
+            $this->sendMessage($chatId, "⚠️ Isi SN ONT dulu ya, baru kirim foto SN.");
+            return;
+        }
+
+        $this->sendMessage(
+            $chatId,
+            "📷 Kirim foto label SN ONT yang jelas.\nSN teks sekarang: {$typedSn}\nBot akan cocokkan isi foto dengan SN ini."
         );
     }
 
