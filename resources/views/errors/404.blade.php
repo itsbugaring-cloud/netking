@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>404 — Halaman Tidak Ditemukan | NETKING ISP</title>
+<title>404 — Halaman Tidak Ditemukan | NETKING</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
@@ -40,7 +40,7 @@
 <body>
   <div class="shell">
     <div class="hero">
-      <div class="brand">NETKING ISP · Route Missing</div>
+      <div class="brand">NETKING · Route Missing</div>
       <div class="title-row">
         <div class="badge">🌐</div>
         <div>
