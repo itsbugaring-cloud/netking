@@ -15,18 +15,86 @@
     background: transparent !important;
   }
   .quick-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .75rem;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(260px, .8fr);
+    gap: 1rem;
+    align-items: stretch;
+    margin-bottom: 1.25rem;
   }
   .quick-toolbar-left {
     display: flex;
-    flex: 1 1 320px;
     gap: .75rem;
     align-items: center;
+  }
+  .quick-search-panel,
+  .quick-side-panel {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
+    box-shadow: 0 14px 30px rgba(15, 23, 42, .05);
+    padding: 1rem 1.1rem;
+  }
+  .quick-search-panel {
+    background:
+      radial-gradient(circle at top right, rgba(59, 130, 246, .12), transparent 34%),
+      linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
+  }
+  .quick-panel-kicker {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--txt-3);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: .35rem;
+  }
+  .quick-panel-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--txt);
+    margin-bottom: .3rem;
+  }
+  .quick-panel-desc {
+    font-size: .79rem;
+    color: var(--txt-3);
+    margin-bottom: .85rem;
+    max-width: 58ch;
+  }
+  .quick-side-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .quick-side-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .7rem;
+  }
+  .quick-mini-card {
+    padding: .82rem .88rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--blue) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--blue) 12%, var(--border));
+  }
+  .quick-mini-label {
+    font-size: .7rem;
+    font-weight: 700;
+    color: var(--txt-3);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: .25rem;
+  }
+  .quick-mini-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--txt);
+    line-height: 1.1;
+  }
+  .quick-mini-note {
+    font-size: .73rem;
+    color: var(--txt-3);
+    margin-top: .22rem;
   }
   .nk-search-wrap {
     display: flex;
@@ -175,6 +243,33 @@
     font-size: .8rem;
     vertical-align: middle;
   }
+  .quick-customer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .7rem;
+    margin-top: 1rem;
+  }
+  .quick-customer-chip {
+    padding: .8rem .9rem;
+    border-radius: 14px;
+    background: rgba(255,255,255,.58);
+    border: 1px solid color-mix(in srgb, var(--blue) 14%, var(--border));
+    backdrop-filter: blur(10px);
+  }
+  .quick-customer-chip .label {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: var(--txt-3);
+    margin-bottom: .25rem;
+  }
+  .quick-customer-chip .value {
+    font-size: .84rem;
+    font-weight: 700;
+    color: var(--txt);
+    line-height: 1.25;
+  }
   .manual-toolbar {
     display: flex;
     gap: .75rem;
@@ -219,6 +314,9 @@
     flex-wrap: wrap;
   }
   @media (max-width: 768px) {
+    .quick-toolbar {
+      grid-template-columns: 1fr;
+    }
     .quick-toolbar-left,
     .manual-toolbar,
     .manual-actions {
@@ -227,11 +325,19 @@
     .form-grid {
       grid-template-columns: 1fr;
     }
+    .quick-side-grid,
+    .quick-customer-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 @endsection
 
 @section('content')
+@php
+  $manualPaymentCount = ($manualPayments ?? collect())->count();
+  $selectedMonthName = \Carbon\Carbon::create()->month((int) ($manualMonth ?? now()->month))->translatedFormat('F');
+@endphp
 <div class="ms-page quick-payment-page">
   <div class="ms-page-head">
     <div>
@@ -242,17 +348,40 @@
 
   {{-- Search bar --}}
   <form method="GET" action="{{ route('admin.payments.quick') }}" class="quick-toolbar">
-    <div class="quick-toolbar-left">
-      <div class="nk-search-wrap">
-        <i class='bx bx-search'></i>
-        <input type="text" name="q" class="nk-search-input" value="{{ $search ?? '' }}" placeholder="Cari kode pelanggan, nama, PPPoE user, atau no. HP..." autofocus>
+    <div class="quick-search-panel">
+      <div class="quick-panel-kicker">Lookup Pelanggan</div>
+      <div class="quick-panel-title">Cari pelanggan lalu tandai pembayaran tanpa pindah-pindah halaman</div>
+      <div class="quick-panel-desc">Pencarian, form input, dan edit tanggal pembayaran manual ada di satu workspace supaya alurnya tetap cepat.</div>
+      <div class="quick-toolbar-left">
+        <div class="nk-search-wrap">
+          <i class='bx bx-search'></i>
+          <input type="text" name="q" class="nk-search-input" value="{{ $search ?? '' }}" placeholder="Cari kode pelanggan, nama, PPPoE user, atau no. HP..." autofocus>
+        </div>
+        <button type="submit" class="ms-btn">
+          <i class='bx bx-search'></i> Cari
+        </button>
       </div>
       <input type="hidden" name="manual_month" value="{{ $manualMonth ?? now()->month }}">
       <input type="hidden" name="manual_year" value="{{ $manualYear ?? now()->year }}">
     </div>
-    <button type="submit" class="ms-btn">
-      <i class='bx bx-search'></i> Cari
-    </button>
+    <div class="quick-side-panel">
+      <div>
+        <div class="quick-panel-kicker">Snapshot</div>
+        <div class="quick-panel-title">Ringkasan kerja cepat</div>
+      </div>
+      <div class="quick-side-grid">
+        <div class="quick-mini-card">
+          <div class="quick-mini-label">Periode Manual</div>
+          <div class="quick-mini-value">{{ $selectedMonthName }}</div>
+          <div class="quick-mini-note">{{ $manualYear ?? now()->year }}</div>
+        </div>
+        <div class="quick-mini-card">
+          <div class="quick-mini-label">Data Manual</div>
+          <div class="quick-mini-value">{{ $manualPaymentCount }}</div>
+          <div class="quick-mini-note">entri terlihat</div>
+        </div>
+      </div>
+    </div>
   </form>
 
   @if($errors->any())
@@ -292,6 +421,20 @@
           · {{ $customer->package->name ?? '—' }}
           · {{ $customer->is_free ? 'Tidak ditagih' : 'Rp ' . number_format($customer->package_price ?? $customer->package->price ?? 0, 0, ',', '.') }}
         </div>
+      </div>
+    </div>
+    <div class="quick-customer-grid">
+      <div class="quick-customer-chip">
+        <div class="label">PPPoE User</div>
+        <div class="value">{{ $customer->pppoe_user ?: '—' }}</div>
+      </div>
+      <div class="quick-customer-chip">
+        <div class="label">No. HP</div>
+        <div class="value">{{ $customer->phone ?: '—' }}</div>
+      </div>
+      <div class="quick-customer-chip">
+        <div class="label">Mulai Tagihan</div>
+        <div class="value">{{ optional($customer->billing_start_date ?? $customer->created_at)->format('d M Y') }}</div>
       </div>
     </div>
 

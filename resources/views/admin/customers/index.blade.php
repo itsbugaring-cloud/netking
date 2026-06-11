@@ -26,6 +26,104 @@
     border: 0 !important; background: transparent !important;
   }
   .customers-index-page .ms-table-shell .dataTables_wrapper { padding: 0 !important; }
+  .cust-overview {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.35rem;
+  }
+  .cust-hero-card,
+  .cust-stat-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, white), var(--surface));
+    box-shadow: 0 16px 34px rgba(15, 23, 42, .06);
+  }
+  .cust-hero-card {
+    padding: 1.15rem 1.25rem;
+    background:
+      radial-gradient(circle at top right, rgba(59, 130, 246, .12), transparent 38%),
+      linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
+  }
+  .cust-hero-kicker {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--txt-3);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: .35rem;
+  }
+  .cust-hero-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--txt);
+    line-height: 1.15;
+    margin-bottom: .4rem;
+  }
+  .cust-hero-desc {
+    font-size: .8rem;
+    color: var(--txt-3);
+    max-width: 48ch;
+    margin-bottom: .85rem;
+  }
+  .cust-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+  .cust-hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .38rem;
+    padding: .45rem .72rem;
+    border-radius: 999px;
+    font-size: .74rem;
+    font-weight: 700;
+    color: var(--txt);
+    background: color-mix(in srgb, var(--blue) 7%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--border));
+  }
+  .cust-stat-card {
+    padding: 1rem 1.05rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 132px;
+  }
+  .cust-stat-label {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--txt-3);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: .55rem;
+  }
+  .cust-stat-value {
+    font-size: 1.7rem;
+    line-height: 1;
+    font-weight: 800;
+    color: var(--txt);
+    margin-bottom: .4rem;
+  }
+  .cust-stat-note {
+    font-size: .75rem;
+    color: var(--txt-3);
+  }
+  .cust-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    margin-left: auto;
+    background: color-mix(in srgb, var(--blue) 10%, var(--surface));
+    color: var(--blue);
+    border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--border));
+  }
 
   /* ── Filter tabs ─────────────────────────────────────────────────────── */
   .cust-filter-tabs {
@@ -198,6 +296,9 @@
   }
 
   @media (max-width: 700px) {
+    .cust-overview {
+      grid-template-columns: 1fr;
+    }
     .cust-filter-tabs {
       width: 100%;
       justify-content: flex-start;
@@ -222,6 +323,10 @@
     'provisioning' => 'Proses',
     'failed' => 'Gagal',
   ];
+  $visibleCustomers = collect($customers->items());
+  $visibleActiveCount = $visibleCustomers->where('status', 'active')->count();
+  $visibleSuspendedCount = $visibleCustomers->where('status', 'suspended')->count();
+  $areaFilterName = optional($areas->firstWhere('id', (int) request('area_id')))->name;
 @endphp
 <div class="ms-page customers-index-page">
   <div class="ms-page-head">
@@ -276,6 +381,37 @@
     </div>
   </div>
   @endunless
+
+  <div class="cust-overview">
+    <div class="cust-hero-card">
+      <div class="cust-hero-kicker">Customer Workspace</div>
+      <div class="cust-hero-title">Data pelanggan lebih ringkas, cepat dibaca, dan enak difilter</div>
+      <div class="cust-hero-desc">Panel ini sekarang difokuskan untuk review cepat: status, area, dan identitas PPPoE bisa dipindai lebih cepat tanpa terasa penuh.</div>
+      <div class="cust-hero-meta">
+        <span class="cust-hero-pill"><i class='bx bx-layer'></i> {{ $customers->total() }} total data</span>
+        <span class="cust-hero-pill"><i class='bx bx-map'></i> {{ $areaFilterName ?: 'Semua area' }}</span>
+        <span class="cust-hero-pill"><i class='bx bx-filter-alt'></i> {{ $statusTabs[request('status', '')] ?? 'Semua' }}</span>
+      </div>
+    </div>
+    <div class="cust-stat-card">
+      <div class="cust-stat-icon"><i class='bx bx-group'></i></div>
+      <div class="cust-stat-label">Total Tampil</div>
+      <div class="cust-stat-value">{{ $visibleCustomers->count() }}</div>
+      <div class="cust-stat-note">Baris pada halaman ini</div>
+    </div>
+    <div class="cust-stat-card">
+      <div class="cust-stat-icon" style="background:color-mix(in srgb, var(--green) 10%, var(--surface));color:var(--green);border-color:color-mix(in srgb, var(--green) 18%, var(--border));"><i class='bx bx-wifi'></i></div>
+      <div class="cust-stat-label">Aktif</div>
+      <div class="cust-stat-value">{{ $visibleActiveCount }}</div>
+      <div class="cust-stat-note">Aktif di halaman ini</div>
+    </div>
+    <div class="cust-stat-card">
+      <div class="cust-stat-icon" style="background:color-mix(in srgb, var(--red) 10%, var(--surface));color:var(--red);border-color:color-mix(in srgb, var(--red) 18%, var(--border));"><i class='bx bx-block'></i></div>
+      <div class="cust-stat-label">Diisolir</div>
+      <div class="cust-stat-value">{{ $visibleSuspendedCount }}</div>
+      <div class="cust-stat-note">Perlu perhatian cepat</div>
+    </div>
+  </div>
 
   <div class="ms-panel">
     {{-- Panel Head --}}

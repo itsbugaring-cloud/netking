@@ -149,10 +149,10 @@
             max-height: 260px !important;
         }
         .select2-container--bootstrap-5 .select2-results__option {
-            font-size: .78rem !important;
-            padding: .4rem .6rem !important;
+            font-size: .73rem !important;
+            padding: .34rem .52rem !important;
             border-radius: 6px !important;
-            line-height: 1.3 !important;
+            line-height: 1.2 !important;
             white-space: normal !important;
         }
         .select2-container--bootstrap-5 .select2-results__option--highlighted:not(.select2-results__option--selected) {

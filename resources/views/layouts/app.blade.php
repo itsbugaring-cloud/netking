@@ -5458,9 +5458,9 @@
       max-height: 260px !important;
     }
     .workspace-shell .main .select2-results__option {
-      font-size: .78rem !important;
-      line-height: 1.25 !important;
-      padding: .38rem .55rem !important;
+      font-size: .73rem !important;
+      line-height: 1.2 !important;
+      padding: .34rem .5rem !important;
       border-radius: 6px !important;
       white-space: normal !important;
     }
