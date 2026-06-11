@@ -123,7 +123,7 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
-        if (in_array($textLc, ['/reset', '♻️ reset draft'], true)) {
+        if (in_array($textLc, ['/reset', '♻️ reset draft', '♻️ reset', 'reset'], true)) {
             $this->cleanupTransientMessages($chatId);
             $this->clearPromptMessage($chatId);
             $this->clearLoadingMessage($chatId);
@@ -132,37 +132,37 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
-        if (in_array($textLc, ['/draft', '📋 lihat draft'], true) || str_contains($textLc, 'lihat draft')) {
+        if (in_array($textLc, ['/draft', '📋 lihat draft', '📋 draft', 'draft'], true) || str_contains($textLc, 'lihat draft')) {
             $this->sendDraftSummary($chatId, true);
             return;
         }
 
-        if (in_array($textLc, ['/history', '🗂 history saya'], true) || str_contains($textLc, 'history saya')) {
+        if (in_array($textLc, ['/history', '🗂 history saya', '🗂 history', 'history'], true) || str_contains($textLc, 'history saya')) {
             $this->sendMyHistory($chatId);
             return;
         }
 
-        if (in_array($textLc, ['/status', '📡 cek status'], true) || str_contains($textLc, 'cek status')) {
+        if (in_array($textLc, ['/status', '📡 cek status', '📡 status'], true) || str_contains($textLc, 'cek status')) {
             $this->sendLatestRequestStatus($chatId);
             return;
         }
 
-        if (in_array($textLc, ['/template', '🧾 template draft'], true) || str_contains($textLc, 'template draft')) {
+        if (in_array($textLc, ['/template', '🧾 template draft', '🧾 template'], true) || str_contains($textLc, 'template draft')) {
             $this->sendDraftTemplate($chatId);
             return;
         }
-        
-        if (in_array($textLc, ['/guide', '📚 panduan mikrotik pppoe'], true) || str_contains($textLc, 'panduan mikrotik pppoe')) {
-            $this->sendGuideMenu($chatId);
+
+        if (in_array($textLc, ['/guide', '📚 panduan mikrotik pppoe', '📚 guide', 'guide'], true) || str_contains($textLc, 'panduan mikrotik pppoe')) {
+            $this->sendMessage($chatId, "Menu guide saya nonaktifkan dulu ya. Langsung klik *Input* buat mulai.", ['parse_mode' => 'Markdown']);
             return;
         }
 
-        if ($textLc === '📝 input data pelanggan' || str_contains($textLc, 'input data pelanggan')) {
+        if (in_array($textLc, ['📝 input', 'input', '📝 input data pelanggan'], true) || str_contains($textLc, 'input data pelanggan')) {
             $this->startFlow($chatId, $from);
             return;
         }
 
-        if ($textLc === '📷 kirim foto sn' || str_contains($textLc, 'kirim foto sn')) {
+        if (in_array($textLc, ['📷 kirim foto sn', '📷 foto sn'], true) || str_contains($textLc, 'kirim foto sn')) {
             $this->sendMessage($chatId, "📷 Kirim foto label SN ONT yang jelas.\nTambahkan caption: SN ONT: <serial> supaya bot bisa cocokkan anti typo.");
             return;
         }
@@ -248,12 +248,12 @@ class TelegramConfigBotController extends Controller
         }
         
         if ($type === 'guide') {
-            $this->sendGuideMenu($chatId);
+            $this->sendMessage($chatId, "Guide saya nonaktifkan dulu ya. Langsung pakai menu *Input* aja.", ['parse_mode' => 'Markdown']);
             return;
         }
 
         if ($type === 'garea') {
-            $this->sendGuideArea($chatId, (int) $value);
+            $this->sendMessage($chatId, "Guide area juga saya nonaktifkan dulu. Klik *Input* buat lanjut kerja.", ['parse_mode' => 'Markdown']);
             return;
         }
 
@@ -1195,8 +1195,7 @@ class TelegramConfigBotController extends Controller
             "Halo {$name} 👋\n" .
             "Langsung pilih menu di bawah buat mulai.\n\n" .
             "Shortcut:\n" .
-            "• /template\n" .
-            "• /guide";
+            "• /template";
 
         $this->sendMessage(
             $chatId,
@@ -1231,7 +1230,7 @@ class TelegramConfigBotController extends Controller
         return [
             ['📝 Input', '📷 Foto SN', '📋 Draft'],
             ['🗂 History', '📡 Status', '✅ Submit'],
-            ['🧾 Template', '📚 Guide', '♻️ Reset'],
+            ['🧾 Template', '♻️ Reset'],
         ];
     }
 
