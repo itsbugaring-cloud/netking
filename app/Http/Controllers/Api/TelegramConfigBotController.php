@@ -328,7 +328,9 @@ class TelegramConfigBotController extends Controller
 
         $this->sendMessage(
             $chatId,
-            "📝 Mode input aktif. Pilih area dulu ya.",
+            "⚡ MODE INPUT AKTIF\n" .
+            "Area dulu, habis itu saya arahkan step by step.\n" .
+            "Begitu area dipilih, hint PPPoE terakhir dan VLAN PPPoE langsung saya tampilkan.",
             [
                 'reply_markup' => [
                     'remove_keyboard' => true,
@@ -370,7 +372,14 @@ class TelegramConfigBotController extends Controller
             $state['field_index'] = $this->fieldIndex('paket_id');
             $state['updated_at'] = now()->toDateTimeString();
             $this->saveState($chatId, $state);
-            $this->sendMessage($chatId, "✅ Area diubah ke {$area->name}. Sekarang pilih paket baru untuk area ini.");
+            $areaVlan = trim((string) ($area->vlan_pppoe ?? ''));
+            $msg = "✅ AREA LOCKED\n" .
+                "Area: {$area->name}";
+            if ($areaVlan !== '') {
+                $msg .= "\nVLAN PPPoE: {$areaVlan}";
+            }
+            $msg .= "\nSekarang pilih paket baru untuk area ini.";
+            $this->sendMessage($chatId, $msg);
             $this->promptCurrentField($chatId, $state);
             return;
         }
@@ -383,6 +392,14 @@ class TelegramConfigBotController extends Controller
             'name' => (string) ($from['first_name'] ?? ''),
         ];
         $this->saveState($chatId, $state);
+
+        $areaVlan = trim((string) ($area->vlan_pppoe ?? ''));
+        $msg = "✅ AREA LOCKED\n" .
+            "Area: {$area->name}";
+        if ($areaVlan !== '') {
+            $msg .= "\nVLAN PPPoE: {$areaVlan}";
+        }
+        $this->sendMessage($chatId, $msg);
 
         $this->promptCurrentField($chatId, $state);
     }
@@ -1106,27 +1123,30 @@ class TelegramConfigBotController extends Controller
         $price = isset($draft['harga']) ? number_format((int) $draft['harga'], 0, ',', '.') : '-';
         $fotoOk = !empty($draft['photo_file_id']) ? '✅ Ada' : '❌ Belum';
         $snOk = (($draft['photo_sn_matched'] ?? false) ? '✅ Cocok' : '❌ Belum cocok');
+        $areaVlan = trim((string) ($draft['area_vlan_pppoe'] ?? ''));
+        $mode = strtoupper($this->cfg('telegram_config_mode', 'TELEGRAM_CONFIG_MODE', 'test'));
 
         $lines = [
-            "🧾 DRAFT SIAP CEK",
+            "🧾 NETKING CONFIG PREVIEW",
             '',
-            'AREA: ' . ($draft['area_name'] ?? '-'),
-            'NAMA: ' . ($draft['nama'] ?? '-'),
-            'No HP: ' . ($draft['no_hp'] ?? '-'),
-            'SN ONT: ' . ($draft['sn_ont'] ?? '-'),
-            'PPPoE User: ' . ($draft['pppoe_user'] ?? '-'),
-            'PAKET: ' . ($draft['paket_kode'] ?? '-') . ' (' . ($draft['paket_name'] ?? '-') . ')',
-            'HARGA: Rp ' . $price,
-            'Tanggal Pasang: ' . $this->formatDateDisplay((string) ($draft['tanggal_pasang'] ?? now()->toDateString())),
+            'AREA       : ' . ($draft['area_name'] ?? '-'),
+            'VLAN PPPOE : ' . ($areaVlan !== '' ? $areaVlan : '-'),
+            'NAMA       : ' . ($draft['nama'] ?? '-'),
+            'NO HP      : ' . ($draft['no_hp'] ?? '-'),
+            'SN ONT     : ' . ($draft['sn_ont'] ?? '-'),
+            'PPPOE USER : ' . ($draft['pppoe_user'] ?? '-'),
+            'PAKET      : ' . ($draft['paket_kode'] ?? '-') . ' (' . ($draft['paket_name'] ?? '-') . ')',
+            'HARGA      : Rp ' . $price,
+            'TGL PASANG : ' . $this->formatDateDisplay((string) ($draft['tanggal_pasang'] ?? now()->toDateString())),
             '',
-            'DIBUAT OLEH:',
-            'Nama: ' . (data_get($draft, 'requested_by.name', '-') ?: '-'),
-            'Username: @' . (data_get($draft, 'requested_by.telegram_username', '-') ?: '-'),
-            'Chat ID: ' . (data_get($draft, 'requested_by.telegram_id', '-') ?: '-'),
+            'OPERATOR',
+            'Nama     : ' . (data_get($draft, 'requested_by.name', '-') ?: '-'),
+            'Username : @' . (data_get($draft, 'requested_by.telegram_username', '-') ?: '-'),
+            'Chat ID  : ' . (data_get($draft, 'requested_by.telegram_id', '-') ?: '-'),
             '',
-            'Foto SN: ' . $fotoOk,
-            'Validasi SN: ' . $snOk,
-            'MODE: ' . strtoupper($this->cfg('telegram_config_mode', 'TELEGRAM_CONFIG_MODE', 'test')),
+            'FOTO SN     : ' . $fotoOk,
+            'VALIDASI SN : ' . $snOk,
+            'MODE        : ' . $mode,
         ];
 
         if (!empty($draft['photo_file_id'])) {
@@ -1179,14 +1199,17 @@ class TelegramConfigBotController extends Controller
         $id = (string) ($from['id'] ?? '-');
         $mode = strtoupper($this->cfg('telegram_config_mode', 'TELEGRAM_CONFIG_MODE', 'test'));
 
-        $text = "🚀 NETKING-SENUT siap bantu\n" .
-            "━━━━━━━━━━━━━━━\n" .
-            "Halo {$name} 👋\n" .
-            "(@{$username} | ID {$id})\n" .
-            "Mode: {$mode}\n" .
-            "━━━━━━━━━━━━━━━\n\n" .
-            "Langsung klik *Input Data Pelanggan* buat mulai.\n" .
-            "Kalau perlu contekan, pakai /guide atau /template ya.";
+        $text = "⚡ NETKING-SENUT // READY\n" .
+            "Mode  : {$mode}\n" .
+            "User  : {$name}\n" .
+            "Handle: @{$username}\n" .
+            "Chat  : {$id}\n\n" .
+            "Aksi tercepat:\n" .
+            "1. Input Data Pelanggan\n" .
+            "2. Kirim Foto SN\n" .
+            "3. Submit\n\n" .
+            "Guide cepat tersedia di /guide\n" .
+            "Template draft tersedia di /template";
 
         $this->sendMessage(
             $chatId,
