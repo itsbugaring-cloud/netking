@@ -170,6 +170,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 return response()->json([]);
             }
 
+            $user = auth()->user();
+            if ($user && $user->role === 'partner' && (int) $user->area_id !== (int) $areaId) {
+                abort(403);
+            }
+
             $area = \App\Models\Area::find($areaId);
             if (!$area || empty($area->router_ip)) {
                 return response()->json([]);
@@ -188,9 +193,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             }
 
             // Load matching packages from DB for price info
-            $dbPackages = \App\Models\Package::where(function ($q) use ($areaId) {
-                    $q->where('area_id', $areaId)->orWhereNull('area_id');
-                })
+            $dbPackages = \App\Models\Package::where('area_id', $areaId)
                 ->where('is_active', true)
                 ->get()
                 ->keyBy('mikrotik_profile');

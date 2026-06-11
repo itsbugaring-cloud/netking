@@ -125,7 +125,7 @@ class CustomerController extends Controller
             $areas    = Area::orderBy('name')->get();
             // Admin: ODP dimuat semua di awal, akan di-filter AJAX saat area dipilih
             $odps     = collect();
-            $packages = \App\Models\Package::where('is_active', true)->orderBy('name')->get();
+            $packages = collect();
         }
 
         return view('admin.customers.create', compact('areas', 'odps', 'packages'));
@@ -156,7 +156,10 @@ class CustomerController extends Controller
             'pppoe_pass'      => 'required|string|max:255',
             'area_id'         => 'required|exists:areas,id',
             'partner_id'      => 'nullable|exists:users,id',
-            'package_id'      => 'nullable|exists:packages,id',
+            'package_id'      => [
+                'nullable',
+                Rule::exists('packages', 'id')->where(fn($q) => $q->where('area_id', $areaId)),
+            ],
             'local_address'   => 'nullable|string|max:45',
             'ont_sn'          => 'nullable|string|max:255',
             'package_price'   => 'required|numeric|min:0',
@@ -223,6 +226,8 @@ class CustomerController extends Controller
             ]);
         }
 
+        $areaId = (int) $request->input('area_id');
+
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
             'username'        => [
@@ -232,7 +237,10 @@ class CustomerController extends Controller
                 Rule::unique('customers', 'username')->ignore($customer->id),
             ],
             'area_id'         => 'required|exists:areas,id',
-            'package_id'      => 'nullable|exists:packages,id',
+            'package_id'      => [
+                'nullable',
+                Rule::exists('packages', 'id')->where(fn($q) => $q->where('area_id', $areaId)),
+            ],
             'package_price'   => 'required|numeric|min:0',
             'billing_start_date' => 'required|date',
             'billing_due_day'    => 'nullable|integer|min:1|max:31',

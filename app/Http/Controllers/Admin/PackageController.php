@@ -19,20 +19,41 @@ class PackageController extends Controller
         return (float) config('billing.default_package_price', 100000);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $packages = Package::with('area')->withCount('customers')->orderBy('name')->get();
-        return view('admin.packages.index', compact('packages'));
+        $user = auth()->user();
+        $query = Package::with('area')->withCount('customers');
+
+        if ($user && $user->role === 'partner') {
+            $query->where('area_id', $user->area_id);
+        } elseif ($request->filled('area_id')) {
+            $query->where('area_id', $request->integer('area_id'));
+        }
+
+        $packages = $query->orderBy('name')->get();
+        $areas = ($user && $user->role === 'admin')
+            ? Area::orderBy('name')->get(['id', 'name'])
+            : collect();
+
+        return view('admin.packages.index', compact('packages', 'areas'));
     }
 
     public function create()
     {
-        $areas = Area::orderBy('name')->get();
+        $user = auth()->user();
+        $areas = ($user && $user->role === 'partner')
+            ? Area::where('id', $user->area_id)->orderBy('name')->get()
+            : Area::orderBy('name')->get();
         return view('admin.packages.create', compact('areas'));
     }
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+        if ($user && $user->role === 'partner') {
+            $request->merge(['area_id' => $user->area_id]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:packages,code',
@@ -56,12 +77,27 @@ class PackageController extends Controller
 
     public function edit(Package $package)
     {
-        $areas = Area::orderBy('name')->get();
+        $user = auth()->user();
+        if ($user && $user->role === 'partner' && (int) $package->area_id !== (int) $user->area_id) {
+            abort(403);
+        }
+
+        $areas = ($user && $user->role === 'partner')
+            ? Area::where('id', $user->area_id)->orderBy('name')->get()
+            : Area::orderBy('name')->get();
         return view('admin.packages.edit', compact('package', 'areas'));
     }
 
     public function update(Request $request, Package $package)
     {
+        $user = auth()->user();
+        if ($user && $user->role === 'partner') {
+            if ((int) $package->area_id !== (int) $user->area_id) {
+                abort(403);
+            }
+            $request->merge(['area_id' => $user->area_id]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:packages,code,' . $package->id,
@@ -85,6 +121,11 @@ class PackageController extends Controller
 
     public function destroy(Package $package)
     {
+        $user = auth()->user();
+        if ($user && $user->role === 'partner' && (int) $package->area_id !== (int) $user->area_id) {
+            abort(403);
+        }
+
         if ($package->customers()->exists()) {
             return back()->with('error', 'Cannot delete package with existing customers. Deactivate it instead.');
         }

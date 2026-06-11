@@ -21,6 +21,26 @@
     </div>
 </div>
 
+@if(isset($areas) && $areas->isNotEmpty())
+<div class="ms-panel mb-3">
+    <div class="ms-panel-body py-3">
+        <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+            <label for="area_id" style="font-size:.82rem;color:var(--txt-3);font-weight:600;">Filter Area</label>
+            <select name="area_id" id="area_id" class="form-select" style="max-width:280px;">
+                <option value="">Semua Area</option>
+                @foreach($areas as $area)
+                <option value="{{ $area->id }}" {{ request('area_id') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="ms-btn-secondary">Terapkan</button>
+            @if(request()->filled('area_id'))
+            <a href="{{ route('admin.packages.index') }}" class="ms-btn-ghost">Reset</a>
+            @endif
+        </form>
+    </div>
+</div>
+@endif
+
 
 
 @php
