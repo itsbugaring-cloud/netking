@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 class TelegramConfigBotController extends Controller
 {
     private const BOT_DIR = 'telegram-config-bot';
+    private const DEFAULT_PPPOE_PASSWORD = 'netking';
 
     private const FLOW_FIELDS = [
         'area_id',
@@ -316,7 +317,7 @@ class TelegramConfigBotController extends Controller
         $state['collecting'] = true;
         $state['field_index'] = 0;
         $state['draft'] = $state['draft'] ?? [];
-        $state['draft']['pppoe_pass'] = 'netking';
+        $state['draft']['pppoe_pass'] = self::DEFAULT_PPPOE_PASSWORD;
         $state['draft']['tanggal_pasang'] = now()->toDateString();
         $state['draft']['requested_by'] = [
             'telegram_id' => (string) ($from['id'] ?? ''),
@@ -676,6 +677,7 @@ class TelegramConfigBotController extends Controller
             if ($areaVlan !== '') {
                 $hint .= "\nVLAN PPPoE: {$areaVlan}";
             }
+            $hint .= "\nPassword default: " . self::DEFAULT_PPPOE_PASSWORD;
             $labels['pppoe_user'] .= $hint;
         }
 
@@ -894,7 +896,7 @@ class TelegramConfigBotController extends Controller
         $this->cleanupTransientMessages($chatId);
 
         $submitMsg = (($push['success'] ?? false) === true)
-            ? "✅ Konfig PPPoE berhasil masuk ke MikroTik.\nTinggal lanjut konfigurasi di ONT.\n\nStatus active connection MikroTik ditampilkan di bawah ini."
+            ? "✅ Konfig PPPoE berhasil masuk ke MikroTik.\nPassword default PPPoE: `" . ($draft['pppoe_pass'] ?? self::DEFAULT_PPPOE_PASSWORD) . "`\nTinggal lanjut konfigurasi di ONT.\n\nStatus active connection MikroTik ditampilkan di bawah ini."
             : "⚠️ Data sudah tersimpan, tapi push ke router gagal.\n\nKlik *Status* buat lihat detailnya.";
 
         $this->sendMessage(
@@ -1164,6 +1166,7 @@ class TelegramConfigBotController extends Controller
             '├ No HP: ' . ($draft['no_hp'] ?? '-'),
             '├ SN ONT: ' . ($draft['sn_ont'] ?? '-'),
             '├ PPPoE User: ' . ($draft['pppoe_user'] ?? '-'),
+            '├ PPPoE Pass: ' . ($draft['pppoe_pass'] ?? self::DEFAULT_PPPOE_PASSWORD),
             '├ Paket: ' . ($draft['paket_kode'] ?? '-') . ' (' . ($draft['paket_name'] ?? '-') . ')',
             '├ Harga: Rp ' . $price,
             '└ Tanggal Pasang: ' . $this->formatDateDisplay((string) ($draft['tanggal_pasang'] ?? now()->toDateString())),
