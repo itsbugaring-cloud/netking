@@ -107,14 +107,16 @@ class SyncAreaVlans extends Command
         try {
             $client = $this->getClient($mikrotik);
 
-            // Check /interface/vlan for this interface name
             $query = new Query('/interface/vlan/print');
             $query->equal('.proplist', 'name,vlan-id,interface,comment');
-            $query->equal('name', $interfaceName);
             $vlans = $client->query($query)->read();
 
-            if (!empty($vlans) && isset($vlans[0]['vlan-id'])) {
-                return (string) $vlans[0]['vlan-id'];
+            $target = strtolower(trim($interfaceName));
+            foreach ($vlans as $vlan) {
+                $name = strtolower(trim((string) ($vlan['name'] ?? '')));
+                if ($name === $target && isset($vlan['vlan-id'])) {
+                    return (string) $vlan['vlan-id'];
+                }
             }
 
             return null;
