@@ -22,13 +22,14 @@
     position: relative;
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: 24px;
+    border-radius: 28px;
     background:
-      radial-gradient(circle at top right, rgba(91, 99, 211, .14), transparent 26%),
-      radial-gradient(circle at bottom left, rgba(22, 163, 74, .10), transparent 28%),
-      linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
-    box-shadow: 0 18px 40px rgba(15, 23, 42, .06);
-    padding: 18px;
+      radial-gradient(circle at top right, rgba(91, 99, 211, .18), transparent 26%),
+      radial-gradient(circle at bottom left, rgba(22, 163, 74, .12), transparent 28%),
+      linear-gradient(135deg, color-mix(in srgb, var(--surface) 95%, white), color-mix(in srgb, var(--surface) 90%, #eef3ff));
+    box-shadow: 0 22px 52px rgba(15, 23, 42, .08);
+    padding: 22px;
+    transform-style: preserve-3d;
   }
 
   .ops-hero::after {
@@ -42,14 +43,31 @@
     pointer-events: none;
   }
 
+  .ops-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(115deg, transparent 0%, rgba(255,255,255,.34) 18%, transparent 38%),
+      repeating-linear-gradient(90deg, transparent 0 36px, rgba(255,255,255,.035) 36px 37px);
+    opacity: .72;
+    pointer-events: none;
+  }
+
   .ops-hero-top {
     position: relative;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) 320px;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
     z-index: 1;
+  }
+
+  .ops-hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 
   .ops-hero-copy {
@@ -58,35 +76,56 @@
 
   .ops-hero-title {
     margin: 0;
-    font-size: 1.95rem;
-    line-height: 1.02;
+    font-size: 2.15rem;
+    line-height: .98;
     letter-spacing: -.04em;
     color: var(--txt);
-    font-weight: 800;
+    font-weight: 850;
   }
 
-  .ops-hero-desc {
-    margin-top: 10px;
-    font-size: .9rem;
-    color: var(--txt-3);
-    max-width: 760px;
+  .ops-live-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+  }
+
+  .ops-live-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .42rem;
+    padding: .46rem .75rem;
+    border-radius: 999px;
+    font-size: .73rem;
+    font-weight: 700;
+    border: 1px solid color-mix(in srgb, var(--blue) 12%, var(--border));
+    background: rgba(255,255,255,.58);
+    backdrop-filter: blur(14px);
+    color: var(--txt);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
   }
 
   .ops-hero-metrics {
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
   }
 
   .ops-hero-metric {
-    padding: 12px 14px;
-    border-radius: 16px;
+    padding: 13px 14px;
+    border-radius: 18px;
     border: 1px solid color-mix(in srgb, var(--blue) 12%, var(--border));
-    background: color-mix(in srgb, var(--surface) 84%, white);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
-    min-height: 88px;
+    background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.5));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 10px 24px rgba(15, 23, 42, .04);
+    min-height: 96px;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  }
+
+  .ops-hero-metric:hover {
+    transform: translateY(-2px) rotateX(4deg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 16px 28px rgba(15, 23, 42, .07);
+    border-color: color-mix(in srgb, var(--blue) 22%, var(--border));
   }
 
   .ops-hero-metric-label {
@@ -99,7 +138,7 @@
   }
 
   .ops-hero-metric-value {
-    font-size: 1.35rem;
+    font-size: 1.55rem;
     line-height: 1;
     font-weight: 800;
     letter-spacing: -.04em;
@@ -148,9 +187,127 @@
   .ops-head-actions {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 10px;
     flex-wrap: wrap;
   }
+
+  .ops-radar {
+    position: relative;
+    min-height: 220px;
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--border));
+    background:
+      radial-gradient(circle at center, rgba(91,99,211,.1), transparent 58%),
+      linear-gradient(180deg, rgba(255,255,255,.52), rgba(255,255,255,.26));
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+  }
+
+  .ops-radar-grid,
+  .ops-radar-ring,
+  .ops-radar-core,
+  .ops-radar-sweep,
+  .ops-radar-node {
+    position: absolute;
+  }
+
+  .ops-radar-grid {
+    inset: 0;
+    background:
+      linear-gradient(rgba(91,99,211,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91,99,211,.045) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(circle at center, black 20%, transparent 85%);
+  }
+
+  .ops-radar-ring {
+    inset: 50%;
+    border-radius: 999px;
+    border: 1px solid rgba(91,99,211,.14);
+    transform: translate(-50%, -50%);
+  }
+
+  .ops-radar-ring.r1 { width: 82px; height: 82px; }
+  .ops-radar-ring.r2 { width: 140px; height: 140px; }
+  .ops-radar-ring.r3 { width: 202px; height: 202px; }
+
+  .ops-radar-core {
+    inset: 50%;
+    width: 20px;
+    height: 20px;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    background: linear-gradient(180deg, #5b63d3, #343b94);
+    box-shadow: 0 0 0 10px rgba(91,99,211,.08), 0 0 28px rgba(91,99,211,.35);
+    z-index: 2;
+  }
+
+  .ops-radar-sweep {
+    inset: 50%;
+    width: 210px;
+    height: 210px;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    background: conic-gradient(from 0deg, rgba(16,185,129,.28), transparent 22%, transparent 100%);
+    filter: blur(2px);
+    animation: ops-radar-spin 7s linear infinite;
+    opacity: .9;
+  }
+
+  .ops-radar-node {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #16a34a;
+    box-shadow: 0 0 0 6px rgba(34,197,94,.12), 0 0 18px rgba(34,197,94,.3);
+    animation: ops-pulse 2.4s ease-in-out infinite;
+    z-index: 3;
+  }
+
+  .ops-radar-node.n1 { top: 22%; left: 62%; animation-delay: .1s; }
+  .ops-radar-node.n2 { top: 60%; left: 24%; animation-delay: .6s; }
+  .ops-radar-node.n3 { top: 67%; left: 72%; animation-delay: 1.2s; }
+
+  .ops-radar-chip {
+    position: absolute;
+    display: inline-flex;
+    flex-direction: column;
+    gap: .18rem;
+    min-width: 112px;
+    padding: .6rem .72rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.45);
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 14px 30px rgba(15,23,42,.08);
+    z-index: 4;
+    transform: translateZ(22px);
+  }
+
+  .ops-radar-chip .label {
+    font-size: .64rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--txt-3);
+  }
+
+  .ops-radar-chip .value {
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--txt);
+  }
+
+  .ops-radar-chip .note {
+    font-size: .68rem;
+    color: var(--txt-3);
+  }
+
+  .ops-radar-chip.c1 { top: 18px; right: 18px; }
+  .ops-radar-chip.c2 { bottom: 18px; left: 18px; }
+  .ops-radar-chip.c3 { bottom: 30px; right: 26px; }
 
   .ops-pill {
     display: inline-flex;
@@ -182,6 +339,12 @@
     flex-direction: column;
     gap: 12px;
     box-shadow: 0 12px 28px rgba(15, 23, 42, .045);
+    transition: transform .22s ease, box-shadow .22s ease;
+  }
+
+  .ops-kpi:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 34px rgba(15, 23, 42, .07);
   }
 
   .ops-kpi-top {
@@ -312,6 +475,13 @@
     justify-content: space-between;
     gap: 12px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+
+  .ops-network-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--blue) 20%, var(--border));
+    box-shadow: 0 16px 28px rgba(15,23,42,.06);
   }
 
   .ops-network-top {
@@ -519,7 +689,7 @@
 
   .ops-quick-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
@@ -531,7 +701,7 @@
     padding: 13px 14px;
     border: 1px solid var(--border);
     background: var(--surface-2);
-    border-radius: 14px;
+    border-radius: 16px;
     color: var(--txt);
     text-decoration: none;
     transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
@@ -547,6 +717,18 @@
   .ops-quick-label {
     font-size: .84rem;
     font-weight: 560;
+  }
+
+  .ops-action-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--border));
+    background: rgba(91,99,211,.08);
+    color: var(--blue);
   }
 
   .ops-empty {
@@ -582,7 +764,21 @@
     color: var(--txt-3);
   }
 
+  @keyframes ops-radar-spin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  @keyframes ops-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.16); opacity: .72; }
+  }
+
   @media (max-width: 1199.98px) {
+    .ops-hero-top {
+      grid-template-columns: 1fr;
+    }
+
     .ops-hero-metrics {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -619,16 +815,21 @@
       border-radius: 20px;
     }
 
-    .ops-hero-top {
-      flex-direction: column;
-    }
-
     .ops-hero-title {
       font-size: 1.55rem;
     }
 
     .ops-hero-metrics {
       grid-template-columns: 1fr;
+    }
+
+    .ops-radar {
+      min-height: 190px;
+    }
+
+    .ops-radar-chip {
+      min-width: 92px;
+      padding: .48rem .58rem;
     }
 
     .ops-chart,
@@ -652,33 +853,60 @@
 <div class="ops-shell dashboard-page">
   <section class="ops-hero">
     <div class="ops-hero-top">
-      <div class="ops-hero-copy">
-        <div class="ops-eyebrow">Ringkasan Operasional</div>
-        <h1 class="ops-hero-title">Dashboard</h1>
+      <div class="ops-hero-left">
+        <div class="ops-hero-copy">
+          <div class="ops-eyebrow">Ringkasan Operasional</div>
+          <h1 class="ops-hero-title">Dashboard</h1>
+        </div>
+        <div class="ops-live-strip">
+          <span class="ops-live-chip"><i class='bx bx-time-five'></i> Auto-refresh 30 dtk</span>
+          <span class="ops-live-chip"><i class='bx bx-pulse'></i> Live monitoring aktif</span>
+          <span class="ops-live-chip"><i class='bx bx-check-shield'></i> {{ $activeRate }}% layanan aktif</span>
+        </div>
+        <div class="ops-head-actions">
+          <button class="ms-btn-secondary" type="button" onclick="location.reload()">
+            <i class='bx bx-refresh'></i>
+            Refresh
+          </button>
+        </div>
       </div>
-      <div class="ops-head-actions">
-        <span class="ops-pill"><i class='bx bx-time'></i> Auto-refresh 30 dtk</span>
-        <button class="ms-btn-secondary" type="button" onclick="location.reload()">
-          <i class='bx bx-refresh'></i>
-          Refresh
-        </button>
+      <div class="ops-radar">
+        <div class="ops-radar-grid"></div>
+        <div class="ops-radar-ring r1"></div>
+        <div class="ops-radar-ring r2"></div>
+        <div class="ops-radar-ring r3"></div>
+        <div class="ops-radar-sweep"></div>
+        <div class="ops-radar-core"></div>
+        <div class="ops-radar-node n1"></div>
+        <div class="ops-radar-node n2"></div>
+        <div class="ops-radar-node n3"></div>
+        <div class="ops-radar-chip c1">
+          <span class="label">Pending</span>
+          <span class="value">{{ number_format($stats['pending_payments'] ?? 0) }}</span>
+          <span class="note">menunggu review</span>
+        </div>
+        <div class="ops-radar-chip c2">
+          <span class="label">Area</span>
+          <span class="value">{{ number_format($stats['total_areas'] ?? 0) }}</span>
+          <span class="note">router aktif</span>
+        </div>
+        <div class="ops-radar-chip c3">
+          <span class="label">Approve</span>
+          <span class="value">{{ number_format($stats['approved_this_month'] ?? 0) }}</span>
+          <span class="note">bulan ini</span>
+        </div>
       </div>
     </div>
     <div class="ops-hero-metrics">
       <div class="ops-hero-metric">
-        <div class="ops-hero-metric-label">Area aktif</div>
-        <div class="ops-hero-metric-value">{{ number_format($stats['total_areas'] ?? 0) }}</div>
-        <div class="ops-hero-metric-note">Wilayah layanan terdaftar</div>
-      </div>
-      <div class="ops-hero-metric">
         <div class="ops-hero-metric-label">Pelanggan aktif</div>
         <div class="ops-hero-metric-value">{{ number_format($stats['active_customers'] ?? 0) }}</div>
-        <div class="ops-hero-metric-note">{{ $activeRate }}% tingkat aktif</div>
+        <div class="ops-hero-metric-note">{{ $activeRate }}% dari total layanan</div>
       </div>
       <div class="ops-hero-metric">
-        <div class="ops-hero-metric-label">Pembayaran pending</div>
+        <div class="ops-hero-metric-label">Pending review</div>
         <div class="ops-hero-metric-value">{{ number_format($stats['pending_payments'] ?? 0) }}</div>
-        <div class="ops-hero-metric-note">Butuh review / approval</div>
+        <div class="ops-hero-metric-note">approval pembayaran</div>
       </div>
       <div class="ops-hero-metric">
         <div class="ops-hero-metric-label">MRR bulanan</div>
@@ -710,14 +938,14 @@
     <div class="ops-kpi">
       <div class="ops-kpi-top">
         <div>
-          <div class="ops-kpi-label">Tingkat Aktif</div>
-          <div class="ops-kpi-value">{{ $activeRate }}%</div>
+          <div class="ops-kpi-label">Area Layanan</div>
+          <div class="ops-kpi-value">{{ number_format($stats['total_areas'] ?? 0) }}</div>
         </div>
         <div class="ops-kpi-icon" style="background:{{ $rateColor }};border-color:{{ $rateBorder }};color:{{ $rateText }};">
-          <i class='bx bx-check-circle'></i>
+          <i class='bx bx-map-alt'></i>
         </div>
       </div>
-      <div class="ops-kpi-meta">{{ number_format($stats['active_customers'] ?? 0) }} aktif &middot; {{ number_format($stats['suspended_customers'] ?? 0) }} nonaktif</div>
+      <div class="ops-kpi-meta">Tersebar di router dan area aktif</div>
     </div>
 
     {{-- Pembayaran Pending --}}
@@ -728,18 +956,18 @@
     <div class="ops-kpi">
       <div class="ops-kpi-top">
         <div>
-          <div class="ops-kpi-label">Pembayaran Pending</div>
-          <div class="ops-kpi-value">{{ number_format($pending) }}</div>
+          <div class="ops-kpi-label">Approve Bulan Ini</div>
+          <div class="ops-kpi-value">{{ number_format($stats['approved_this_month'] ?? 0) }}</div>
         </div>
         <div class="ops-kpi-icon" style="background:{{ $pendingBg }};border-color:{{ $pendingBorder }};color:{{ $pendingText }};">
-          <i class='bx bx-{{ $pending > 0 ? "error" : "check" }}'></i>
+          <i class='bx bx-badge-check'></i>
         </div>
       </div>
       <div class="ops-kpi-meta">
-        @if(($stats['approved_this_month'] ?? 0) > 0)
-          <span style="color:#16a34a;">{{ number_format($stats['approved_this_month']) }} disetujui bulan ini</span>
+        @if(($stats['monthly_revenue'] ?? 0) > 0)
+          <span style="color:#16a34a;">Rp {{ number_format($stats['monthly_revenue'] ?? 0, 0, ',', '.') }} revenue tercatat</span>
         @else
-          Belum ada pembayaran disetujui bulan ini
+          Belum ada revenue tercatat bulan ini
         @endif
       </div>
     </div>
@@ -748,14 +976,14 @@
     <div class="ops-kpi">
       <div class="ops-kpi-top">
         <div>
-          <div class="ops-kpi-label">MRR (Est. Bulanan)</div>
-          <div class="ops-kpi-value">Rp {{ number_format($stats['mrr'] ?? 0, 0, ',', '.') }}</div>
+          <div class="ops-kpi-label">Pelanggan Diisolir</div>
+          <div class="ops-kpi-value">{{ number_format($stats['suspended_customers'] ?? 0) }}</div>
         </div>
         <div class="ops-kpi-icon" style="background:rgba(91,99,211,.1);border-color:rgba(91,99,211,.2);color:#5b63d3;">
-          <i class='bx bx-line-chart'></i>
+          <i class='bx bx-block'></i>
         </div>
       </div>
-      <div class="ops-kpi-meta">Terbayar bulan ini: Rp {{ number_format($stats['monthly_revenue'] ?? 0, 0, ',', '.') }}</div>
+      <div class="ops-kpi-meta">Butuh follow up atau reaktivasi</div>
     </div>
   </div>
 
@@ -932,19 +1160,19 @@
           <div class="ops-quick-grid">
             <a href="{{ route('admin.customers.index') }}" class="ops-quick-link">
               <span class="ops-quick-label">Pelanggan</span>
-              <i class='bx bx-right-arrow-alt'></i>
+              <span class="ops-action-badge"><i class='bx bx-right-arrow-alt'></i></span>
             </a>
             <a href="{{ route('admin.pppoe.index') }}" class="ops-quick-link">
               <span class="ops-quick-label">PPPoE</span>
-              <i class='bx bx-right-arrow-alt'></i>
+              <span class="ops-action-badge"><i class='bx bx-right-arrow-alt'></i></span>
             </a>
             <a href="{{ route('admin.olts.index') }}" class="ops-quick-link">
               <span class="ops-quick-label">OLT & ONT</span>
-              <i class='bx bx-right-arrow-alt'></i>
+              <span class="ops-action-badge"><i class='bx bx-right-arrow-alt'></i></span>
             </a>
             <a href="{{ route('admin.payments.review') }}" class="ops-quick-link">
               <span class="ops-quick-label">Pembayaran</span>
-              <i class='bx bx-right-arrow-alt'></i>
+              <span class="ops-action-badge"><i class='bx bx-right-arrow-alt'></i></span>
             </a>
           </div>
         </div>
