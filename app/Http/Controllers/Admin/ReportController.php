@@ -9,6 +9,7 @@ use App\Models\Area;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
@@ -180,7 +181,28 @@ class ReportController extends Controller
         $data = $query->orderBy('name')->get();
 
         $statusLabel = ['active'=>'Aktif','suspended'=>'Diisolir','provisioning'=>'Dalam Proses','failed'=>'Gagal','pending'=>'Pending'];
-        $filename = 'laporan_pelanggan_' . now()->format('Ymd_His') . '.csv';
+
+        $parts = ['laporan_pelanggan'];
+        if ($request->filled('area_id')) {
+            $areaName = Area::whereKey($request->area_id)->value('name');
+            if ($areaName) {
+                $parts[] = Str::slug($areaName, '-');
+            }
+        }
+        if ($request->filled('status')) {
+            $parts[] = Str::slug((string) $request->status, '-');
+        }
+        if ($request->filled('payment_status')) {
+            $paymentLabels = [
+                'approved' => 'sudah-bayar',
+                'pending' => 'pending',
+            ];
+            $parts[] = $paymentLabels[$request->payment_status] ?? Str::slug((string) $request->payment_status, '-');
+        }
+        if (count($parts) === 1) {
+            $parts[] = 'semua';
+        }
+        $filename = implode('_', $parts) . '_' . now()->format('Ymd_His') . '.csv';
 
         return response()->streamDownload(function () use ($data, $statusLabel) {
             $out = fopen('php://output', 'w');

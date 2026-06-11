@@ -915,7 +915,32 @@ class CustomerController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $filename = 'data_pelanggan_netking_' . now()->format('Ymd_His') . '.xlsx';
+        $parts = ['data_pelanggan'];
+
+        if ($request->filled('area_id')) {
+            $areaName = Area::whereKey($request->area_id)->value('name');
+            if ($areaName) {
+                $parts[] = Str::slug($areaName, '-');
+            }
+        }
+
+        if ($request->filled('status')) {
+            $parts[] = Str::slug((string) $request->status, '-');
+        }
+
+        if ($request->filled('payment_status')) {
+            $paymentLabels = [
+                'approved' => 'sudah-bayar',
+                'pending' => 'pending',
+            ];
+            $parts[] = $paymentLabels[$request->payment_status] ?? Str::slug((string) $request->payment_status, '-');
+        }
+
+        if (count($parts) === 1) {
+            $parts[] = 'semua';
+        }
+
+        $filename = implode('_', $parts) . '_' . now()->format('Ymd_His') . '.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(new CustomersExport($request), $filename);
     }
