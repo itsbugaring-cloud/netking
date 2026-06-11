@@ -29,8 +29,8 @@
   .cust-overview {
     display: grid;
     grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(160px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.35rem;
+    gap: .85rem;
+    margin-bottom: 1.1rem;
   }
   .cust-hero-card,
   .cust-stat-card {
@@ -42,10 +42,11 @@
     box-shadow: 0 16px 34px rgba(15, 23, 42, .06);
   }
   .cust-hero-card {
-    padding: 1.15rem 1.25rem;
+    padding: .95rem 1rem;
     background:
       radial-gradient(circle at top right, rgba(59, 130, 246, .12), transparent 38%),
       linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
+    min-height: 112px;
   }
   .cust-hero-kicker {
     font-size: .72rem;
@@ -55,42 +56,29 @@
     text-transform: uppercase;
     margin-bottom: .35rem;
   }
-  .cust-hero-title {
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: var(--txt);
-    line-height: 1.15;
-    margin-bottom: .4rem;
-  }
-  .cust-hero-desc {
-    font-size: .8rem;
-    color: var(--txt-3);
-    max-width: 48ch;
-    margin-bottom: .85rem;
-  }
   .cust-hero-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: .5rem;
+    gap: .4rem;
   }
   .cust-hero-pill {
     display: inline-flex;
     align-items: center;
     gap: .38rem;
-    padding: .45rem .72rem;
+    padding: .38rem .62rem;
     border-radius: 999px;
-    font-size: .74rem;
+    font-size: .72rem;
     font-weight: 700;
     color: var(--txt);
     background: color-mix(in srgb, var(--blue) 7%, var(--surface));
     border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--border));
   }
   .cust-stat-card {
-    padding: 1rem 1.05rem;
+    padding: .85rem .95rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 132px;
+    min-height: 112px;
   }
   .cust-stat-label {
     font-size: .72rem;
@@ -98,17 +86,17 @@
     color: var(--txt-3);
     text-transform: uppercase;
     letter-spacing: .06em;
-    margin-bottom: .55rem;
+    margin-bottom: .4rem;
   }
   .cust-stat-value {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
     line-height: 1;
     font-weight: 800;
     color: var(--txt);
-    margin-bottom: .4rem;
+    margin-bottom: .3rem;
   }
   .cust-stat-note {
-    font-size: .75rem;
+    font-size: .72rem;
     color: var(--txt-3);
   }
   .cust-stat-icon {
@@ -385,8 +373,6 @@
   <div class="cust-overview">
     <div class="cust-hero-card">
       <div class="cust-hero-kicker">Customer Workspace</div>
-      <div class="cust-hero-title">Data pelanggan lebih ringkas, cepat dibaca, dan enak difilter</div>
-      <div class="cust-hero-desc">Panel ini sekarang difokuskan untuk review cepat: status, area, dan identitas PPPoE bisa dipindai lebih cepat tanpa terasa penuh.</div>
       <div class="cust-hero-meta">
         <span class="cust-hero-pill"><i class='bx bx-layer'></i> {{ $customers->total() }} total data</span>
         <span class="cust-hero-pill"><i class='bx bx-map'></i> {{ $areaFilterName ?: 'Semua area' }}</span>

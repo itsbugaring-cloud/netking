@@ -17,9 +17,9 @@
   .quick-toolbar {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(260px, .8fr);
-    gap: 1rem;
+    gap: .85rem;
     align-items: stretch;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
   }
   .quick-toolbar-left {
     display: flex;
@@ -31,10 +31,10 @@
     position: relative;
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: 18px;
+    border-radius: 16px;
     background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
-    box-shadow: 0 14px 30px rgba(15, 23, 42, .05);
-    padding: 1rem 1.1rem;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, .04);
+    padding: .85rem .95rem;
   }
   .quick-search-panel {
     background:
@@ -49,18 +49,6 @@
     letter-spacing: .08em;
     margin-bottom: .35rem;
   }
-  .quick-panel-title {
-    font-size: 1rem;
-    font-weight: 800;
-    color: var(--txt);
-    margin-bottom: .3rem;
-  }
-  .quick-panel-desc {
-    font-size: .79rem;
-    color: var(--txt-3);
-    margin-bottom: .85rem;
-    max-width: 58ch;
-  }
   .quick-side-panel {
     display: flex;
     flex-direction: column;
@@ -69,10 +57,10 @@
   .quick-side-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: .7rem;
+    gap: .55rem;
   }
   .quick-mini-card {
-    padding: .82rem .88rem;
+    padding: .68rem .75rem;
     border-radius: 14px;
     background: color-mix(in srgb, var(--blue) 6%, var(--surface));
     border: 1px solid color-mix(in srgb, var(--blue) 12%, var(--border));
@@ -86,13 +74,13 @@
     margin-bottom: .25rem;
   }
   .quick-mini-value {
-    font-size: 1.15rem;
+    font-size: 1rem;
     font-weight: 800;
     color: var(--txt);
     line-height: 1.1;
   }
   .quick-mini-note {
-    font-size: .73rem;
+    font-size: .7rem;
     color: var(--txt-3);
     margin-top: .22rem;
   }
@@ -246,11 +234,11 @@
   .quick-customer-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: .7rem;
-    margin-top: 1rem;
+    gap: .55rem;
+    margin-top: .8rem;
   }
   .quick-customer-chip {
-    padding: .8rem .9rem;
+    padding: .68rem .75rem;
     border-radius: 14px;
     background: rgba(255,255,255,.58);
     border: 1px solid color-mix(in srgb, var(--blue) 14%, var(--border));
@@ -265,7 +253,7 @@
     margin-bottom: .25rem;
   }
   .quick-customer-chip .value {
-    font-size: .84rem;
+    font-size: .8rem;
     font-weight: 700;
     color: var(--txt);
     line-height: 1.25;
@@ -350,8 +338,6 @@
   <form method="GET" action="{{ route('admin.payments.quick') }}" class="quick-toolbar">
     <div class="quick-search-panel">
       <div class="quick-panel-kicker">Lookup Pelanggan</div>
-      <div class="quick-panel-title">Cari pelanggan lalu tandai pembayaran tanpa pindah-pindah halaman</div>
-      <div class="quick-panel-desc">Pencarian, form input, dan edit tanggal pembayaran manual ada di satu workspace supaya alurnya tetap cepat.</div>
       <div class="quick-toolbar-left">
         <div class="nk-search-wrap">
           <i class='bx bx-search'></i>
@@ -365,10 +351,7 @@
       <input type="hidden" name="manual_year" value="{{ $manualYear ?? now()->year }}">
     </div>
     <div class="quick-side-panel">
-      <div>
-        <div class="quick-panel-kicker">Snapshot</div>
-        <div class="quick-panel-title">Ringkasan kerja cepat</div>
-      </div>
+      <div class="quick-panel-kicker">Snapshot</div>
       <div class="quick-side-grid">
         <div class="quick-mini-card">
           <div class="quick-mini-label">Periode Manual</div>
