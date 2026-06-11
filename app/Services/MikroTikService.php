@@ -505,14 +505,13 @@ class MikroTikService
      */
     public function getProfiles(): array
     {
-        if (!$this->connect()) {
-            throw new Exception('Not connected to MikroTik at ' . $this->host);
+        $profiles = $this->getPppoeProfiles();
+
+        if (($profiles['success'] ?? false) !== true) {
+            throw new Exception((string) ($profiles['error'] ?? ('Failed to get PPPoE profiles from MikroTik at ' . $this->host)));
         }
 
-        $query = new Query('/ppp/profile/print');
-        $response = $this->client->query($query)->read();
-
-        return $response;
+        return is_array($profiles['data'] ?? null) ? $profiles['data'] : [];
     }
 
     /**

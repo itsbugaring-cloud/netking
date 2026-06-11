@@ -160,7 +160,13 @@ class PackageController extends Controller
                     continue;
                 }
 
-                $profiles = $mikrotik->getProfiles();
+                $profilesResult = $mikrotik->getPppoeProfiles();
+                if (($profilesResult['success'] ?? false) !== true) {
+                    $errors[] = "{$area->name}: " . ($profilesResult['error'] ?? 'gagal membaca profile MikroTik');
+                    continue;
+                }
+
+                $profiles = $profilesResult['data'] ?? [];
                 if (!is_array($profiles)) {
                     $errors[] = "{$area->name}: data profile dari MikroTik tidak valid";
                     continue;
