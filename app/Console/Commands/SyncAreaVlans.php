@@ -109,7 +109,8 @@ class SyncAreaVlans extends Command
 
             // Check /interface/vlan for this interface name
             $query = new Query('/interface/vlan/print');
-            $query->where('name', $interfaceName);
+            $query->equal('.proplist', 'name,vlan-id,interface,comment');
+            $query->equal('name', $interfaceName);
             $vlans = $client->query($query)->read();
 
             if (!empty($vlans) && isset($vlans[0]['vlan-id'])) {
@@ -118,13 +119,18 @@ class SyncAreaVlans extends Command
 
             // Maybe PPPoE is on a bridge that has a VLAN — check bridge ports
             $query = new Query('/interface/bridge/port/print');
-            $query->where('bridge', $interfaceName);
+            $query->equal('.proplist', 'bridge,interface');
+            $query->equal('bridge', $interfaceName);
             $ports = $client->query($query)->read();
 
             foreach ($ports as $port) {
                 $portInterface = $port['interface'] ?? '';
+                if ($portInterface === '' || $this->looksLikeMgmt($portInterface)) {
+                    continue;
+                }
                 $query2 = new Query('/interface/vlan/print');
-                $query2->where('name', $portInterface);
+                $query2->equal('.proplist', 'name,vlan-id,interface,comment');
+                $query2->equal('name', $portInterface);
                 $vlanCheck = $client->query($query2)->read();
                 if (!empty($vlanCheck) && isset($vlanCheck[0]['vlan-id'])) {
                     return (string) $vlanCheck[0]['vlan-id'];
