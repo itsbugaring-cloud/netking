@@ -112,6 +112,10 @@ class PaymentController extends Controller
      */
     public function manualPaymentStore(Request $request, Customer $customer)
     {
+        if ($customer->is_free) {
+            return back()->with('error', 'Pelanggan gratis tidak perlu dicatat pembayaran manual.');
+        }
+
         $validated = $request->validate([
             'periode_bulan' => 'required|integer|min:1|max:12',
             'periode_tahun' => 'required|integer|min:2020|max:2030',

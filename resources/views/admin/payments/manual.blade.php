@@ -33,8 +33,44 @@
   .customer-header-info h3 {
     margin: 0; font-size: 1rem; font-weight: 700; color: var(--txt);
   }
+  .customer-name-row {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+  }
   .customer-header-info .meta {
     font-size: .8rem; color: var(--txt-3); margin-top: 2px;
+  }
+  .free-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, #10b981 14%, var(--surface));
+    border: 1px solid color-mix(in srgb, #10b981 30%, var(--border));
+    color: #047857;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .free-warning {
+    margin-bottom: 1rem;
+    padding: .9rem 1rem;
+    border: 1px solid color-mix(in srgb, #10b981 30%, var(--border));
+    border-radius: 10px;
+    background: color-mix(in srgb, #10b981 8%, var(--surface));
+    color: #065f46;
+    font-size: .82rem;
+  }
+  .free-warning strong {
+    color: #047857;
+  }
+  .disabled-form-shell {
+    opacity: .65;
+    pointer-events: none;
   }
   .form-grid {
     display: grid;
@@ -128,11 +164,16 @@
       {{ strtoupper(substr($customer->name, 0, 1)) }}
     </div>
     <div class="customer-header-info">
-      <h3>{{ $customer->name }}</h3>
+      <div class="customer-name-row">
+        <h3>{{ $customer->name }}</h3>
+        @if($customer->is_free)
+        <span class="free-badge"><i class='bx bx-gift'></i> Gratis</span>
+        @endif
+      </div>
       <div class="meta">
         {{ $customer->area->name ?? '—' }}
         · {{ $customer->package->name ?? '—' }}
-        · Rp {{ number_format($customer->package_price ?? $customer->package->price ?? 0, 0, ',', '.') }}
+        · {{ $customer->is_free ? 'Tidak ditagih' : 'Rp ' . number_format($customer->package_price ?? $customer->package->price ?? 0, 0, ',', '.') }}
       </div>
     </div>
   </div>
@@ -144,12 +185,17 @@
       </span>
     </div>
     <div class="ms-panel-body">
+      @if($customer->is_free)
+      <div class="free-warning">
+        <strong>Pelanggan ini gratis.</strong> Tidak perlu catat pembayaran manual untuk pelanggan ini.
+      </div>
+      @endif
       <div style="margin-bottom:1rem;padding:.85rem 1rem;border:1px solid color-mix(in srgb, var(--blue) 20%, var(--border));border-radius:10px;background:color-mix(in srgb, var(--blue) 6%, var(--surface));font-size:.82rem;color:var(--txt-3);">
         Jika salah input tanggal transfer, ubah dari daftar pembayaran manual. Form ini tetap mencatat entri baru.
       </div>
       <form action="{{ route('admin.payments.manual.store', $customer) }}" method="POST">
         @csrf
-
+        <fieldset @disabled($customer->is_free) class="{{ $customer->is_free ? 'disabled-form-shell' : '' }}">
         <div class="form-grid">
           {{-- Periode Bulan --}}
           <div class="form-group">
@@ -178,7 +224,7 @@
           <div class="form-group">
             <label for="jumlah">Jumlah (Rp)</label>
             <input type="number" name="jumlah" id="jumlah"
-                   value="{{ old('jumlah', $customer->package_price ?? $customer->package->price ?? 0) }}"
+                   value="{{ old('jumlah', $customer->is_free ? 0 : ($customer->package_price ?? $customer->package->price ?? 0)) }}"
                    min="0" step="1000" required>
           </div>
 
@@ -225,11 +271,12 @@
             <textarea name="catatan" id="catatan" placeholder="Catatan tambahan...">{{ old('catatan') }}</textarea>
           </div>
         </div>
+        </fieldset>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
           <a href="{{ route('admin.customers.show', $customer) }}" class="ms-btn-ghost">Batal</a>
-          <button type="submit" class="ms-btn">
-            <i class='bx bx-check'></i> Simpan Pembayaran
+          <button type="submit" class="ms-btn" @disabled($customer->is_free)>
+            <i class='bx {{ $customer->is_free ? 'bx-block' : 'bx-check' }}'></i> {{ $customer->is_free ? 'Pelanggan Gratis' : 'Simpan Pembayaran' }}
           </button>
         </div>
       </form>
