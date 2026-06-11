@@ -117,26 +117,6 @@ class SyncAreaVlans extends Command
                 return (string) $vlans[0]['vlan-id'];
             }
 
-            // Maybe PPPoE is on a bridge that has a VLAN — check bridge ports
-            $query = new Query('/interface/bridge/port/print');
-            $query->equal('.proplist', 'bridge,interface');
-            $query->equal('bridge', $interfaceName);
-            $ports = $client->query($query)->read();
-
-            foreach ($ports as $port) {
-                $portInterface = $port['interface'] ?? '';
-                if ($portInterface === '' || $this->looksLikeMgmt($portInterface)) {
-                    continue;
-                }
-                $query2 = new Query('/interface/vlan/print');
-                $query2->equal('.proplist', 'name,vlan-id,interface,comment');
-                $query2->equal('name', $portInterface);
-                $vlanCheck = $client->query($query2)->read();
-                if (!empty($vlanCheck) && isset($vlanCheck[0]['vlan-id'])) {
-                    return (string) $vlanCheck[0]['vlan-id'];
-                }
-            }
-
             return null;
         } catch (\Exception $e) {
             return null;
@@ -149,57 +129,7 @@ class SyncAreaVlans extends Command
             return null;
         }
 
-        $directVlan = $this->getVlanId($mikrotik, $pppoeInterface);
-        if ($directVlan !== null) {
-            return $directVlan;
-        }
-
-        try {
-            $client = $this->getClient($mikrotik);
-            $query = new Query('/interface/vlan/print');
-            $query->equal('.proplist', 'name,vlan-id,comment');
-            $vlans = $client->query($query)->read();
-
-            $best = null;
-            $bestScore = -1;
-
-            foreach ($vlans as $vlan) {
-                $name = trim((string) ($vlan['name'] ?? ''));
-                $comment = trim((string) ($vlan['comment'] ?? ''));
-                $vlanId = trim((string) ($vlan['vlan-id'] ?? ''));
-
-                if ($name === '' || $vlanId === '') {
-                    continue;
-                }
-
-                if ($this->looksLikeMgmt($name) || $this->looksLikeMgmt($comment)) {
-                    continue;
-                }
-
-                $score = 0;
-                if (strcasecmp($name, $pppoeInterface) === 0) {
-                    $score += 100;
-                }
-                if (str_contains(strtolower($name), 'pppoe')) {
-                    $score += 50;
-                }
-                if (str_contains(strtolower($comment), 'pppoe')) {
-                    $score += 30;
-                }
-                if (strcasecmp($name, $pppoeInterface) !== 0 && str_contains(strtolower($pppoeInterface), strtolower($name))) {
-                    $score += 15;
-                }
-
-                if ($score > $bestScore) {
-                    $bestScore = $score;
-                    $best = $vlanId;
-                }
-            }
-
-            return $bestScore > 0 ? $best : null;
-        } catch (\Exception $e) {
-            return null;
-        }
+        return $this->getVlanId($mikrotik, $pppoeInterface);
     }
 
     private function pickPppoeInterface(array $pppoeServers): ?string
