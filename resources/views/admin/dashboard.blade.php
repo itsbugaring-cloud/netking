@@ -655,7 +655,6 @@
       <div class="ops-hero-copy">
         <div class="ops-eyebrow">Ringkasan Operasional</div>
         <h1 class="ops-hero-title">Dashboard</h1>
-        <div class="ops-hero-desc">Pantau pelanggan, pembayaran, dan kesehatan jaringan dalam satu tampilan yang lebih padat, lebih cepat dibaca, dan lebih terasa seperti pusat kendali.</div>
       </div>
       <div class="ops-head-actions">
         <span class="ops-pill"><i class='bx bx-time'></i> Auto-refresh 30 dtk</span>
