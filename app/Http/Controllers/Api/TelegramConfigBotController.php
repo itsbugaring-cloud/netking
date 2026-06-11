@@ -12,6 +12,7 @@ use App\Services\TelegramConfigDraftValidator;
 use App\Services\MikroTikService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -22,6 +23,7 @@ class TelegramConfigBotController extends Controller
 {
     private const BOT_DIR = 'telegram-config-bot';
     private const DEFAULT_PPPOE_PASSWORD = 'netking';
+    private const LAST_PPPOE_CACHE_TTL_SECONDS = 60;
 
     private const FLOW_FIELDS = [
         'area_id',
@@ -785,7 +787,7 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
-        $this->finishProgressMessage($chatId, $loadingMessageId, true, 'SN cocok');
+        $this->finishProgressMessage($chatId, $loadingMessageId, true, 'SN cocok, draft siap disubmit');
 
         if ($incomingMessageId > 0) {
             $this->deleteMessage($chatId, $incomingMessageId);
@@ -949,6 +951,13 @@ class TelegramConfigBotController extends Controller
         // Auto push to MikroTik (tanpa approve manual).
         $push = $this->pushSecretToMikrotik($payload);
         if (($push['success'] ?? false) === true) {
+            $this->clearLastPppoeHintCache((int) ($draft['area_id'] ?? 0));
+            $this->cacheLastPppoeHint((int) ($draft['area_id'] ?? 0), [
+                'name' => (string) ($draft['nama'] ?? '-'),
+                'pppoe_user' => (string) ($draft['pppoe_user'] ?? ''),
+                'source' => 'fresh',
+            ]);
+
             $payload['status'] = self::STATUS_MENUNGGU_PPPOE_UP;
             $payload['pipeline']['menunggu_push_olt'] = now()->toDateTimeString();
             $payload['pipeline']['menunggu_pppoe_up'] = now()->toDateTimeString();
@@ -1968,6 +1977,12 @@ class TelegramConfigBotController extends Controller
 
         $expectedPrefix = $this->detectAreaPppoePrefix($areaId, $dbLatest?->pppoe_user);
 
+        $cacheKey = $this->lastPppoeCacheKey($areaId);
+        $cached = Cache::get($cacheKey);
+        if (is_array($cached) && !empty($cached['pppoe_user'])) {
+            return $cached;
+        }
+
         // Prioritaskan data live dari MikroTik supaya hint "secret terakhir" akurat.
         $area = Area::query()->find($areaId);
         if ($area) {
@@ -1980,11 +1995,13 @@ class TelegramConfigBotController extends Controller
                         $best = $this->pickLatestRouterSecret($rows, $expectedPrefix);
 
                         if (is_array($best)) {
-                            return [
+                            $result = [
                                 'name' => trim((string) ($best['comment'] ?? '')) ?: '-',
                                 'pppoe_user' => trim((string) ($best['name'] ?? '')),
                                 'source' => 'router',
                             ];
+                            $this->cacheLastPppoeHint($areaId, $result);
+                            return $result;
                         }
                     }
                 }
@@ -1997,11 +2014,40 @@ class TelegramConfigBotController extends Controller
             return null;
         }
 
-        return [
+        $result = [
             'name' => (string) $dbLatest->name,
             'pppoe_user' => (string) $dbLatest->pppoe_user,
             'source' => 'db',
         ];
+        $this->cacheLastPppoeHint($areaId, $result);
+        return $result;
+    }
+
+    private function lastPppoeCacheKey(int $areaId): string
+    {
+        return 'telegram_config_bot:last_pppoe_hint:area:' . $areaId;
+    }
+
+    private function cacheLastPppoeHint(int $areaId, ?array $payload): void
+    {
+        if ($areaId <= 0 || !is_array($payload) || empty($payload['pppoe_user'])) {
+            return;
+        }
+
+        Cache::put(
+            $this->lastPppoeCacheKey($areaId),
+            $payload,
+            now()->addSeconds(self::LAST_PPPOE_CACHE_TTL_SECONDS)
+        );
+    }
+
+    private function clearLastPppoeHintCache(int $areaId): void
+    {
+        if ($areaId <= 0) {
+            return;
+        }
+
+        Cache::forget($this->lastPppoeCacheKey($areaId));
     }
 
     private function pickLatestRouterSecret(array $rows, ?string $expectedPrefix = null): ?array
