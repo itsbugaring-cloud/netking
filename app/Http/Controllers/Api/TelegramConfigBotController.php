@@ -328,8 +328,8 @@ class TelegramConfigBotController extends Controller
 
         $this->sendMessage(
             $chatId,
-            "📝 Siap, kita mulai ya.\n" .
-            "Pilih area dulu, nanti saya lanjut bantu step berikutnya.",
+            "┌ Input pelanggan\n" .
+            "└ Pilih area dulu ya.",
             [
                 'reply_markup' => [
                     'remove_keyboard' => true,
@@ -372,11 +372,11 @@ class TelegramConfigBotController extends Controller
             $state['updated_at'] = now()->toDateTimeString();
             $this->saveState($chatId, $state);
             $areaVlan = trim((string) ($area->vlan_pppoe ?? ''));
-            $msg = "✅ Area: {$area->name}";
+            $msg = "✅ {$area->name}";
             if ($areaVlan !== '') {
                 $msg .= "\nVLAN PPPoE: {$areaVlan}";
             }
-            $msg .= "\nSekarang pilih paketnya ya.";
+            $msg .= "\nLanjut pilih paket.";
             $this->sendMessage($chatId, $msg);
             $this->promptCurrentField($chatId, $state);
             return;
@@ -392,7 +392,7 @@ class TelegramConfigBotController extends Controller
         $this->saveState($chatId, $state);
 
         $areaVlan = trim((string) ($area->vlan_pppoe ?? ''));
-        $msg = "✅ Area: {$area->name}";
+        $msg = "✅ {$area->name}";
         if ($areaVlan !== '') {
             $msg .= "\nVLAN PPPoE: {$areaVlan}";
         }
@@ -643,8 +643,8 @@ class TelegramConfigBotController extends Controller
             $areaName = (string) ($state['draft']['area_name'] ?? '-');
             $areaVlan = trim((string) ($state['draft']['area_vlan_pppoe'] ?? ''));
             $hint = $lastPppoe !== null
-                ? "\nArea: {$areaName}\nHint secret terakhir: {$lastPppoe['pppoe_user']} ({$lastPppoe['name']})"
-                : "\nArea: {$areaName}\nHint: belum ada secret sebelumnya.";
+                ? "\nArea: {$areaName}\nHint terakhir: {$lastPppoe['pppoe_user']} ({$lastPppoe['name']})"
+                : "\nArea: {$areaName}\nHint terakhir: belum ada.";
             if ($areaVlan !== '') {
                 $hint .= "\nVLAN PPPoE: {$areaVlan}";
             }
@@ -1123,21 +1123,21 @@ class TelegramConfigBotController extends Controller
         $areaVlan = trim((string) ($draft['area_vlan_pppoe'] ?? ''));
 
         $lines = [
-            "🧾 Draft Siap Cek",
+            "┌ Draft Siap Cek",
             '',
-            'Area: ' . ($draft['area_name'] ?? '-'),
-            'VLAN PPPoE: ' . ($areaVlan !== '' ? $areaVlan : '-'),
-            'Nama: ' . ($draft['nama'] ?? '-'),
-            'No HP: ' . ($draft['no_hp'] ?? '-'),
-            'SN ONT: ' . ($draft['sn_ont'] ?? '-'),
-            'PPPoE User: ' . ($draft['pppoe_user'] ?? '-'),
-            'Paket: ' . ($draft['paket_kode'] ?? '-') . ' (' . ($draft['paket_name'] ?? '-') . ')',
-            'Harga: Rp ' . $price,
-            'Tanggal Pasang: ' . $this->formatDateDisplay((string) ($draft['tanggal_pasang'] ?? now()->toDateString())),
+            '├ Area: ' . ($draft['area_name'] ?? '-'),
+            '├ VLAN PPPoE: ' . ($areaVlan !== '' ? $areaVlan : '-'),
+            '├ Nama: ' . ($draft['nama'] ?? '-'),
+            '├ No HP: ' . ($draft['no_hp'] ?? '-'),
+            '├ SN ONT: ' . ($draft['sn_ont'] ?? '-'),
+            '├ PPPoE User: ' . ($draft['pppoe_user'] ?? '-'),
+            '├ Paket: ' . ($draft['paket_kode'] ?? '-') . ' (' . ($draft['paket_name'] ?? '-') . ')',
+            '├ Harga: Rp ' . $price,
+            '└ Tanggal Pasang: ' . $this->formatDateDisplay((string) ($draft['tanggal_pasang'] ?? now()->toDateString())),
             '',
-            'Dibuat oleh:',
-            'Nama: ' . (data_get($draft, 'requested_by.name', '-') ?: '-'),
-            'Username: @' . (data_get($draft, 'requested_by.telegram_username', '-') ?: '-'),
+            'Operator:',
+            '• Nama: ' . (data_get($draft, 'requested_by.name', '-') ?: '-'),
+            '• Username: @' . (data_get($draft, 'requested_by.telegram_username', '-') ?: '-'),
             '',
             'Foto SN: ' . $fotoOk,
             'Validasi SN: ' . $snOk,
@@ -1191,11 +1191,12 @@ class TelegramConfigBotController extends Controller
         $name = (string) ($from['first_name'] ?? 'Partner');
         $username = (string) ($from['username'] ?? '-');
 
-        $text = "Halo {$name} 👋\n\n" .
-            "Kalau mau input pelanggan baru, langsung klik *Input Data Pelanggan* ya.\n" .
-            "Kalau perlu contoh, pakai /template.\n" .
-            "Kalau perlu panduan, pakai /guide.\n\n" .
-            "Username kamu: @{$username}";
+        $text = "⚡ NETKING-SENUT\n\n" .
+            "Halo {$name} 👋\n" .
+            "Langsung pilih menu di bawah buat mulai.\n\n" .
+            "Shortcut:\n" .
+            "• /template\n" .
+            "• /guide";
 
         $this->sendMessage(
             $chatId,
@@ -1228,12 +1229,9 @@ class TelegramConfigBotController extends Controller
     private function mainKeyboardRows(): array
     {
         return [
-            ['📝 Input Data Pelanggan', '📷 Kirim Foto SN'],
-            ['📋 Lihat Draft', '🗂 History Saya'],
-            ['📡 Cek Status', '🧾 Template Draft'],
-            ['📚 Panduan MikroTik PPPoE'],
-            ['✅ Submit'],
-            ['♻️ Reset Draft'],
+            ['📝 Input', '📷 Foto SN', '📋 Draft'],
+            ['🗂 History', '📡 Status', '✅ Submit'],
+            ['🧾 Template', '📚 Guide', '♻️ Reset'],
         ];
     }
 
