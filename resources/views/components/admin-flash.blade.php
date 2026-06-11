@@ -75,6 +75,30 @@ foreach ($types as $type => $config) {
         margin-bottom: 18px;
     }
 
+    @keyframes nk-slide-up {
+        from {
+            opacity: 0;
+            transform: translateY(12px) scale(.99);
+            filter: blur(2px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+    }
+
+    @keyframes nk-soft-pulse {
+        0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 0 0 0 rgba(37,99,235,0.00); }
+        50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 0 0 10px rgba(37,99,235,0.03); }
+    }
+
+    @keyframes nk-gradient-flow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
     .nk-banner,
     .nk-flash-card,
     .nk-inline-alert,
@@ -86,6 +110,7 @@ foreach ($types as $type => $config) {
         box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
         color: #0f172a !important;
         overflow: hidden;
+        animation: nk-slide-up .36s cubic-bezier(.2,.8,.2,1) both;
     }
 
     .nk-banner::before,
@@ -129,6 +154,7 @@ foreach ($types as $type => $config) {
         background: color-mix(in srgb, var(--nk-tone, #3b82f6) 12%, white);
         border: 1px solid color-mix(in srgb, var(--nk-tone, #3b82f6) 18%, #dbeafe);
         box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+        animation: nk-soft-pulse 3.5s ease-in-out infinite;
     }
 
     .nk-banner-kicker,
@@ -186,6 +212,7 @@ foreach ($types as $type => $config) {
         font-size: .8rem;
         font-weight: 700;
         transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+        background-size: 180% 180%;
     }
 
     .nk-banner-link:hover {
@@ -218,6 +245,11 @@ foreach ($types as $type => $config) {
         display: flex;
         align-items: flex-start;
         gap: 14px;
+        background-image: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%), linear-gradient(90deg, rgba(59,130,246,.04), rgba(34,197,94,.03), rgba(245,158,11,.03));
+        background-size: auto, 180% 180%;
+        animation:
+            nk-slide-up .36s cubic-bezier(.2,.8,.2,1) both,
+            nk-gradient-flow 7s ease-in-out infinite;
     }
 
     .nk-flash-body {
@@ -230,13 +262,20 @@ foreach ($types as $type => $config) {
     .nk-flash-card[data-tone="warning"] { --nk-tone: #f59e0b; border-color: #fde68a !important; }
     .nk-flash-card[data-tone="info"]    { --nk-tone: #3b82f6; border-color: #bfdbfe !important; }
 
+    .nk-flash-card:nth-child(1) { animation-delay: .02s, .02s; }
+    .nk-flash-card:nth-child(2) { animation-delay: .08s, .08s; }
+    .nk-flash-card:nth-child(3) { animation-delay: .14s, .14s; }
+    .nk-flash-card:nth-child(4) { animation-delay: .20s, .20s; }
+
     .nk-banner[data-tone="success"] { --nk-tone: #22c55e; border-color: #ccefd8 !important; }
     .nk-banner[data-tone="danger"]  { --nk-tone: #ef4444; border-color: #fecaca !important; }
     .nk-banner[data-tone="warning"] { --nk-tone: #f59e0b; border-color: #fde68a !important; }
     .nk-banner[data-tone="info"]    { --nk-tone: #3b82f6; border-color: #bfdbfe !important; }
+    .nk-banner { background-size: 180% 180%; animation: nk-slide-up .38s cubic-bezier(.2,.8,.2,1) both, nk-gradient-flow 8s ease-in-out infinite; }
 
     .alert:not(.nk-plain-alert) {
         padding: 14px 16px 14px 18px !important;
+        animation: nk-slide-up .34s cubic-bezier(.2,.8,.2,1) both;
     }
 
     .alert:not(.nk-plain-alert) .d-flex {
@@ -289,6 +328,21 @@ foreach ($types as $type => $config) {
         .nk-banner-link {
             width: 100%;
             justify-content: center;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .nk-banner,
+        .nk-flash-card,
+        .alert:not(.nk-plain-alert),
+        .nk-banner-icon,
+        .nk-flash-icon {
+            animation: none !important;
+        }
+        .nk-banner-link,
+        .nk-banner-dismiss,
+        .nk-flash-dismiss {
+            transition: none !important;
         }
     }
 </style>
@@ -379,7 +433,7 @@ document.querySelectorAll('[data-autodismiss]').forEach(function(el) {
     function hideCard() {
         el.style.transition = 'opacity .22s ease, transform .22s ease';
         el.style.opacity = '0';
-        el.style.transform = 'translateY(-4px)';
+        el.style.transform = 'translateY(-8px) scale(.985)';
         setTimeout(function() { el.remove(); }, 220);
     }
 
