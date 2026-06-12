@@ -26,7 +26,7 @@
         </div>
         @if($selectedArea)
         <div class="ms-page-actions">
-            <button type="button" class="ms-btn" onclick="new bootstrap.Modal(document.getElementById('backupModal')).show()">
+            <button type="button" class="ms-btn" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('backupModal')).show()">
                 <i class='bx bx-download'></i> Buat Backup
             </button>
         </div>
@@ -152,25 +152,19 @@
                 </div>
                 <div class="modal-body">
                     <p style="color:var(--txt-3);margin-bottom:.75rem;">Pilih tipe backup untuk router <strong>{{ $selectedArea->name }}</strong>:</p>
-                    <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
-                        <label class="form-selectgroup-item flex-fill">
-                            <input type="radio" name="type" value="text" class="form-selectgroup-input" checked>
-                            <div class="form-selectgroup-label d-flex align-items-center p-3">
-                                <div class="me-3"><i class='bx bx-file' style="font-size:1.5rem;"></i></div>
-                                <div>
-                                    <strong>Text Export (.rsc)</strong>
-                                    <div style="font-size:.78rem;color:var(--txt-3);">Script text, bisa di-download & dibaca</div>
-                                </div>
+                    <div class="d-flex flex-column gap-3">
+                        <label class="form-check p-3 rounded" style="border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 1rem; margin: 0;">
+                            <input type="radio" name="type" value="text" class="form-check-input mt-0" checked style="width: 1.25rem; height: 1.25rem;">
+                            <div>
+                                <div style="font-weight: 600; color: var(--txt);"><i class='bx bx-file'></i> Text Export (.rsc)</div>
+                                <div style="font-size: .78rem; color: var(--txt-3);">Script text, bisa di-download & dibaca</div>
                             </div>
                         </label>
-                        <label class="form-selectgroup-item flex-fill">
-                            <input type="radio" name="type" value="binary" class="form-selectgroup-input">
-                            <div class="form-selectgroup-label d-flex align-items-center p-3">
-                                <div class="me-3"><i class='bx bx-archive' style="font-size:1.5rem;"></i></div>
-                                <div>
-                                    <strong>Binary Backup (.backup)</strong>
-                                    <div style="font-size:.78rem;color:var(--txt-3);">Full restore, tersimpan di router</div>
-                                </div>
+                        <label class="form-check p-3 rounded" style="border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 1rem; margin: 0;">
+                            <input type="radio" name="type" value="binary" class="form-check-input mt-0" style="width: 1.25rem; height: 1.25rem;">
+                            <div>
+                                <div style="font-weight: 600; color: var(--txt);"><i class='bx bx-archive'></i> Binary Backup (.backup)</div>
+                                <div style="font-size: .78rem; color: var(--txt-3);">Full restore, tersimpan di router</div>
                             </div>
                         </label>
                     </div>

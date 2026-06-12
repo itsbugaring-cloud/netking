@@ -324,7 +324,7 @@
     }
 
     function fetchTraffic() {
-        const areaId = areaSelect.value;
+        const areaId = $(areaSelect).val();
         if (!areaId) return;
 
         fetch('{{ route("admin.pppoe.traffic") }}?area_id=' + areaId)
@@ -338,7 +338,7 @@
                     ifaceSelect.style.display = 'inline-block';
                 }
 
-                const selIface = ifaceSelect.value;
+                const selIface = $(ifaceSelect).val();
                 const ifaceData = res.data.find(i => i.name === selIface);
 
                 if (ifaceData) {
@@ -371,12 +371,12 @@
             .catch(err => console.error('Traffic fetch error:', err));
     }
 
-    areaSelect.addEventListener('change', function() {
+    $(areaSelect).on('change', function() {
         clearInterval(trafficTimer);
         timeLabels = []; rxData = []; txData = [];
         ifaceSelect.innerHTML = '';
         
-        if (this.value) {
+        if ($(this).val()) {
             emptyState.style.display = 'none';
             chartContainer.style.display = 'block';
             metricsContainer.style.display = 'flex';
@@ -390,7 +390,7 @@
         }
     });
 
-    ifaceSelect.addEventListener('change', function() {
+    $(ifaceSelect).on('change', function() {
         // Reset chart when interface changes
         timeLabels = []; rxData = []; txData = [];
         if (chartObj) chartObj.update();
@@ -400,7 +400,7 @@
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             clearInterval(trafficTimer);
-        } else if (areaSelect.value) {
+        } else if ($(areaSelect).val()) {
             trafficTimer = setInterval(fetchTraffic, 3000);
         }
     });
