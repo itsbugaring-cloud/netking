@@ -216,40 +216,71 @@
                   <button type="button" class="ms-btn-ghost" id="btn-telegram-webhook"><i class='bx bx-link'></i> Set Webhook</button>
                 </div>
               </form>
-            </div>
-
+            </div>            
+            
             <!-- Tab Panduan MikroTik -->
             <div class="tab-pane fade" id="tab-mikrotik">
-              <div class="d-flex align-items-center mb-3">
-                <div class="ms-3">
-                  <h5 class="mb-1" style="font-size: 1.1rem; font-weight: 600;">Instruksi Setup MikroTik</h5>
-                  <p class="text-muted mb-0" style="font-size: 0.85rem;">Simpan dan jalankan perintah ini di Terminal Winbox untuk mengatur fitur otomatisasi Netking.</p>
+              <div class="text-center mb-4">
+                <i class='bx bx-terminal' style="font-size: 3rem; color: var(--blue); margin-bottom: 0.5rem;"></i>
+                <h4 style="font-weight: 700; color: var(--txt);">Script MikroTik Otomatis</h4>
+                <p style="color: var(--txt-3); max-width: 500px; margin: 0 auto; font-size: 0.9rem;">
+                  Tinggal *Copy-Paste* script di bawah ini ke <strong>New Terminal</strong> di Winbox Akang untuk mengatur semua keperluan integrasi Netking.
+                </p>
+              </div>
+
+              <!-- Script 1: Isolir -->
+              <div class="card mb-4" style="border-radius: 12px; border: 1px solid var(--border); background: var(--surface); overflow: hidden;">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background: color-mix(in srgb, var(--red) 5%, var(--surface-2)); border-bottom: 1px solid var(--border); padding: 1rem 1.25rem;">
+                  <div class="d-flex align-items-center gap-2">
+                    <div style="width: 32px; height: 32px; background: var(--red); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
+                    <div>
+                      <h6 class="mb-0" style="font-weight: 700; color: var(--txt);">Script Isolir (Redirect Pelanggan Nunggak)</h6>
+                      <div style="font-size: 0.75rem; color: var(--txt-3);">Memblokir internet pelanggan belum bayar & memunculkan halaman peringatan.</div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-primary" onclick="copyScript('script-isolir', this)">
+                    <i class='bx bx-copy'></i> Copy Script
+                  </button>
+                </div>
+                <div class="card-body p-0">
+                  <pre id="script-isolir" class="m-0 p-3" style="background: #1e1e1e; color: #569cd6; font-size: 0.85rem; border-radius: 0;"><code><span style="color:#6a9955;"># 1. Pastikan Pelanggan Isolir tetap bisa akses Server Netking (Ganti IP_SERVER_VPS dengan IP VPS Akang)</span>
+/ip firewall filter
+add action=accept chain=forward comment="BYPASS SERVER NETKING" dst-address=<span style="color:#ce9178;">IP_SERVER_VPS</span> src-address-list=isolir
+
+<span style="color:#6a9955;"># 2. Redirect port 80 (HTTP) ke Landing Page Isolir Netking</span>
+/ip firewall nat
+add action=dst-nat chain=dstnat comment="REDIRECT ISOLIR KE NETKING" dst-port=80 protocol=tcp src-address-list=isolir to-addresses=<span style="color:#ce9178;">IP_SERVER_VPS</span> to-ports=80
+
+<span style="color:#6a9955;"># 3. Blokir sisa trafik (HTTPS, Game, Sosmed) untuk pelanggan Isolir</span>
+/ip firewall filter
+add action=drop chain=forward comment="DROP KONEKSI ISOLIR" src-address-list=isolir</code></pre>
+                </div>
+                <div class="card-footer" style="background: var(--surface-2); padding: 0.75rem 1.25rem; font-size: 0.8rem; color: var(--orange);">
+                  <i class='bx bx-info-circle'></i> <strong>Penting:</strong> Setelah di-paste, buka <strong>IP > Firewall > Filter Rules</strong> & <strong>NAT</strong>, lalu pastikan rule "REDIRECT" dan "DROP" ini berada di urutan <strong>paling atas</strong> agar tidak tertimpa rule yang lain.
                 </div>
               </div>
 
-              <div class="p-3 mb-4 rounded" style="background: var(--surface-2); border: 1px solid var(--border);">
-                <h6 class="mb-2" style="font-weight: 600; color: var(--txt);"><i class='bx bx-block text-danger me-1'></i> 1. Setup Isolir (Otomatis Redirect ke Popup)</h6>
-                <p style="font-size: 0.85rem; color: var(--txt-3); margin-bottom: 0.8rem;">
-                  Jalankan kode di bawah ini di <strong>New Terminal</strong> Winbox. Kode ini akan memaksa pelanggan yang belum bayar agar otomatis dialihkan ke halaman pemberitahuan Isolir.
-                </p>
-                
-                <div class="position-relative">
-                  <pre class="p-3 rounded" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem; overflow-x: auto; border: 1px solid #333;"><code>/ip firewall nat
-add action=dst-nat chain=dstnat comment="REDIRECT ISOLIR KE NETKING" dst-port=80 protocol=tcp src-address-list=isolir to-addresses={{ request()->getHost() }} to-ports=80</code></pre>
+              <!-- Script 2: WhatsApp Bot -->
+              <div class="card mb-4" style="border-radius: 12px; border: 1px solid var(--border); background: var(--surface); overflow: hidden;">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background: color-mix(in srgb, var(--green) 5%, var(--surface-2)); border-bottom: 1px solid var(--border); padding: 1rem 1.25rem;">
+                  <div class="d-flex align-items-center gap-2">
+                    <div style="width: 32px; height: 32px; background: var(--green); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+                    <div>
+                      <h6 class="mb-0" style="font-weight: 700; color: var(--txt);">Script Auto-Kick PPPoE (Opsional)</h6>
+                      <div style="font-size: 0.75rem; color: var(--txt-3);">Otomatis memutuskan sesi aktif saat profil diganti ke Isolir.</div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-primary" onclick="copyScript('script-kick', this)">
+                    <i class='bx bx-copy'></i> Copy Script
+                  </button>
                 </div>
-                <div class="mt-2 text-warning" style="font-size: 0.8rem;">
-                  <i class='bx bx-info-circle'></i> <strong>Penting:</strong> Setelah menjalankan kode di atas, buka menu <strong>IP > Firewall > NAT</strong>, cari rule "REDIRECT ISOLIR", lalu <strong>geser (drag) ke posisi paling atas (urutan 0)</strong> agar tidak tertimpa rule lain.
+                <div class="card-body p-0">
+                  <pre id="script-kick" class="m-0 p-3" style="background: #1e1e1e; color: #569cd6; font-size: 0.85rem; border-radius: 0;"><code><span style="color:#6a9955;"># Tambahkan script ini di tab "On Up" pada Profile PPPoE Isolir Akang</span>
+:delay 2s;
+/ppp active remove [find name=$user];</code></pre>
                 </div>
-              </div>
-
-              <div class="p-3 rounded" style="background: var(--surface-2); border: 1px solid var(--border);">
-                <h6 class="mb-2" style="font-weight: 600; color: var(--txt);"><i class='bx bx-wifi text-primary me-1'></i> 2. Script Auto-Disconnect PPPoE (Opsional)</h6>
-                <p style="font-size: 0.85rem; color: var(--txt-3); margin-bottom: 0.8rem;">
-                  Jika Akang ingin PPPoE pelanggan langsung <em>terputus seketika</em> saat diisolir, gunakan script ini. Namun jika hanya ingin meredirect traffic seperti di atas, script ini tidak wajib.
-                </p>
-                
-                <div class="position-relative">
-                  <pre class="p-3 rounded" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem; overflow-x: auto; border: 1px solid #333;"><code># Script ini tidak diperlukan jika Akang sudah pakai fitur API Kick/Disconnect bawaan Netking.</code></pre>
+                <div class="card-footer" style="background: var(--surface-2); padding: 0.75rem 1.25rem; font-size: 0.8rem; color: var(--txt-3);">
+                  <i class='bx bx-bulb' style="color:var(--yellow);"></i> Catatan: Sistem Netking sebenarnya sudah otomatis mengeksekusi "Kick" via API saat isolir, jadi script ini hanya sebagai *backup* tambahan di router.
                 </div>
               </div>
             </div>
@@ -293,6 +324,21 @@ add action=dst-nat chain=dstnat comment="REDIRECT ISOLIR KE NETKING" dst-port=80
 
 @section('scripts')
 <script>
+  function copyScript(id, btn) {
+    var text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text).then(function() {
+      var originalHtml = btn.innerHTML;
+      btn.innerHTML = "<i class='bx bx-check'></i> Tersalin!";
+      btn.classList.replace('btn-outline-primary', 'btn-success');
+      btn.style.color = 'white';
+      setTimeout(function() {
+        btn.innerHTML = originalHtml;
+        btn.classList.replace('btn-success', 'btn-outline-primary');
+        btn.style.color = '';
+      }, 2000);
+    });
+  }
+
   $(function() {
     $('form[id^="form-"]').on('submit', function(e) {
       e.preventDefault();
