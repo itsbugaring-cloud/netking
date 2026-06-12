@@ -351,12 +351,12 @@
 
   <!-- Load Spline Runtime from jsDelivr and Initialize Scene -->
   <script type="module">
-    import { Application } from 'https://cdn.jsdelivr.net/npm/@splinetool/runtime@1.9.56/build/runtime.js';
+    import { Application } from 'https://cdn.jsdelivr.net/npm/@splinetool/runtime@1.12.96/build/runtime.js';
 
     const canvas = document.getElementById('canvas3d');
     const spline = new Application(canvas);
     
-    spline.load('https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode')
+    spline.load('https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode')
       .then(() => {
         // Hide loader smoothly once loading is complete
         const loader = document.getElementById('spline-loader');
@@ -367,12 +367,13 @@
         }
 
         // Set spline scene background to transparent
-        const scene = spline._scene || spline.scene;
+        const scene = spline.scene || spline._scene;
         if (scene) {
           scene.background = null;
         }
-        if (spline.renderer) {
-          spline.renderer.setClearAlpha(0);
+        const renderer = spline.renderer || spline._renderer;
+        if (renderer) {
+          renderer.setClearAlpha(0);
         }
 
         // Clean watermark recursively and hide the floor mesh
@@ -453,6 +454,13 @@
       })
       .catch(err => {
         console.error('Failed to load Spline scene:', err);
+        // Hide loader even on failure so page content is interactive
+        const loader = document.getElementById('spline-loader');
+        if (loader) {
+          loader.style.opacity = '0';
+          loader.style.visibility = 'hidden';
+          setTimeout(() => loader.remove(), 400);
+        }
       });
   </script>
 </body>
