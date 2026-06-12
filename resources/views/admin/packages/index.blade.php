@@ -186,7 +186,7 @@
 <script>
     $(function() {
         var table = $('#packages-table').DataTable({
-            dom: 'rt<"row align-items-center mt-3"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-4 d-flex justify-content-center"l><"col-sm-12 col-md-4 d-flex justify-content-end"p>>',
+            dom: '<"d-none"ilp>rt',
             pageLength: 25,
             autoWidth: false,
             scrollX: true,

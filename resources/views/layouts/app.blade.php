@@ -5307,15 +5307,16 @@
     /* Code badges inside tables */
     .nk-list-page table code { background:color-mix(in srgb,var(--blue) 8%,var(--surface)); color:color-mix(in srgb,var(--blue) 80%,var(--txt)); border:1px solid color-mix(in srgb,var(--blue) 18%,var(--border)); padding:2px 7px; border-radius:6px; font-size:.78rem; font-weight:600; }
     /* Table controls bar */
-    .nk-table-controls { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; justify-content:space-between; padding:.6rem 0 .4rem; }
+    .nk-table-controls { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; justify-content:space-between; padding:.6rem 0 .4rem; margin-bottom: 1rem; }
     .nk-search-wrap { position:relative; display:flex; align-items:center; }
-    .nk-search-wrap i {
-      position:absolute;
-      left:.65rem;
+    .nk-search-wrap i, .nk-search-wrap .bx-search {
+      position:absolute !important;
+      left:.65rem !important;
       color:var(--txt-3);
       font-size:1.1rem;
       pointer-events:none;
       transition:color .15s ease;
+      z-index: 5;
     }
     .nk-search-input {
       height: 38px;
