@@ -26,7 +26,7 @@
         </div>
         @if($selectedArea)
         <div class="ms-page-actions">
-            <button type="button" class="ms-btn" data-bs-toggle="modal" data-bs-target="#backupModal">
+            <button type="button" class="ms-btn" onclick="new bootstrap.Modal(document.getElementById('backupModal')).show()">
                 <i class='bx bx-download'></i> Buat Backup
             </button>
         </div>

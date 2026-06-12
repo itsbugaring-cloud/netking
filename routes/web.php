@@ -330,6 +330,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('queues', [\App\Http\Controllers\Admin\QueueController::class, 'destroy'])->name('queues.destroy');
         Route::get('queues/sync', [\App\Http\Controllers\Admin\QueueController::class, 'sync'])->name('queues.sync');
 
+        // Customer Map
+        Route::get('maps', [\App\Http\Controllers\Admin\MapController::class, 'index'])->name('maps.index');
+
         // MikroTik Management (scoped per role in controller)
         Route::prefix('pppoe')->name('pppoe.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\PppoeController::class, 'index'])->name('index');

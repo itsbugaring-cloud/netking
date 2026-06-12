@@ -69,6 +69,45 @@
             </div>
         </div>
     </div>
+
+    <!-- Live Traffic Monitor -->
+    <div class="ms-panel mt-3">
+        <div class="ms-panel-head">
+            <div>
+                <h5 class="ms-panel-title">Live Traffic Monitor (MRTG)</h5>
+                <div class="ms-panel-subtitle">Monitor kecepatan Download/Upload secara real-time</div>
+            </div>
+            <div class="ms-toolbar-right d-flex gap-2">
+                <select id="traffic-area-select" class="form-select form-select-sm" style="width:160px;background:var(--surface);color:var(--txt);border-color:var(--border);">
+                    <option value="">-- Pilih Router --</option>
+                    @foreach($areas as $area)
+                        <option value="{{ $area->id }}">{{ $area->name }}</option>
+                    @endforeach
+                </select>
+                <select id="traffic-iface-select" class="form-select form-select-sm" style="width:160px;background:var(--surface);color:var(--txt);border-color:var(--border);display:none;">
+                </select>
+            </div>
+        </div>
+        <div class="ms-panel-body">
+            <div id="traffic-empty" style="text-align:center;padding:3rem;color:var(--txt-3);">
+                <i class='bx bx-line-chart' style="font-size:3rem;opacity:.3;display:block;margin-bottom:.5rem;"></i>
+                Pilih Router untuk melihat grafik Live Traffic
+            </div>
+            <div id="traffic-chart-container" style="display:none; height:320px; position:relative;">
+                <canvas id="trafficChart"></canvas>
+            </div>
+            <div id="traffic-metrics" style="display:none; justify-content:center; gap:2rem; margin-top:1rem; text-align:center;">
+                <div>
+                    <div style="font-size:.75rem;color:var(--txt-3);text-transform:uppercase;letter-spacing:1px;font-weight:600;">Download (RX)</div>
+                    <div id="traffic-rx-val" style="font-size:1.5rem;font-weight:700;color:var(--green);">0 Mbps</div>
+                </div>
+                <div>
+                    <div style="font-size:.75rem;color:var(--txt-3);text-transform:uppercase;letter-spacing:1px;font-weight:600;">Upload (TX)</div>
+                    <div id="traffic-tx-val" style="font-size:1.5rem;font-weight:700;color:var(--blue);">0 Mbps</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -210,5 +249,163 @@
     fetchData();
     startPolling();
 })();
+
+// --- Live Traffic Monitor (MRTG) ---
+(function() {
+    const areaSelect = document.getElementById('traffic-area-select');
+    const ifaceSelect = document.getElementById('traffic-iface-select');
+    const emptyState = document.getElementById('traffic-empty');
+    const chartContainer = document.getElementById('traffic-chart-container');
+    const metricsContainer = document.getElementById('traffic-metrics');
+    const rxVal = document.getElementById('traffic-rx-val');
+    const txVal = document.getElementById('traffic-tx-val');
+
+    let trafficTimer = null;
+    let chartObj = null;
+    let timeLabels = [];
+    let rxData = [];
+    let txData = [];
+    const MAX_POINTS = 30; // Show last 30 data points (~90 seconds)
+
+    function initChart() {
+        if (chartObj) chartObj.destroy();
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        chartObj = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: [
+                    {
+                        label: 'Download (RX) Mbps',
+                        data: rxData,
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'Upload (TX) Mbps',
+                        data: txData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 0 },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { color: '#94a3b8', maxTicksLimit: 10 }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: function(val) { return val + ' Mbps'; }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function fetchTraffic() {
+        const areaId = areaSelect.value;
+        if (!areaId) return;
+
+        fetch('{{ route("admin.pppoe.traffic") }}?area_id=' + areaId)
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success || !res.data) return;
+                
+                // Populate interface select on first load
+                if (ifaceSelect.options.length === 0) {
+                    ifaceSelect.innerHTML = res.data.map(i => `<option value="${i.name}">${i.name} (${i.type})</option>`).join('');
+                    ifaceSelect.style.display = 'inline-block';
+                }
+
+                const selIface = ifaceSelect.value;
+                const ifaceData = res.data.find(i => i.name === selIface);
+
+                if (ifaceData) {
+                    const now = new Date();
+                    const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                                    now.getMinutes().toString().padStart(2, '0') + ':' + 
+                                    now.getSeconds().toString().padStart(2, '0');
+
+                    // Push to array
+                    timeLabels.push(timeStr);
+                    rxData.push(ifaceData.rx_mbps);
+                    txData.push(ifaceData.tx_mbps);
+
+                    // Shift if too many
+                    if (timeLabels.length > MAX_POINTS) {
+                        timeLabels.shift();
+                        rxData.shift();
+                        txData.shift();
+                    }
+
+                    // Update metrics text
+                    rxVal.textContent = ifaceData.rx_mbps.toFixed(2) + ' Mbps';
+                    txVal.textContent = ifaceData.tx_mbps.toFixed(2) + ' Mbps';
+
+                    // Update chart
+                    if (!chartObj) initChart();
+                    chartObj.update();
+                }
+            })
+            .catch(err => console.error('Traffic fetch error:', err));
+    }
+
+    areaSelect.addEventListener('change', function() {
+        clearInterval(trafficTimer);
+        timeLabels = []; rxData = []; txData = [];
+        ifaceSelect.innerHTML = '';
+        
+        if (this.value) {
+            emptyState.style.display = 'none';
+            chartContainer.style.display = 'block';
+            metricsContainer.style.display = 'flex';
+            fetchTraffic(); // Fetch immediately
+            trafficTimer = setInterval(fetchTraffic, 3000); // Polling every 3s
+        } else {
+            emptyState.style.display = 'block';
+            chartContainer.style.display = 'none';
+            metricsContainer.style.display = 'none';
+            ifaceSelect.style.display = 'none';
+        }
+    });
+
+    ifaceSelect.addEventListener('change', function() {
+        // Reset chart when interface changes
+        timeLabels = []; rxData = []; txData = [];
+        if (chartObj) chartObj.update();
+    });
+
+    // Clean up on unmount/hidden
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            clearInterval(trafficTimer);
+        } else if (areaSelect.value) {
+            trafficTimer = setInterval(fetchTraffic, 3000);
+        }
+    });
+
+})();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @endsection
