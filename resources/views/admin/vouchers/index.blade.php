@@ -64,17 +64,20 @@
               </td>
               <td>{{ $batch->created_at->format('d M Y') }}</td>
               <td>
-                <div class="d-flex gap-1">
-                  <a href="{{ route('admin.vouchers.show', $batch) }}" class="btn btn-sm btn-outline-primary" title="Lihat">
-                    <i class='bx bx-show'></i>
-                  </a>
-                  <form method="POST" action="{{ route('admin.vouchers.destroy', $batch) }}" class="d-inline m-0" data-confirm="Hapus batch dan semua vouchernya?">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
-                      <i class='bx bx-trash'></i>
-                    </button>
-                  </form>
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius:6px;font-size:0.8rem;padding:0.25rem 0.5rem;background:var(--surface);border:1px solid var(--border);">
+                    Opsi
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><a class="dropdown-item" href="{{ route('admin.vouchers.show', $batch) }}"><i class='bx bx-show'></i> Lihat Detail</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <form method="POST" action="{{ route('admin.vouchers.destroy', $batch) }}" class="m-0" data-confirm="Hapus batch dan semua vouchernya?">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="dropdown-item text-danger"><i class='bx bx-trash' style="color:var(--red);"></i> Hapus</button>
+                      </form>
+                    </li>
+                  </ul>
                 </div>
               </td>
             </tr>
