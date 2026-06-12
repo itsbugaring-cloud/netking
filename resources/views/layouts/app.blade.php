@@ -6689,10 +6689,14 @@
         wrapper.children('.row').each(function() {
             if ($(this).text().trim() === '') $(this).hide();
         });
-    });
-  </script>
-  <script>
     $(document).ready(function() {
+      // Fix global modal z-index stacking context by moving all modals to body
+      document.querySelectorAll('.modal').forEach(function(modal) {
+        if (modal.parentNode !== document.body) {
+          document.body.appendChild(modal);
+        }
+      });
+
       @if(session('success'))
         if(window.toastr) toastr.success("{{ session('success') }}");
       @endif
