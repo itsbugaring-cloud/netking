@@ -5942,34 +5942,39 @@
       });
     }, 5000);
 
-    // Select2 init
+    // Select2 init — applies to ALL select elements for consistent look
     $(function() {
       if (typeof $.fn.select2 === 'undefined') return;
       function buildSelect2Options($el, extra) {
         var placeholder = $el.data('placeholder') ||
-          $el.find('option[value=""]').first().text() || 'Pilih...';
+          $el.find('option[value=""]').first().text() ||
+          $el.attr('placeholder') || 'Pilih...';
         var optionCount = $el.find('option').length;
-        var hideSearch = $el.hasClass('form-select-sm') || $el.is('[data-hide-search]') || optionCount <= 8;
+        var hideSearch = $el.is('[data-hide-search]') || optionCount <= 10;
         return Object.assign({
           theme: 'bootstrap-5',
           width: '100%',
           placeholder: placeholder,
           allowClear: $el.find('option[value=""]').length > 0,
           minimumResultsForSearch: hideSearch ? Infinity : 10,
-          dropdownParent: $('body')  // FIX: render dropdown at body level, bypassing workspace-shell overflow:hidden
+          dropdownParent: $('body')  // render at body level — bypass workspace-shell overflow:hidden
         }, extra || {});
       }
 
-      $('.form-select').not('.no-select2').not('[data-select2-id]').each(function() {
+      // Target ALL selects: form-select, period-sel, form-select-sm, native select in forms
+      $('select').not('.no-select2').not('[data-select2-id]').not('[data-bs-toggle]').each(function() {
         var $el = $(this);
         $el.select2(buildSelect2Options($el));
       });
+
+      // Re-init Select2 inside modals when shown
       document.querySelectorAll('.modal').forEach(function(modal) {
         modal.addEventListener('shown.bs.modal', function() {
-          $(modal).find('.form-select').not('.no-select2').not('[data-select2-id]').each(function() {
+          $(modal).find('select').not('.no-select2').not('[data-select2-id]').each(function() {
             var $el = $(this);
+            if ($el.hasClass('select2-hidden-accessible')) return; // already init
             $el.select2(buildSelect2Options($el, {
-              dropdownParent: $(modal)  // For modals, keep parent as modal so z-index stays correct
+              dropdownParent: $(modal)
             }));
           });
         });
