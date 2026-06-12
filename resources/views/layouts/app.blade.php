@@ -5942,18 +5942,18 @@
       });
     }, 5000);
 
-    // Select2 init — applies to ALL select elements for consistent look
+    // Select2 init — targeted selects only for consistent look
     $(function() {
       if (typeof $.fn.select2 === 'undefined') return;
       function buildSelect2Options($el, extra) {
         var placeholder = $el.data('placeholder') ||
           $el.find('option[value=""]').first().text() ||
-          $el.attr('placeholder') || 'Pilih...';
+          $el.attr('title') || 'Pilih...';
         var optionCount = $el.find('option').length;
         var hideSearch = $el.is('[data-hide-search]') || optionCount <= 10;
         return Object.assign({
           theme: 'bootstrap-5',
-          width: '100%',
+          width: 'resolve',  // respect element's own CSS width
           placeholder: placeholder,
           allowClear: $el.find('option[value=""]').length > 0,
           minimumResultsForSearch: hideSearch ? Infinity : 10,
@@ -5961,8 +5961,8 @@
         }, extra || {});
       }
 
-      // Target ALL selects: form-select, period-sel, form-select-sm, native select in forms
-      $('select').not('.no-select2').not('[data-select2-id]').not('[data-bs-toggle]').each(function() {
+      // Target: form-select class + period-sel class, but NOT no-select2
+      $('.form-select, .period-sel').not('.no-select2').not('[data-select2-id]').each(function() {
         var $el = $(this);
         $el.select2(buildSelect2Options($el));
       });
@@ -5970,9 +5970,9 @@
       // Re-init Select2 inside modals when shown
       document.querySelectorAll('.modal').forEach(function(modal) {
         modal.addEventListener('shown.bs.modal', function() {
-          $(modal).find('select').not('.no-select2').not('[data-select2-id]').each(function() {
+          $(modal).find('.form-select, .period-sel').not('.no-select2').not('[data-select2-id]').each(function() {
             var $el = $(this);
-            if ($el.hasClass('select2-hidden-accessible')) return; // already init
+            if ($el.hasClass('select2-hidden-accessible')) return;
             $el.select2(buildSelect2Options($el, {
               dropdownParent: $(modal)
             }));
