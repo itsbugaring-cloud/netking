@@ -17,6 +17,9 @@ use App\Http\Controllers\Admin\IpamController;
 |--------------------------------------------------------------------------
 */
 
+// Isolir Landing Page
+Route::view('/isolir', 'isolir')->name('isolir.page');
+
 // Landing page
 Route::get('/', function () {
     $buildMeta = static function (string $filename): array {
