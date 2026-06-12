@@ -8,64 +8,148 @@
 <script type="module" src="https://cdn.jsdelivr.net/npm/@splinetool/viewer@1.9.0/build/spline-viewer.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    --bg:#f6f8fc;--surface:#fff;--surface-2:#fefdf8;--border:#e5e7eb;--txt:#0f172a;--txt-2:#475569;--txt-3:#64748b;--amber:#d97706;--amber-soft:rgba(217,119,6,0.06);--blue:#2563eb;--shadow:0 30px 70px rgba(15,23,42,.08);
-  }
-  body{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;background:radial-gradient(circle at top, rgba(245,158,11,.08), transparent 45%),linear-gradient(180deg,#fffdf8 0%,#f6f8fc 100%);color:var(--txt);display:flex;align-items:center;justify-content:center;padding:24px}
-  .shell{width:min(100%,560px);background:linear-gradient(180deg,var(--surface) 0%,var(--surface-2) 100%);border:1px solid var(--border);border-radius:32px;box-shadow:var(--shadow);overflow:hidden;animation:nk-pop-in .5s cubic-bezier(.2,.8,.2,1) both}
-  .error-container{padding:40px 32px;text-align:center;display:flex;flex-direction:column;align-items:center}
-  
-  .brand{font-size:.8rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--txt-3);margin-bottom:15px}
-  
-  /* Spline Wrapper */
-  .spline-wrapper {
-    width: 100%;
-    height: 280px;
-    margin: 15px 0 25px;
-    position: relative;
-    border-radius: 20px;
-    background: var(--amber-soft);
+  body {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    height: 100vh;
     overflow: hidden;
-    border: 1px dashed rgba(217, 119, 6, 0.15);
+    position: relative;
+    background: #f1f5f9;
+  }
+  .spline-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
   }
   spline-viewer {
     width: 100%;
     height: 100%;
+    display: block;
   }
- 
+  .overlay-content {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    padding: 60px;
+  }
+  .glass-card {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 28px;
+    padding: 40px 36px;
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    display: flex;
+    flex-direction: column;
+    animation: nk-pop-in .6s cubic-bezier(.34, 1.56, 0.64, 1) both;
+  }
+  .brand {
+    font-size: .8rem;
+    font-weight: 900;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: #475569;
+    margin-bottom: 20px;
+  }
+  .title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #0f172a;
+    line-height: 1.25;
+  }
+  .msg {
+    font-size: .95rem;
+    line-height: 1.6;
+    color: #334155;
+    margin-bottom: 32px;
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+  }
+  .btn {
+    flex: 1;
+    height: 48px;
+    padding: 0 24px;
+    border-radius: 16px;
+    text-decoration: none;
+    font-size: .9rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(37,99,235,.2);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    background: #1d4ed8;
+    box-shadow: 0 12px 24px rgba(37,99,235,.3);
+  }
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.5);
+    color: #334155;
+    border-color: rgba(15, 23, 42, 0.08);
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.8);
+    color: #0f172a;
+    border-color: rgba(15, 23, 42, 0.15);
+    transform: translateY(-2px);
+  }
   @keyframes nk-pop-in {
     from { opacity: 0; transform: translateY(20px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
- 
-  .title{font-size:1.6rem;font-weight:800;margin:15px 0 8px;color:var(--txt)}
-  .msg{font-size:.92rem;line-height:1.6;color:var(--txt-2);max-width:42ch;margin-bottom:28px}
-  .actions{display:flex;gap:12px;justify-content:center;width:100%}
-  .btn{height:42px;padding:0 24px;border-radius:14px;text-decoration:none;font-size:.87rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;transition:all .18s ease;border:1px solid transparent}
-  .btn-primary{background:var(--blue);color:#fff;box-shadow:0 8px 20px rgba(37,99,235,.16)}
-  .btn-primary:hover{transform:translateY(-1px);background:#1d4ed8;box-shadow:0 10px 24px rgba(37,99,235,.24)}
-  .btn-ghost{background:#fff;color:var(--txt-2);border-color:var(--border)}
-  .btn-ghost:hover{background:#f8fafc;color:var(--txt);border-color:#cbd5e1}
-  
-  @media (max-width:576px){
-    .shell{border-radius:24px;width:100%}
-    .error-container{padding:32px 20px}
-    .actions{flex-direction:column}
-    .btn{width:100%}
+  @media (max-width: 768px) {
+    .overlay-content {
+      padding: 24px;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .glass-card {
+      max-width: 100%;
+      padding: 32px 24px;
+    }
+    .title {
+      font-size: 1.7rem;
+    }
+    .actions {
+      flex-direction: column;
+    }
+    .btn {
+      width: 100%;
+    }
   }
 </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="error-container">
-      <div class="brand">NETKING</div>
-      
-      <!-- Spline 3D Scene -->
-      <div class="spline-wrapper">
-        <!-- MASUKKAN URL SCENE SPLINE KAMU DI SINI -->
-        <spline-viewer url="https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode" loading="eager"></spline-viewer>
-      </div>
+  <!-- Spline 3D Scene Background -->
+  <div class="spline-container">
+    <spline-viewer url="https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode" loading="eager"></spline-viewer>
+  </div>
 
+  <!-- Overlay Text & Buttons -->
+  <div class="overlay-content">
+    <div class="glass-card">
+      <div class="brand">NETKING</div>
       <h1 class="title">Akses Ditolak</h1>
       <p class="msg">Maaf, akun Anda tidak memiliki izin untuk melihat halaman ini.</p>
       
@@ -75,5 +159,32 @@
       </div>
     </div>
   </div>
+
+  <!-- Script to Remove Spline Watermark -->
+  <script>
+    const hideSplineLogo = () => {
+      const viewer = document.querySelector('spline-viewer');
+      if (viewer && viewer.shadowRoot) {
+        if (!viewer.shadowRoot.querySelector('#hide-logo-style')) {
+          const style = document.createElement('style');
+          style.id = 'hide-logo-style';
+          style.textContent = `
+            #logo, #ar, a[href*="spline.design"] {
+              display: none !important;
+              opacity: 0 !important;
+              visibility: hidden !important;
+              pointer-events: none !important;
+            }
+          `;
+          viewer.shadowRoot.appendChild(style);
+        }
+      }
+    };
+
+    const interval = setInterval(hideSplineLogo, 50);
+    window.addEventListener('DOMContentLoaded', hideSplineLogo);
+    window.addEventListener('load', hideSplineLogo);
+    setTimeout(() => clearInterval(interval), 10000);
+  </script>
 </body>
 </html>
