@@ -5702,11 +5702,18 @@
         margin-bottom: 0 !important;
     }
     
-    .dataTables_wrapper .d-flex.justify-content-between.align-items-center.mt-3 {
+    .dataTables_wrapper .row.align-items-center.mt-3 {
         padding: 1rem 1.5rem !important;
         border-top: 1px solid var(--border) !important;
         background: transparent;
         margin-top: 0 !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .dataTables_wrapper .row.align-items-center.mt-3 > div {
+        padding-left: 0;
+        padding-right: 0;
     }
     
     .dataTables_info {
@@ -5714,6 +5721,7 @@
         color: var(--txt-2) !important;
         font-weight: 500 !important;
         padding-top: 0 !important;
+        text-align: left;
     }
     .dataTables_length { margin-bottom: 0 !important; }
     .dataTables_length select {
@@ -5735,17 +5743,19 @@
         background-position: right 0.75rem center !important;
         background-size: 16px 12px !important;
     }
-    .dataTables_length label { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0; font-size: 0.85rem; font-weight: 500; color: var(--txt-2); }
+    .dataTables_length label { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0; font-size: 0.85rem; font-weight: 500; color: var(--txt-2); justify-content: center; width: auto !important; }
     .dataTables_paginate {
         display: flex !important;
         align-items: center !important;
         gap: 0.2rem !important;
         padding-top: 0 !important;
+        justify-content: flex-end;
     }
     .dataTables_wrapper .dataTables_paginate .pagination {
         align-items: center !important;
         gap: 0.2rem !important;
         padding-top: 0 !important;
+        justify-content: flex-end;
     }
     /* Remove default Bootstrap override for first/last elements since we use gap */
     .page-item:first-child .page-link, .page-item:last-child .page-link {
