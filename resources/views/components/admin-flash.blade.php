@@ -92,7 +92,7 @@ foreach ($types as $type => $config) {
         box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
         pointer-events: auto;
         overflow: hidden;
-        animation: nk-toast-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        animation: nk-toast-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         transition: all 0.3s ease;
     }
 
@@ -112,12 +112,12 @@ foreach ($types as $type => $config) {
     @keyframes nk-toast-in {
         from {
             opacity: 0;
-            transform: translateY(-16px) scale(0.96);
+            transform: translate3d(120%, 0, 0) scale(0.9);
             filter: blur(2px);
         }
         to {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translate3d(0, 0, 0) scale(1);
             filter: blur(0);
         }
     }
@@ -404,7 +404,7 @@ foreach ($types as $type => $config) {
                         </ul>
                     </div>
                 </div>
-                <button type="button" class="nk-toast-close" aria-label="Close" onclick="this.closest('.nk-toast').remove()">&times;</button>
+                <button type="button" class="nk-toast-close" aria-label="Close" onclick="var t = this.closest('.nk-toast'); t.style.opacity = '0'; t.style.transform = 'translate3d(120%, 0, 0) scale(.9)'; setTimeout(function() { t.remove(); }, 300);">&times;</button>
             </div>
         </div>
     @endif
@@ -420,7 +420,7 @@ foreach ($types as $type => $config) {
                         <h5 class="nk-toast-title">{{ $item['title'] }}</h5>
                         <p class="nk-toast-message">{!! $item['message'] !!}</p>
                     </div>
-                    <button type="button" class="nk-toast-close" aria-label="Close" onclick="this.closest('.nk-toast').remove()">&times;</button>
+                    <button type="button" class="nk-toast-close" aria-label="Close" onclick="var t = this.closest('.nk-toast'); t.style.opacity = '0'; t.style.transform = 'translate3d(120%, 0, 0) scale(.9)'; setTimeout(function() { t.remove(); }, 300);">&times;</button>
                 </div>
                 @if ($item['autoDismiss'])
                     <div class="nk-toast-progress">
@@ -445,7 +445,7 @@ document.querySelectorAll('.nk-toast[data-autodismiss]').forEach(function(el) {
 
     function hideCard() {
         el.style.opacity = '0';
-        el.style.transform = 'translateY(-12px) scale(.96)';
+        el.style.transform = 'translate3d(120%, 0, 0) scale(.9)';
         setTimeout(function() { el.remove(); }, 300);
     }
 
