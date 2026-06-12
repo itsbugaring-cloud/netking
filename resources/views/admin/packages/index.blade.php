@@ -151,16 +151,20 @@
                         </span>
                     </td>
                     <td>
-                        <div class="d-flex gap-1">
-                            <a href="{{ route('admin.packages.edit', $package) }}" class="nk-action-btn edit" title="Edit">
-                                <i class='bx bx-edit-alt'></i>
-                            </a>
-                            <form action="{{ route('admin.packages.destroy', $package) }}" method="POST" class="d-inline" data-confirm="Hapus paket ini?">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="nk-action-btn delete" title="Hapus">
-                                    <i class='bx bx-trash'></i>
-                                </button>
-                            </form>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius:6px;font-size:0.8rem;padding:0.25rem 0.5rem;background:var(--surface);border:1px solid var(--border);">
+                                Opsi
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li><a class="dropdown-item" href="{{ route('admin.packages.edit', $package) }}"><i class='bx bx-edit-alt'></i> Edit Paket</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form action="{{ route('admin.packages.destroy', $package) }}" method="POST" class="m-0" data-confirm="Hapus paket ini?">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="dropdown-item text-danger"><i class='bx bx-trash' style="color:var(--red);"></i> Hapus</button>
+                                    </form>
+                                </li>
+                            </ul>
                         </div>
                     </td>
                 </tr>

@@ -70,26 +70,25 @@
                 @endif
               </td>
               <td>
-                <div class="d-flex gap-1">
-                  <a href="{{ route('admin.users.edit', $user) }}" class="nk-action-btn edit" title="Ubah">
-                    <i class='bx bx-edit'></i>
-                  </a>
-                  @if(auth()->user()->role === 'admin')
-                  <a
-                    href="{{ route('admin.users.edit', $user) }}#reset-password-panel"
-                    class="nk-action-btn"
-                    title="Reset Password"
-                    style="border:none;background:#fff7ed;color:#c2410c;"
-                  >
-                    <i class='bx bx-key'></i>
-                  </a>
-                  @endif
-                  @if($user->id !== auth()->id())
-                  <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="d-inline m-0" data-confirm="Hapus pengguna {{ addslashes($user->name) }}?">
-                    @csrf @method('DELETE')
-                    <button class="nk-action-btn delete" title="Hapus"><i class='bx bx-trash'></i></button>
-                  </form>
-                  @endif
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius:6px;font-size:0.8rem;padding:0.25rem 0.5rem;background:var(--surface);border:1px solid var(--border);">
+                    Opsi
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><a class="dropdown-item" href="{{ route('admin.users.edit', $user) }}"><i class='bx bx-edit'></i> Edit Pengguna</a></li>
+                    @if(auth()->user()->role === 'admin')
+                    <li><a class="dropdown-item" href="{{ route('admin.users.edit', $user) }}#reset-password-panel"><i class='bx bx-key' style="color:#c2410c;"></i> Reset Password</a></li>
+                    @endif
+                    @if($user->id !== auth()->id())
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="m-0" data-confirm="Hapus pengguna {{ addslashes($user->name) }}?">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="dropdown-item text-danger"><i class='bx bx-trash' style="color:var(--red);"></i> Hapus</button>
+                      </form>
+                    </li>
+                    @endif
+                  </ul>
                 </div>
               </td>
             </tr>
