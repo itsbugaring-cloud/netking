@@ -5689,20 +5689,21 @@
     
     /* Checkbox inside Dropdown */
     .dropdown-item input[type="checkbox"] {
-        accent-color: var(--blue);
+        accent-color: var(--nk-primary);
         width: 16px; height: 16px; cursor: pointer;
     }
 
     /* ── Global Advanced Pagination Styles ── */
     .pagination {
         gap: 0.5rem;
+        margin-bottom: 0;
     }
     .page-item .page-link {
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
-        width: 32px; height: 32px;
-        padding: 0 !important;
+        min-width: 32px; height: 32px;
+        padding: 0 0.5rem !important;
         border: 1px solid var(--border) !important;
         background: var(--surface) !important;
         color: var(--txt) !important;
@@ -5712,9 +5713,9 @@
         transition: all 0.15s;
     }
     .page-item.active .page-link {
-        background: var(--blue) !important;
+        background: var(--nk-primary) !important;
         color: white !important;
-        border-color: var(--blue) !important;
+        border-color: var(--nk-primary) !important;
     }
     .page-item.disabled .page-link {
         opacity: 0.5;
@@ -5728,6 +5729,14 @@
     /* Remove default Bootstrap override for first/last elements since we use gap */
     .page-item:first-child .page-link, .page-item:last-child .page-link {
         border-radius: 8px !important;
+    }
+    
+    /* Hide Laravel's default info text to prevent duplicates with view's custom text */
+    nav .d-none.flex-sm-fill.d-sm-flex > div:first-child {
+        display: none !important;
+    }
+    nav .d-flex.justify-content-between.flex-fill.d-sm-none {
+        display: none !important;
     }
     
     /* DataTables Pagination Specific Fixes */
