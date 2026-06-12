@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>404 — Halaman Tidak Ditemukan | NETKING</title>
+<!-- Load Spline Viewer Script -->
+<script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.0/build/spline-viewer.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
@@ -15,72 +17,22 @@
   
   .brand{font-size:.8rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--txt-3);margin-bottom:15px}
   
-  /* 3D Cube animation */
-  .cube-container {
-    animation: cubeBob 4s ease-in-out infinite;
-    margin: 20px 0;
-  }
-  .cube-wrapper {
-    perspective: 800px;
-    width: 120px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .cube {
-    width: 80px;
-    height: 80px;
+  /* Spline Wrapper */
+  .spline-wrapper {
+    width: 100%;
+    height: 280px;
+    margin: 15px 0 25px;
     position: relative;
-    transform-style: preserve-3d;
-    transform: rotateX(-22deg) rotateY(45deg);
-    animation: rotateCube 12s infinite linear;
+    border-radius: 20px;
+    background: var(--blue-soft);
+    overflow: hidden;
+    border: 1px dashed rgba(37, 99, 235, 0.15);
   }
-  .face {
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    background: rgba(37, 99, 235, 0.08);
-    border: 2px solid var(--blue);
-    color: var(--blue);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.7rem;
-    font-weight: 900;
-    box-shadow: inset 0 0 15px rgba(37, 99, 235, 0.2);
-    border-radius: 12px;
-    backdrop-filter: blur(2px);
-  }
-  .face.front  { transform: rotateY(0deg) translateZ(40px); }
-  .face.back   { transform: rotateY(180deg) translateZ(40px); }
-  .face.right  { transform: rotateY(90deg) translateZ(40px); }
-  .face.left   { transform: rotateY(-90deg) translateZ(40px); }
-  .face.top    { transform: rotateX(90deg) translateZ(40px); background: rgba(37, 99, 235, 0.04); }
-  .face.bottom { transform: rotateX(-90deg) translateZ(40px); background: rgba(37, 99, 235, 0.04); }
-
-  .cube-shadow {
-    width: 80px;
-    height: 8px;
-    background: rgba(37, 99, 235, 0.12);
-    border-radius: 50%;
-    margin: 5px auto 0;
-    filter: blur(4px);
-    animation: shadowPulse 4s ease-in-out infinite;
+  spline-viewer {
+    width: 100%;
+    height: 100%;
   }
 
-  @keyframes rotateCube {
-    0% { transform: rotateX(-22deg) rotateY(0deg); }
-    100% { transform: rotateX(-22deg) rotateY(360deg); }
-  }
-  @keyframes cubeBob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-  @keyframes shadowPulse {
-    0%, 100% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.2); opacity: 0.4; }
-  }
   @keyframes nk-pop-in {
     from { opacity: 0; transform: translateY(20px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
@@ -108,18 +60,10 @@
     <div class="error-container">
       <div class="brand">NETKING</div>
       
-      <div class="cube-container">
-        <div class="cube-wrapper">
-          <div class="cube">
-            <div class="face front">404</div>
-            <div class="face back">404</div>
-            <div class="face right">🔍</div>
-            <div class="face left">🔍</div>
-            <div class="face top"></div>
-            <div class="face bottom"></div>
-          </div>
-        </div>
-        <div class="cube-shadow"></div>
+      <!-- Spline 3D Scene -->
+      <div class="spline-wrapper">
+        <!-- MASUKKAN URL SCENE SPLINE KAMU DI SINI -->
+        <spline-viewer url="https://prod.spline.design/cop32OkaP0aYJb6R/scene.splinecode"></spline-viewer>
       </div>
 
       <h1 class="title">Halaman Tidak Ditemukan</h1>
