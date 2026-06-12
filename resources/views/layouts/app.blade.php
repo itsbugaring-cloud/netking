@@ -6603,61 +6603,30 @@
         var api = new $.fn.dataTable.Api(settings);
         var wrapper = $(api.table().container());
         
-        // Find the DataTables components
         var info = wrapper.find('.dataTables_info');
-        var length = wrapper.find('.dataTables_length');
         var paginate = wrapper.find('.dataTables_paginate');
         
-        // Only build if not already built and components exist
-        if ($('.adv-pagination-container').length === 0 && info.length) {
-            // Create the wrapper as a distinctly separate card with shadow
-            var container = $('<div class="adv-pagination-container d-flex justify-content-between align-items-center mt-3" style="border: 1px solid var(--border) !important; background: var(--surface) !important; border-radius: 12px !important; padding: 1rem 1.5rem !important; width: 100% !important; box-shadow: var(--shadow-sm) !important;"></div>');
-            var rightDiv = $('<div class="d-flex align-items-center gap-3"></div>');
+        if (wrapper.find('.nk-pager-wrap').length === 0 && info.length) {
+            // Build the exact same structure as vendor/pagination/netking.blade.php
+            var container = $('<nav class="nk-pager-wrap" style="width: 100%; border-top: 1px solid var(--border);"></nav>');
             
-            // Remove d-none if it was added by dom string
-            info.removeClass('d-none');
-            length.removeClass('d-none');
-            paginate.removeClass('d-none');
+            // Clean up info
+            info.removeClass('d-none').addClass('nk-pager-info');
+            info.css({'display': 'block', 'padding': '0', 'font-size': '0.85rem', 'color': 'var(--txt-2)', 'font-weight': '400'});
             
-            // Clean up the length control DOM to prevent Bootstrap 5 from breaking it
-            var select = length.find('select');
-            if (select.length) {
-                // Keep the select but remove all the buggy Bootstrap wrappers/labels
-                var newLength = $('<div class="d-flex align-items-center" style="gap: 8px;"></div>');
-                select.css({
-                    'display': 'inline-block',
-                    'width': 'auto',
-                    'padding': '0.375rem 2.25rem 0.375rem 0.75rem',
-                    'border': '1px solid var(--border)',
-                    'border-radius': '8px',
-                    'background-color': 'var(--surface)',
-                    'font-size': '0.85rem',
-                    'font-weight': '500',
-                    'color': 'var(--txt)'
-                });
-                newLength.append(select);
-                newLength.append($('<span style="font-size: 0.85rem; font-weight: 500; color: var(--txt-2); white-space: nowrap;">per hal</span>'));
-                length.empty().append(newLength);
-            }
+            // Clean up paginate
+            paginate.removeClass('d-none').addClass('nk-pager');
+            paginate.css({'display': 'flex', 'align-items': 'center', 'gap': '0.2rem', 'justify-content': 'flex-end'});
             
-            // Assemble the layout
-            rightDiv.append(length).append(paginate);
-            container.append(info).append(rightDiv);
+            container.append(info).append(paginate);
             
-            // Append to the bottom of the table shell so it's a separate card and immune to scrollX
-            var shell = wrapper.closest('.ms-table-shell');
-            if (shell.length) {
-                shell.after(container);
-            } else {
-                wrapper.append(container);
-            }
+            // Put it seamlessly inside the table shell at the bottom
+            wrapper.closest('.ms-table-shell').append(container);
             
-            // Clean up any empty row/col wrappers left behind by Bootstrap 5 integration
+            // Clean up any empty row/col wrappers
             wrapper.find('.row:empty').remove();
             wrapper.children('.row').each(function() {
-                if ($(this).children().length === 0 || $(this).text().trim() === '') {
-                    $(this).hide();
-                }
+                if ($(this).children().length === 0 || $(this).text().trim() === '') $(this).hide();
             });
         }
     });
