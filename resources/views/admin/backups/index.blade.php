@@ -142,11 +142,13 @@
     @endif
     @endif
 </div>
+@endsection
 
-{{-- Backup Type Modal --}}
+{{-- Backup Type Modal: OUTSIDE @section('content') so it renders at <body> level, bypassing workspace-shell overflow:hidden --}}
 @if($selectedArea)
-<div class="modal modal-blur fade" id="backupModal" tabindex="-1">
-    <div class="modal-dialog modal-sm">
+@push('modals')
+<div class="modal fade" id="backupModal" tabindex="-1" style="z-index:99999;">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
         <form method="POST" action="{{ route('admin.backups.store') }}" onsubmit="var btn=this.querySelector('button[type=submit]'); setTimeout(() => { btn.disabled=true; btn.innerHTML='<i class=\'bx bx-loader-alt bx-spin\'></i> Memproses...'; }, 0);">
             @csrf
             <input type="hidden" name="area_id" value="{{ $selectedArea->id }}">
@@ -182,5 +184,5 @@
         </form>
     </div>
 </div>
+@endpush
 @endif
-@endsection

@@ -5854,6 +5854,9 @@
   <footer class="layout-footer"></footer>
   </div>
 
+  {{-- MODALS STACK: rendered OUTSIDE .workspace-shell so overflow:hidden doesn't clip them --}}
+  @stack('modals')
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -6690,13 +6693,6 @@
             if ($(this).text().trim() === '') $(this).hide();
         });
     $(document).ready(function() {
-      // Fix global modal z-index stacking context by moving all modals to body
-      document.querySelectorAll('.modal').forEach(function(modal) {
-        if (modal.parentNode !== document.body) {
-          document.body.appendChild(modal);
-        }
-      });
-
       @if(session('success'))
         if(window.toastr) toastr.success("{{ session('success') }}");
       @endif
