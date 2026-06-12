@@ -5682,11 +5682,17 @@
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
+        width: 100% !important;
         padding: 1rem !important;
         border: 1px solid var(--border) !important;
         border-radius: 12px !important;
         background: var(--surface) !important;
         margin-top: 1.5rem !important;
+    }
+    .adv-pagination-container > .row,
+    .adv-pagination-container > div > .row,
+    .adv-pagination-container .col-sm-12 {
+        display: contents !important;
     }
     .dataTables_info {
         font-size: 0.85rem !important;
