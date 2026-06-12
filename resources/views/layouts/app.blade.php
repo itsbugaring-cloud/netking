@@ -5654,6 +5654,93 @@
         border-color: var(--nk-primary) !important;
         box-shadow: 0 0 0 2px rgba(37,99,235,.12) !important;
     }
+
+    /* ── Global Advanced Dropdown Styles ── */
+    .dropdown-menu {
+        border-radius: 12px !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+        padding: 0.5rem !important;
+    }
+    .dropdown-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+        padding: 0.4rem 0.75rem !important;
+        border-radius: 6px !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        transition: background 0.1s !important;
+    }
+    .dropdown-item:hover {
+        background: var(--bg) !important;
+    }
+    .dropdown-item i { font-size: 1.1rem; color: var(--txt-3); }
+    .dropdown-item .shortcut { margin-left: auto; color: var(--txt-3); font-size: 0.75rem; font-weight: 600; }
+    .dropdown-divider { border-top: 1px solid var(--border) !important; margin: 0.5rem 0 !important; }
+    
+    /* Submenu Global CSS */
+    .dropdown-submenu { position: relative; }
+    .dropdown-submenu > .dropdown-menu {
+        top: 0; left: 100%; margin-top: -6px; margin-left: 0.1rem; display: none; position: absolute;
+    }
+    .dropdown-submenu:hover > .dropdown-menu { display: block; }
+    .dropdown-submenu-caret { margin-left: auto; font-size: 1rem !important; }
+    
+    /* Checkbox inside Dropdown */
+    .dropdown-item input[type="checkbox"] {
+        accent-color: var(--blue);
+        width: 16px; height: 16px; cursor: pointer;
+    }
+
+    /* ── Global Advanced Pagination Styles ── */
+    .pagination {
+        gap: 0.5rem;
+    }
+    .page-item .page-link {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 32px; height: 32px;
+        padding: 0 !important;
+        border: 1px solid var(--border) !important;
+        background: var(--surface) !important;
+        color: var(--txt) !important;
+        border-radius: 8px !important;
+        font-size: 0.85rem !important;
+        font-weight: 600;
+        transition: all 0.15s;
+    }
+    .page-item.active .page-link {
+        background: var(--blue) !important;
+        color: white !important;
+        border-color: var(--blue) !important;
+    }
+    .page-item.disabled .page-link {
+        opacity: 0.5;
+        background: var(--bg) !important;
+    }
+    .page-item .page-link:hover:not(:disabled) {
+        background: var(--bg) !important;
+        border-color: var(--txt-3) !important;
+    }
+    
+    /* Remove default Bootstrap override for first/last elements since we use gap */
+    .page-item:first-child .page-link, .page-item:last-child .page-link {
+        border-radius: 8px !important;
+    }
+    
+    /* DataTables Pagination Specific Fixes */
+    .dataTables_wrapper .dataTables_paginate .pagination {
+        justify-content: flex-end;
+        margin: 0;
+    }
+    .dataTables_wrapper .dataTables_info {
+        font-size: 0.85rem;
+        color: var(--txt-2) !important;
+        font-weight: 500;
+        padding-top: 0.5rem;
+    }
   </style>
   @yield('styles')
   @livewireStyles
