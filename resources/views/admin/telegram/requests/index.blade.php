@@ -169,11 +169,7 @@
     <div class="ms-panel-body">
       <div class="tg-toolbar">
         <form class="tg-toolbar-form" method="GET" action="{{ route('admin.telegram.requests.index') }}">
-          <div class="nk-search-wrap">
-            <i class='bx bx-search'></i>
-            <input type="text" name="q" class="nk-search-input" value="{{ $q }}" placeholder="Cari ref, pelanggan, PPPoE, area, atau user Telegram...">
-          </div>
-          <select name="status" class="form-select form-select-sm">
+          <select name="status" class="form-select form-select-sm" style="max-width:180px;">
             <option value="">Semua status</option>
             @foreach($statuses as $s)
               <option value="{{ $s }}" @selected($status === $s)>{{ $s }}</option>
@@ -258,3 +254,5 @@
   </div>
 </div>
 @endsection
+
+

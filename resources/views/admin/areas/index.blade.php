@@ -20,12 +20,7 @@
     </div>
     <div class="ms-table-shell">
       <div class="nk-table-controls">
-        <div class="nk-search-wrap nk-table-search-trigger">
-          <i class='bx bx-search'></i>
-          <input type="text" id="areas-search" class="nk-search-input" placeholder="Cari area...">
         </div>
-        
-      </div>
       <div class="table-responsive">
         <table class="table table-flat mb-0" id="areas-table">
           <thead>
@@ -137,3 +132,4 @@
   });
 </script>
 @endsection
+

@@ -17,15 +17,11 @@
 
 
 
-  <div class="ms-panel">
-    <div class="ms-table-shell">
-      <div class="nk-table-controls">
-        <div class="nk-search-wrap nk-table-search-trigger">
-          <i class='bx bx-search'></i>
-          <input type="text" id="user-search" class="nk-search-input" placeholder="Cari pengguna...">
+    <div class="ms-panel">
+      <div class="ms-table-shell">
+        <div class="nk-table-controls" style="justify-content: flex-end;">
+          
         </div>
-        
-      </div>
       <div class="table-responsive">
         <table class="table table-flat mb-0" id="users-table" style="min-width:1020px;">
           <thead>
@@ -132,3 +128,4 @@
   });
 </script>
 @endsection
+

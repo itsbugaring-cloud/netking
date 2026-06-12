@@ -68,11 +68,7 @@
       <form action="{{ route('admin.ipam.routers.index') }}" method="GET">
         <div class="d-flex gap-2">
           <div class="flex-grow-1">
-            <div class="nk-search-wrap">
-              <i class='bx bx-search'></i>
-              <input type="text" name="search" class="nk-search-input" placeholder="Cari router (nama, IP)..." value="{{ request('search') }}">
             </div>
-          </div>
           <button type="submit" class="ms-btn-secondary">
             <i class='bx bx-search'></i> Cari
           </button>
@@ -177,3 +173,4 @@
   @endif
 </div>
 @endsection
+

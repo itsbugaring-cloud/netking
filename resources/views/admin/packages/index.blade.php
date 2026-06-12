@@ -26,7 +26,7 @@
     <div class="ms-panel-body py-3">
         <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
             <label for="area_id" style="font-size:.82rem;color:var(--txt-3);font-weight:600;">Filter Area</label>
-            <select name="area_id" id="area_id" class="form-select" data-hide-search style="max-width:280px;">
+            <select name="area_id" id="area_id" class="form-select form-select-sm" data-hide-search style="max-width:180px;">
                 <option value="">Semua Area</option>
                 @foreach($areas as $area)
                 <option value="{{ $area->id }}" {{ request('area_id') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
@@ -76,12 +76,7 @@
     </div>
     <div class="ms-table-shell">
     <div class="nk-table-controls">
-        <div class="nk-search-wrap nk-table-search-trigger">
-            <i class='bx bx-search'></i>
-            <input type="text" id="pkg-search" class="nk-search-input" placeholder="Cari paket...">
         </div>
-        
-    </div>
     <div class="table-responsive">
         <table class="table table-flat mb-0" id="packages-table" style="min-width:1260px;">
             <thead>
@@ -208,3 +203,4 @@
     });
 </script>
 @endsection
+
