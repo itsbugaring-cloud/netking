@@ -20,6 +20,7 @@
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-billing">Tagihan</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-notif">Notifikasi</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-telegram">Telegram Bot</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-mikrotik"><i class='bx bx-server'></i> Panduan MikroTik</a></li>
           </ul>
 
           <div class="tab-content p-4">
@@ -216,6 +217,43 @@
                 </div>
               </form>
             </div>
+
+            <!-- Tab Panduan MikroTik -->
+            <div class="tab-pane fade" id="tab-mikrotik">
+              <div class="d-flex align-items-center mb-3">
+                <div class="ms-3">
+                  <h5 class="mb-1" style="font-size: 1.1rem; font-weight: 600;">Instruksi Setup MikroTik</h5>
+                  <p class="text-muted mb-0" style="font-size: 0.85rem;">Simpan dan jalankan perintah ini di Terminal Winbox untuk mengatur fitur otomatisasi Netking.</p>
+                </div>
+              </div>
+
+              <div class="p-3 mb-4 rounded" style="background: var(--surface-2); border: 1px solid var(--border);">
+                <h6 class="mb-2" style="font-weight: 600; color: var(--txt);"><i class='bx bx-block text-danger me-1'></i> 1. Setup Isolir (Otomatis Redirect ke Popup)</h6>
+                <p style="font-size: 0.85rem; color: var(--txt-3); margin-bottom: 0.8rem;">
+                  Jalankan kode di bawah ini di <strong>New Terminal</strong> Winbox. Kode ini akan memaksa pelanggan yang belum bayar agar otomatis dialihkan ke halaman pemberitahuan Isolir.
+                </p>
+                
+                <div class="position-relative">
+                  <pre class="p-3 rounded" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem; overflow-x: auto; border: 1px solid #333;"><code>/ip firewall nat
+add action=dst-nat chain=dstnat comment="REDIRECT ISOLIR KE NETKING" dst-port=80 protocol=tcp src-address-list=isolir to-addresses={{ request()->getHost() }} to-ports=80</code></pre>
+                </div>
+                <div class="mt-2 text-warning" style="font-size: 0.8rem;">
+                  <i class='bx bx-info-circle'></i> <strong>Penting:</strong> Setelah menjalankan kode di atas, buka menu <strong>IP > Firewall > NAT</strong>, cari rule "REDIRECT ISOLIR", lalu <strong>geser (drag) ke posisi paling atas (urutan 0)</strong> agar tidak tertimpa rule lain.
+                </div>
+              </div>
+
+              <div class="p-3 rounded" style="background: var(--surface-2); border: 1px solid var(--border);">
+                <h6 class="mb-2" style="font-weight: 600; color: var(--txt);"><i class='bx bx-wifi text-primary me-1'></i> 2. Script Auto-Disconnect PPPoE (Opsional)</h6>
+                <p style="font-size: 0.85rem; color: var(--txt-3); margin-bottom: 0.8rem;">
+                  Jika Akang ingin PPPoE pelanggan langsung <em>terputus seketika</em> saat diisolir, gunakan script ini. Namun jika hanya ingin meredirect traffic seperti di atas, script ini tidak wajib.
+                </p>
+                
+                <div class="position-relative">
+                  <pre class="p-3 rounded" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem; overflow-x: auto; border: 1px solid #333;"><code># Script ini tidak diperlukan jika Akang sudah pakai fitur API Kick/Disconnect bawaan Netking.</code></pre>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
