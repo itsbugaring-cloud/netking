@@ -15,7 +15,7 @@
     background: transparent !important;
   }
   .quick-toolbar {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
   }
   .quick-search-panel {
     position: relative;
@@ -548,7 +548,7 @@
     </div>
   @endif
 
-  <div class="ms-panel mt-5" style="border: none !important; box-shadow: none !important; background: transparent !important;">
+  <div class="ms-panel mt-3" style="border: none !important; box-shadow: none !important; background: transparent !important;">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <span class="ms-panel-title" style="font-size: 1.25rem;">
         <i class='bx bx-history me-2' style="color:var(--blue);"></i>Riwayat Pembayaran Manual

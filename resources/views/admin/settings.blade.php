@@ -243,20 +243,21 @@
                   </button>
                 </div>
                 <div class="card-body p-0">
-                  <pre id="script-isolir" class="m-0 p-3" style="background: #1e1e1e; color: #569cd6; font-size: 0.85rem; border-radius: 0;"><code><span style="color:#6a9955;"># 1. Pastikan Pelanggan Isolir tetap bisa akses Server Netking (Ganti IP_SERVER_VPS dengan IP VPS Akang)</span>
+                  <pre id="script-isolir" class="m-0 p-3" style="background: #1e1e1e; color: #569cd6; font-size: 0.85rem; border-radius: 0; white-space: pre-wrap;"><code><span style="color:#6a9955;"># 1. Pastikan Pelanggan Isolir tetap bisa akses Server Netking</span>
 /ip firewall filter
-add action=accept chain=forward comment="BYPASS SERVER NETKING" dst-address=<span style="color:#ce9178;">IP_SERVER_VPS</span> src-address-list=isolir
+add action=accept chain=forward comment="BYPASS SERVER NETKING" dst-address=<span style="color:#ce9178;">{{ $_SERVER['SERVER_ADDR'] ?? request()->ip() }}</span> src-address-list=isolir
 
 <span style="color:#6a9955;"># 2. Redirect port 80 (HTTP) ke Landing Page Isolir Netking</span>
 /ip firewall nat
-add action=dst-nat chain=dstnat comment="REDIRECT ISOLIR KE NETKING" dst-port=80 protocol=tcp src-address-list=isolir to-addresses=<span style="color:#ce9178;">IP_SERVER_VPS</span> to-ports=80
+add action=dst-nat chain=dstnat comment="REDIRECT ISOLIR KE NETKING" dst-port=80 protocol=tcp src-address-list=isolir to-addresses=<span style="color:#ce9178;">{{ $_SERVER['SERVER_ADDR'] ?? request()->ip() }}</span> to-ports=80
 
 <span style="color:#6a9955;"># 3. Blokir sisa trafik (HTTPS, Game, Sosmed) untuk pelanggan Isolir</span>
 /ip firewall filter
 add action=drop chain=forward comment="DROP KONEKSI ISOLIR" src-address-list=isolir</code></pre>
                 </div>
                 <div class="card-footer" style="background: var(--surface-2); padding: 0.75rem 1.25rem; font-size: 0.8rem; color: var(--orange);">
-                  <i class='bx bx-info-circle'></i> <strong>Penting:</strong> Setelah di-paste, buka <strong>IP > Firewall > Filter Rules</strong> & <strong>NAT</strong>, lalu pastikan rule "REDIRECT" dan "DROP" ini berada di urutan <strong>paling atas</strong> agar tidak tertimpa rule yang lain.
+                  <div class="mb-2"><i class='bx bx-info-circle'></i> <strong>Penting:</strong> Setelah di-paste, buka <strong>IP > Firewall > Filter Rules</strong> & <strong>NAT</strong>, lalu pastikan rule "REDIRECT" dan "DROP" ini berada di urutan <strong>paling atas</strong> agar tidak tertimpa rule yang lain.</div>
+                  <div style="color: var(--red); font-weight: 600;"><i class='bx bx-error'></i> Catatan Isolir Webpage: Jika Akang menggunakan sistem "Redirect Webpage" seperti script di atas, fitur <span style="text-decoration: underline;">Disable PPPoE (Disable Secret)</span> di Netking <strong>TIDAK BOLEH DIGUNAKAN</strong>. Karena jika rahasia (secret) pelanggan didisable, router pelanggan tidak akan bisa terkoneksi ke MikroTik, sehingga mustahil menampilkan halaman isolir.</div>
                 </div>
               </div>
 
