@@ -4346,32 +4346,44 @@
     /* ── NKPager: custom pagination, zero Bootstrap dependency ── */
     .nk-pager-wrap {
       display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 8px; padding: .6rem 1rem;
+      flex-wrap: wrap; gap: 8px; padding: 0.6rem 1rem;
     }
     .nk-pager-info {
-      font-size: .75rem; color: var(--txt-3);
+      display: none !important; /* Disembunyikan agar tidak dobel dengan teks manual */
     }
     .nk-pager {
-      display: flex; align-items: center; gap: 2px;
+      display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end; width: 100%;
     }
+    @media (min-width: 576px) { .nk-pager { width: auto; } }
     .nk-pager-nav, .nk-pager-num {
-      display: inline-flex; align-items: center; justify-content: center;
-      min-width: 32px; height: 32px; padding: 0 8px;
-      border-radius: 6px; font-size: .8125rem; font-weight: 400;
-      border: 1px solid transparent; background: transparent;
-      color: var(--txt) !important; text-decoration: none !important;
-      cursor: pointer; transition: background .12s, border-color .12s;
-      line-height: 1;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px; height: 32px;
+      padding: 0 0.5rem !important;
+      border: 1px solid var(--border) !important;
+      background: var(--surface) !important;
+      color: var(--txt) !important;
+      border-radius: 8px !important;
+      font-size: 0.85rem !important;
+      font-weight: 600;
+      transition: all 0.15s;
+      text-decoration: none !important;
     }
-    .nk-pager-nav:hover, .nk-pager-num:hover {
-      background: var(--surface-2); color: var(--txt) !important;
+    .nk-pager-nav:hover:not(.disabled), .nk-pager-num:hover:not(.disabled) {
+      background: var(--bg) !important;
+      border-color: var(--txt-3) !important;
     }
-    .nk-pager-num { min-width: 32px; font-variant-numeric: tabular-nums; }
+    .nk-pager-num { font-variant-numeric: tabular-nums; }
     .nk-pager-num.active {
-      border-color: var(--border); font-weight: 600; cursor: default;
+      background: var(--blue, #2563eb) !important;
+      color: white !important;
+      border-color: var(--blue, #2563eb) !important;
+      font-weight: 600; cursor: default;
     }
     .nk-pager-nav.disabled, .nk-pager-num.disabled {
-      opacity: .55; cursor: not-allowed; pointer-events: none;
+      opacity: 0.5; cursor: not-allowed; pointer-events: none;
+      background: var(--bg) !important;
     }
 
     /* ── Table flat: no outer box, only row separators ── */
