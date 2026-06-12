@@ -31,12 +31,12 @@
   .cust-filter-tabs {
     display: inline-flex;
     align-items: center;
-    gap: .2rem;
-    padding: .35rem;
-    border-radius: 999px;
-    background: var(--surface);
+    gap: .3rem;
+    padding: .4rem;
+    border-radius: 14px;
+    background: var(--surface-2);
     border: 1px solid var(--border);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 8px 18px rgba(37, 99, 235, .08);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     flex-wrap: wrap;
   }
   .cust-filter-tab {
@@ -44,23 +44,23 @@
     align-items: center;
     justify-content: center;
     min-width: 84px;
-    height: 34px;
-    padding: 0 .9rem;
-    font-size: .78rem;
+    height: 36px;
+    padding: 0 1rem;
+    font-size: .8125rem;
     font-weight: 600;
-    border-radius: 999px;
+    border-radius: 10px;
     text-decoration: none;
     background: transparent;
     color: var(--txt-3);
-    transition: color .18s ease, background .18s ease, transform .18s ease;
+    transition: all .2s ease;
     white-space: nowrap;
-    line-height: 1;
   }
-  .cust-filter-tab:hover { color: var(--txt); transform: translateY(-1px); }
+  .cust-filter-tab:hover { color: var(--txt); background: rgba(0,0,0,0.03); }
+  [data-theme="dark"] .cust-filter-tab:hover { background: rgba(255,255,255,0.05); }
   .cust-filter-tab.active {
     color: var(--blue);
-    background: color-mix(in srgb, var(--blue) 10%, var(--surface));
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 18%, var(--border));
+    background: var(--surface);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   }
 
   /* ── Table cell sizing (sama seperti ONT inventory) ─────────────────── */
@@ -273,14 +273,17 @@
         <input type="hidden" name="search" value="{{ request('search') }}">
         <input type="hidden" name="status" value="{{ request('status') }}">
         <input type="hidden" name="per_page" value="{{ $perPage ?? 50 }}">
-        <select name="area_id" class="form-select form-select-sm" data-hide-search onchange="this.form.submit()">
-          <option value="">Semua Area</option>
-          @foreach($areas as $area)
-          <option value="{{ $area->id }}" {{ request('area_id') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
-          @endforeach
-        </select>
+        <div style="position: relative;">
+          <i class='bx bx-map' style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--txt-3); font-size: 1.1rem; z-index: 2;"></i>
+          <select name="area_id" class="form-select form-select-sm" data-hide-search onchange="this.form.submit()" style="border-radius: 10px; padding-left: 2.2rem; font-weight: 600; border-color: var(--border); background: var(--surface-2); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+            <option value="">Semua Area</option>
+            @foreach($areas as $area)
+            <option value="{{ $area->id }}" {{ request('area_id') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
+            @endforeach
+          </select>
+        </div>
         @if(request('area_id'))
-        <a href="{{ route('admin.customers.index') }}" style="font-size:.78rem;color:var(--txt-3);text-decoration:none;" title="Hapus filter area">
+        <a href="{{ route('admin.customers.index') }}" style="font-size:1rem;color:var(--txt-3);text-decoration:none; background: var(--surface-2); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" title="Hapus filter area" onmouseover="this.style.background='var(--red)'; this.style.color='#fff';" onmouseout="this.style.background='var(--surface-2)'; this.style.color='var(--txt-3)';">
           <i class='bx bx-x'></i>
         </a>
         @endif
@@ -289,48 +292,37 @@
     </div>
 
     {{-- Toolbar: Server-side search/filter --}}
-    <div class="ms-panel-body pt-0 pb-0">
-      <div class="cust-status-toolbar">
+    <div class="ms-panel-body pb-3 pt-3">
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        
         <div class="cust-filter-tabs" role="tablist" aria-label="Filter status pelanggan">
           @foreach($statusTabs as $value => $label)
             @php
               $isActiveTab = request('status', '') === $value;
               $tabQuery = array_merge(request()->query(), ['status' => $value === '' ? null : $value]);
-              if ($value === '') {
-                unset($tabQuery['status']);
-              }
+              if ($value === '') unset($tabQuery['status']);
             @endphp
-            <a href="{{ route('admin.customers.index', $tabQuery) }}"
-               class="cust-filter-tab {{ $isActiveTab ? 'active' : '' }}"
-               aria-selected="{{ $isActiveTab ? 'true' : 'false' }}">
+            <a href="{{ route('admin.customers.index', $tabQuery) }}" class="cust-filter-tab {{ $isActiveTab ? 'active' : '' }}" aria-selected="{{ $isActiveTab ? 'true' : 'false' }}">
               {{ $label }}
             </a>
           @endforeach
         </div>
-        <div class="cust-status-note">Filter cepat status pelanggan</div>
-      </div>
 
-      <form method="GET" action="{{ route('admin.customers.index') }}" class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
-        <div class="d-flex gap-3 flex-wrap align-items-center">
-          <div class="nk-search-wrap">
-            <i class='bx bx-search'></i>
-            <input type="text" name="search" class="nk-search-input" value="{{ request('search') }}" placeholder="Cari nama, PPPoE, no HP, alamat...">
+        <form method="GET" action="{{ route('admin.customers.index') }}" class="d-flex gap-2 align-items-center flex-wrap">
+          <div class="nk-search-wrap" style="width: 280px;">
+            <i class='bx bx-search' style="color: var(--blue);"></i>
+            <input type="text" name="search" class="nk-search-input" value="{{ request('search') }}" placeholder="Cari Pelanggan..." style="border-radius: 10px; background: var(--surface); border-color: var(--border);">
           </div>
           <input type="hidden" name="status" value="{{ request('status') }}">
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <span style="font-size:.76rem;color:var(--txt-3);font-weight:500;">Tampilkan</span>
-          <select name="per_page" class="form-select form-select-sm" data-hide-search onchange="this.form.submit()">
+          <select name="per_page" class="form-select form-select-sm" data-hide-search onchange="this.form.submit()" style="width: 70px; border-radius: 10px;">
             <option value="25" @selected(($perPage ?? 50) == 25)>25</option>
             <option value="50" @selected(($perPage ?? 50) == 50)>50</option>
             <option value="100" @selected(($perPage ?? 50) == 100)>100</option>
             <option value="200" @selected(($perPage ?? 50) == 200)>200</option>
           </select>
-          <button type="submit" class="ms-btn-secondary">Terapkan</button>
-          <a href="{{ route('admin.customers.index') }}" class="ms-btn-ghost">Reset</a>
-        </div>
-      </form>
+          <button type="submit" class="ms-btn" style="border-radius: 10px; padding: 0.45rem 0.8rem;"><i class='bx bx-filter-alt'></i></button>
+        </form>
+      </div>
     </div>
 
     {{-- Table --}}
@@ -369,12 +361,12 @@
             <tr>
               <td>@unless($isFinance)<input type="checkbox" class="row-check" value="{{ $customer->id }}" style="accent-color:var(--blue);">@endunless</td>
               <td>
-                <div class="d-flex align-items-center gap-2">
-                  <div style="flex-shrink:0;width:34px;height:34px;border-radius:10px;background:hsl({{ crc32($customer->name) % 360 }},50%,58%);font-size:.76rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">
+                <div class="d-flex align-items-center gap-3">
+                  <div style="flex-shrink:0;width:42px;height:42px;border-radius:12px;background:hsl({{ crc32($customer->name) % 360 }},50%,58%);font-size:1.1rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                     {{ strtoupper(substr($customer->name, 0, 1)) }}
                   </div>
                   <div>
-                    <div style="font-weight:600;color:var(--txt);">{{ $customer->name }}</div>
+                    <div style="font-weight:700;font-size: .95rem; color:var(--txt);">{{ $customer->name }}</div>
                   </div>
                 </div>
               </td>
