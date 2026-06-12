@@ -316,7 +316,7 @@
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pelanggan..." 
                    style="border:none; outline:none; background:transparent; font-size:0.8125rem; color:var(--txt); width:190px;">
           </div>
-          <select name="per_page" class="no-select2" onchange="this.form.submit()"
+          <select name="per_page" onchange="this.form.submit()"
                   style="height:34px; width:65px; padding:0 6px; font-size:0.8125rem; font-weight:600; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--txt); outline:none; cursor:pointer;">
             <option value="25" @selected(($perPage ?? 50) == 25)>25</option>
             <option value="50" @selected(($perPage ?? 50) == 50)>50</option>

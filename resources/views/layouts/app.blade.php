@@ -5430,15 +5430,17 @@
       white-space: normal !important;
       transition: background .1s !important;
     }
+    .select2-container--bootstrap-5 .select2-results__option--highlighted:not(.select2-results__option--selected),
     .select2-results__option--highlighted:not(.select2-results__option--selected) {
       background: var(--bg) !important;
       color: var(--txt) !important;
     }
     /* Selected item — light blue like Opsi active */
+    .select2-container--bootstrap-5 .select2-results__option--selected,
     .select2-results__option--selected,
     .select2-results__option[aria-selected="true"] {
-      background: color-mix(in srgb, var(--blue) 10%, var(--surface)) !important;
-      color: var(--blue) !important;
+      background: color-mix(in srgb, var(--nk-primary, #2563eb) 10%, var(--surface)) !important;
+      color: var(--nk-primary, #2563eb) !important;
       font-weight: 600 !important;
     }
     .workspace-shell .main .select2-container .select2-selection__placeholder {
