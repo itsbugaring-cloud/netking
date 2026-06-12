@@ -26,6 +26,33 @@
     height: 100%;
     display: block;
   }
+  
+  /* Visual Loader Spinner Overlay */
+  .loader-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f4f6fa;
+    z-index: 5;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+  }
+  .loader {
+    width: 48px;
+    height: 48px;
+    border: 5px solid rgba(37, 99, 235, 0.15);
+    border-bottom-color: #2563eb;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+  }
+  @keyframes rotation {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
   .overlay-content {
     position: absolute;
     inset: 0;
@@ -147,6 +174,10 @@
 <body>
   <!-- Spline 3D Scene Background Canvas -->
   <div class="spline-container">
+    <!-- Loader Spinner equivalent to Suspense fallback -->
+    <div class="loader-container" id="spline-loader">
+      <span class="loader"></span>
+    </div>
     <canvas id="canvas3d"></canvas>
   </div>
 
@@ -172,6 +203,14 @@
     
     spline.load('https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode')
       .then(() => {
+        // Hide loader smoothly once loading is complete
+        const loader = document.getElementById('spline-loader');
+        if (loader) {
+          loader.style.opacity = '0';
+          loader.style.visibility = 'hidden';
+          setTimeout(() => loader.remove(), 400);
+        }
+
         // Repeatedly hide floor meshes to override any internal updates
         const hideFloor = () => {
           if (spline.scene) {
