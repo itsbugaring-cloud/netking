@@ -6627,7 +6627,75 @@
         if (items[nkCmdIdx]) items[nkCmdIdx].scrollIntoView({ block: 'nearest' });
       });
     })();
-    // Global DataTables Advanced Pagination Builder removed for a simpler CSS based approach
+    // Global DataTables Extraction Script
+    // Moves pagination and info outside of the horizontally scrolling table shell
+    $(document).on('init.dt', function(e, settings) {
+        var api = new $.fn.dataTable.Api(settings);
+        var wrapper = $(api.table().container());
+        
+        var panel = wrapper.closest('.ms-panel');
+        if (!panel.length) return; // Only process tables inside ms-panel
+        
+        // Ensure we don't build twice
+        if (panel.find('.dt-custom-footer').length > 0) return;
+        
+        var info = wrapper.find('.dataTables_info');
+        var length = wrapper.find('.dataTables_length');
+        var paginate = wrapper.find('.dataTables_paginate');
+        
+        if (!info.length) return;
+        
+        // Build the structure matching Laravel's native pagination layout
+        var footer = $('<div class="ms-panel-body pt-2 pb-3 dt-custom-footer"></div>');
+        var flex = $('<div class="d-flex justify-content-between align-items-center flex-wrap gap-2"></div>');
+        var leftSide = $('<div class="d-flex align-items-center gap-4"></div>');
+        
+        // 1. Info Text
+        info.removeClass('d-none');
+        info.css({'padding': '0', 'font-size': '0.85rem', 'color': 'var(--txt-2)'});
+        leftSide.append(info);
+        
+        // 2. Length Menu
+        if (length.length) {
+            length.removeClass('d-none');
+            var select = length.find('select');
+            var newLength = $('<div class="d-flex align-items-center" style="gap: 8px;"></div>');
+            select.css({
+                'display': 'inline-block', 'width': 'auto',
+                'padding': '0.3rem 2rem 0.3rem 0.75rem',
+                'border': '1px solid var(--border)', 'border-radius': '8px',
+                'background-color': 'var(--surface)', 'font-size': '0.85rem',
+                'font-weight': '600', 'color': 'var(--txt)',
+                'appearance': 'none',
+                'background-image': 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 16 16\'%3e%3cpath fill=\'none\' stroke=\'%23343a40\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'m2 5 6 6 6-6\'/%3e%3c/svg%3e")',
+                'background-repeat': 'no-repeat',
+                'background-position': 'right 0.75rem center',
+                'background-size': '16px 12px'
+            });
+            newLength.append(select);
+            newLength.append($('<span style="font-size: 0.8rem; color: var(--txt-3);">per hal</span>'));
+            length.empty().append(newLength);
+            leftSide.append(length);
+        }
+        
+        flex.append(leftSide);
+        
+        // 3. Pagination
+        paginate.removeClass('d-none');
+        paginate.css({'margin': '0'});
+        flex.append(paginate);
+        
+        footer.append(flex);
+        
+        // Append OUTSIDE the table shell! This prevents horizontal scrolling issues.
+        panel.append(footer);
+        
+        // Clean up empty wrappers
+        wrapper.find('.row:empty').remove();
+        wrapper.children('.row').each(function() {
+            if ($(this).text().trim() === '') $(this).hide();
+        });
+    });
   </script>
 </body>
 
