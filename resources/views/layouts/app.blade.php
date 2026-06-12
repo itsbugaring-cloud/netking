@@ -5510,42 +5510,7 @@
       border-collapse: separate !important;
       border-spacing: 0 !important;
     }
-    /* Pagination: clean, no shadow, no double border */
-    .workspace-shell .main .pagination {
-      gap: 2px !important;
-    }
-    .workspace-shell .main .pagination .page-link,
-    .workspace-shell .main .dataTables_paginate .paginate_button {
-      min-width: 28px !important;
-      height: 28px !important;
-      padding: 0 6px !important;
-      font-size: .72rem !important;
-      line-height: 28px !important;
-      border-radius: 5px !important;
-      box-shadow: none !important;
-      border: 1px solid var(--border, #e2e8f0) !important;
-      background: #fff !important;
-      color: var(--txt, #1e293b) !important;
-    }
-    .workspace-shell .main .pagination .page-item.active .page-link,
-    .workspace-shell .main .dataTables_paginate .paginate_button.current {
-      background: var(--blue) !important;
-      border-color: var(--blue) !important;
-      color: #fff !important;
-      box-shadow: none !important;
-    }
-    .workspace-shell .main .pagination .page-link:hover,
-    .workspace-shell .main .dataTables_paginate .paginate_button:hover:not(.current) {
-      background: #f1f5f9 !important;
-      color: var(--txt, #1e293b) !important;
-      box-shadow: none !important;
-    }
-    .workspace-shell .main .pagination .page-item.disabled .page-link,
-    .workspace-shell .main .dataTables_paginate .paginate_button.disabled {
-      opacity: .4 !important;
-      background: transparent !important;
-      box-shadow: none !important;
-    }
+    /* Conflicting pagination styles removed to allow global .pagination styles to apply */
 
     /* ── Design Tokens ── */
     :root {
@@ -5703,6 +5668,26 @@
     .dropdown-item input[type="checkbox"] {
         accent-color: var(--blue, #2563eb);
         width: 16px; height: 16px; cursor: pointer;
+    }
+    
+    /* Table Dropdown Toggle Styling */
+    .table .dropdown-toggle.btn-light {
+        background: var(--surface) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--txt) !important;
+        font-weight: 600 !important;
+        padding: 0.4rem 0.8rem !important;
+        border-radius: 8px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        transition: all 0.15s !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    }
+    .table .dropdown-toggle.btn-light:hover, 
+    .table .dropdown-toggle.btn-light[aria-expanded="true"] {
+        background: var(--bg) !important;
+        border-color: var(--txt-3) !important;
     }
 
     /* ── Global Advanced Pagination Styles ── */
