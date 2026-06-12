@@ -111,9 +111,9 @@
       padding: 12px 14px 12px 16px !important;
       opacity: 1 !important;
       border: 1px solid #e2e8f0;
+      background-color: #ffffff !important;
       background: linear-gradient(180deg, #ffffff, #f8fafc) !important;
       color: #0f172a !important;
-      background-image: none !important;
       display: block;
       position: relative;
       overflow: hidden;
@@ -132,6 +132,7 @@
     #toast-container > .toast {
       padding-left: 14px !important;
       background-image: none !important;
+      opacity: 1 !important;
     }
 
     #toast-container .toast-title {
@@ -157,24 +158,28 @@
     #toast-container .toast-success {
       --toast-accent: #22c55e;
       border-color: #bbf7d0;
+      background-color: #f0fdf4 !important;
       background: linear-gradient(180deg, #f7fff9, #f0fdf4) !important;
     }
 
     #toast-container .toast-error {
       --toast-accent: #f87171;
       border-color: #fecaca;
+      background-color: #fef2f2 !important;
       background: linear-gradient(180deg, #fff8f8, #fef2f2) !important;
     }
 
     #toast-container .toast-warning {
       --toast-accent: #f59e0b;
       border-color: #fde68a;
+      background-color: #fffbeb !important;
       background: linear-gradient(180deg, #fffdf5, #fffbeb) !important;
     }
 
     #toast-container .toast-info {
       --toast-accent: #38bdf8;
       border-color: #bfdbfe;
+      background-color: #eff6ff !important;
       background: linear-gradient(180deg, #f8fbff, #eff6ff) !important;
     }
 
@@ -182,7 +187,6 @@
     #toast-container .toast-error,
     #toast-container .toast-warning,
     #toast-container .toast-info {
-      background-image: none !important;
       color: #0f172a !important;
     }
 
@@ -221,9 +225,11 @@
 
     [data-theme="dark"] #toast-container > div {
       border-color: rgba(71, 85, 105, 0.5);
+      background-color: #111827 !important;
       background: linear-gradient(180deg, #0f172a, #111827) !important;
       color: #e2e8f0 !important;
       box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
+      opacity: 1 !important;
     }
 
     [data-theme="dark"] #toast-container .toast-title {
@@ -236,21 +242,25 @@
 
     [data-theme="dark"] #toast-container .toast-success {
       border-color: rgba(34, 197, 94, 0.25);
+      background-color: #0d1f17 !important;
       background: linear-gradient(180deg, #0f172a, #0d1f17) !important;
     }
 
     [data-theme="dark"] #toast-container .toast-error {
       border-color: rgba(248, 113, 113, 0.25);
+      background-color: #221315 !important;
       background: linear-gradient(180deg, #0f172a, #221315) !important;
     }
 
     [data-theme="dark"] #toast-container .toast-warning {
       border-color: rgba(245, 158, 11, 0.25);
+      background-color: #231a0f !important;
       background: linear-gradient(180deg, #0f172a, #231a0f) !important;
     }
 
     [data-theme="dark"] #toast-container .toast-info {
       border-color: rgba(56, 189, 248, 0.25);
+      background-color: #0f1b26 !important;
       background: linear-gradient(180deg, #0f172a, #0f1b26) !important;
     }
 
