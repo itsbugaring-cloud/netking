@@ -14,7 +14,22 @@
   .hero{padding:26px 28px 20px;border-bottom:1px solid var(--border)}
   .brand{font-size:.78rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-3);margin-bottom:14px}
   .title-row{display:flex;align-items:flex-start;gap:18px}
-  .badge{width:60px;height:60px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:var(--amber-soft);color:var(--amber);font-size:1.6rem;border:1px solid #fed7aa;flex-shrink:0}
+  .badge-wrapper{position:relative;width:68px;height:68px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
+  .loader-ring{position:absolute;inset:0;border:3px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:nk-spin 1.2s linear infinite}
+  .badge{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--amber-soft);color:var(--amber);border:1px solid #fed7aa;z-index:1;animation:nk-float-pulse 3s ease-in-out infinite}
+  @keyframes nk-spin{100%{transform:rotate(360deg)}}
+  @keyframes nk-float-pulse{
+    0%,100%{transform:translateY(0) scale(1);box-shadow:0 4px 12px rgba(217,119,6,0.06)}
+    50%{transform:translateY(-3px) scale(1.02);box-shadow:0 8px 20px rgba(217,119,6,0.12)}
+  }
+  @keyframes shackle-pulse {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+  .lock-shackle {
+    animation: shackle-pulse 2s ease-in-out infinite;
+    transform-origin: bottom;
+  }
   .code{font-size:4.8rem;line-height:.9;font-weight:900;color:var(--amber);letter-spacing:-.05em}
   .title{font-size:1.6rem;font-weight:800;margin:6px 0 8px}
   .msg{font-size:.95rem;line-height:1.7;color:var(--txt-2);max-width:48ch}
@@ -36,7 +51,15 @@
     <div class="hero">
       <div class="brand">NETKING · Access Control</div>
       <div class="title-row">
-        <div class="badge">🔒</div>
+        <div class="badge-wrapper">
+          <div class="loader-ring"></div>
+          <div class="badge">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="lock-svg">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" class="lock-shackle"></path>
+            </svg>
+          </div>
+        </div>
         <div>
           <div class="code">403</div>
           <div class="title">Akses ke halaman ini ditolak</div>

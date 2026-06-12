@@ -64,9 +64,20 @@
     align-items:flex-start;
     gap:18px;
   }
-  .badge{
-    width:60px;height:60px;border-radius:20px;display:flex;align-items:center;justify-content:center;
-    background:var(--danger-soft);color:var(--danger);font-size:1.6rem;border:1px solid #fecaca;flex-shrink:0;animation:nk-float 3.8s ease-in-out infinite,nk-glow 3.8s ease-in-out infinite;
+  .badge-wrapper{position:relative;width:68px;height:68px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
+  .loader-ring{position:absolute;inset:0;border:3px solid var(--border);border-top-color:var(--danger);border-radius:50%;animation:nk-spin 1.2s linear infinite}
+  .badge{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--danger-soft);color:var(--danger);border:1px solid #fecaca;z-index:1;animation:nk-float-pulse 3s ease-in-out infinite}
+  @keyframes nk-spin{100%{transform:rotate(360deg)}}
+  @keyframes nk-float-pulse{
+    0%,100%{transform:translateY(0) scale(1);box-shadow:0 4px 12px rgba(239,68,68,0.06)}
+    50%{transform:translateY(-3px) scale(1.02);box-shadow:0 8px 20px rgba(239,68,68,0.12)}
+  }
+  @keyframes gear-spin {
+    100% { transform: rotate(360deg); }
+  }
+  .gear-rotate {
+    animation: gear-spin 8s linear infinite;
+    transform-origin: 12px 12px;
   }
   .code{font-size:4.8rem;line-height:.9;font-weight:900;color:var(--danger);letter-spacing:-.05em;animation:nk-pop-in .58s cubic-bezier(.2,.8,.2,1) .03s both}
   .title{font-size:1.6rem;font-weight:800;margin:6px 0 8px}
@@ -111,7 +122,15 @@
     <div class="hero">
       <div class="brand">NETKING · Server Alert</div>
       <div class="title-row">
-        <div class="badge">⚡</div>
+        <div class="badge-wrapper">
+          <div class="loader-ring"></div>
+          <div class="badge">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="gear-svg">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" class="gear-rotate"></path>
+            </svg>
+          </div>
+        </div>
         <div>
           <div class="code">500</div>
           <div class="title">Server sedang bermasalah</div>

@@ -502,6 +502,28 @@ class TelegramConfigBotController extends Controller
                     $this->promptCurrentField($chatId, $state);
                     return;
                 }
+
+                // Live MikroTik check to prevent overwriting existing secret
+                $areaId = (int) ($state['draft']['area_id'] ?? 0);
+                $area = Area::query()->find($areaId);
+                if ($area) {
+                    try {
+                        $service = MikroTikService::forArea($area);
+                        if ($service->isConnected()) {
+                            $exists = $service->secretExists($value);
+                            if (($exists['success'] ?? false) === true && ($exists['exists'] ?? false) === true) {
+                                $this->sendMessage(
+                                    $chatId,
+                                    "⚠️ PPPoE ini sudah ada/aktif di router MikroTik area {$area->name}.\nCoba gunakan username lain ya."
+                                );
+                                $this->promptCurrentField($chatId, $state);
+                                return;
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        // Fallback silently if connection failed
+                    }
+                }
             }
 
             $state['draft'][$editingField] = $value;
@@ -574,6 +596,28 @@ class TelegramConfigBotController extends Controller
                 );
                 $this->promptCurrentField($chatId, $state);
                 return;
+            }
+
+            // Live MikroTik check to prevent overwriting existing secret
+            $areaId = (int) ($state['draft']['area_id'] ?? 0);
+            $area = Area::query()->find($areaId);
+            if ($area) {
+                try {
+                    $service = MikroTikService::forArea($area);
+                    if ($service->isConnected()) {
+                        $exists = $service->secretExists((string) ($state['draft']['pppoe_user'] ?? ''));
+                        if (($exists['success'] ?? false) === true && ($exists['exists'] ?? false) === true) {
+                            $this->sendMessage(
+                                $chatId,
+                                "⚠️ PPPoE ini sudah ada/aktif di router MikroTik area {$area->name}.\nCoba gunakan username lain ya."
+                            );
+                            $this->promptCurrentField($chatId, $state);
+                            return;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // Fallback silently if connection failed
+                }
             }
         }
 
@@ -1075,7 +1119,17 @@ class TelegramConfigBotController extends Controller
 
     private function validateDraftAgainstTemplate(array $draft): array
     {
-        return $this->draftValidator()->validateDraftAgainstTemplate($draft);
+        $errors = $this->draftValidator()->validateDraftAgainstTemplate($draft);
+        if (!empty($draft['pppoe_user'])) {
+            $pppoeUserError = $this->validateFieldValue('pppoe_user', $draft['pppoe_user'], ['draft' => $draft]);
+            if ($pppoeUserError !== null) {
+                $errors = array_filter($errors, function($err) {
+                    return !str_contains($err, 'PPPoE User');
+                });
+                $errors[] = $pppoeUserError;
+            }
+        }
+        return array_values($errors);
     }
 
     private function adminActionApprove(string $adminChatId, string $token, array $from): void
@@ -2064,7 +2118,51 @@ class TelegramConfigBotController extends Controller
 
     private function validateFieldValue(string $field, string $value, array $state): ?string
     {
-        return $this->draftValidator()->validateFieldValue($field, $value);
+        $error = $this->draftValidator()->validateFieldValue($field, $value);
+        if ($error !== null) {
+            return $error;
+        }
+
+        if ($field === 'pppoe_user') {
+            $areaId = (int) ($state['draft']['area_id'] ?? 0);
+            if ($areaId > 0) {
+                $latest = $this->getLastPppoeByArea($areaId);
+                $expectedPrefix = $this->detectAreaPppoePrefix($areaId, $latest['pppoe_user'] ?? null);
+                if ($expectedPrefix !== null && $expectedPrefix !== '') {
+                    $expectedPrefix = strtoupper($expectedPrefix);
+                    $value = strtoupper($value);
+
+                    // Check if it starts with PREFIX-
+                    if (!str_starts_with($value, $expectedPrefix . '-')) {
+                        // Let's analyze the typo to give helpful feedback
+                        if (str_starts_with($value, $expectedPrefix)) {
+                            // Missing hyphen, e.g. NK021 instead of NK-021
+                            $rest = substr($value, strlen($expectedPrefix));
+                            if (!str_starts_with($rest, '-')) {
+                                return "Format PPPoE salah: Kurang tanda hubung (-) setelah {$expectedPrefix}. Contoh: {$expectedPrefix}-021";
+                            }
+                        }
+                        return "Format PPPoE salah: Harus diawali dengan prefix area '{$expectedPrefix}-'. Contoh: {$expectedPrefix}-021";
+                    }
+
+                    $suffix = substr($value, strlen($expectedPrefix) + 1);
+                    if ($suffix === '') {
+                        return "Format PPPoE salah: Harus ada nomor setelah tanda hubung. Contoh: {$expectedPrefix}-021";
+                    }
+
+                    // Check for letter O instead of number 0 in the suffix
+                    if (stripos($suffix, 'O') !== false) {
+                        return "Typo terdeteksi: Gunakan angka 0 (nol), bukan huruf O. Contoh: {$expectedPrefix}-021";
+                    }
+
+                    if (!ctype_digit($suffix)) {
+                        return "Format PPPoE salah: Karakter setelah tanda hubung harus berupa angka saja. Contoh: {$expectedPrefix}-021";
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     private function findDuplicatePppoe(int $areaId, string $pppoeUser): ?array

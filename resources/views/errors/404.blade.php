@@ -18,7 +18,29 @@
   .hero{padding:26px 28px 20px;border-bottom:1px solid var(--border)}
   .brand{font-size:.78rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-3);margin-bottom:14px}
   .title-row{display:flex;align-items:flex-start;gap:18px}
-  .badge{width:60px;height:60px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--blue);font-size:1.6rem;border:1px solid #bfdbfe;flex-shrink:0;animation:nk-float 3.8s ease-in-out infinite,nk-glow 3.8s ease-in-out infinite}
+  .badge-wrapper{position:relative;width:68px;height:68px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
+  .loader-ring{position:absolute;inset:0;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:nk-spin 1.2s linear infinite}
+  .badge{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--blue);border:1px solid #bfdbfe;z-index:1;animation:nk-float-pulse 3s ease-in-out infinite}
+  @keyframes nk-spin{100%{transform:rotate(360deg)}}
+  @keyframes nk-float-pulse{
+    0%,100%{transform:translateY(0) scale(1);box-shadow:0 4px 12px rgba(37,99,235,0.06)}
+    50%{transform:translateY(-3px) scale(1.02);box-shadow:0 8px 20px rgba(37,99,235,0.12)}
+  }
+  @keyframes pulse-dash-anim {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 7; }
+  }
+  .pulse-dash {
+    animation: pulse-dash-anim 1s linear infinite;
+  }
+  @keyframes search-wiggle {
+    0%, 100% { transform: rotate(0deg) translate(0, 0); }
+    33% { transform: rotate(3deg) translate(1px, -1px); }
+    66% { transform: rotate(-3deg) translate(-1px, 1px); }
+  }
+  .searching-svg {
+    animation: search-wiggle 3s ease-in-out infinite;
+  }
   .code{font-size:4.8rem;line-height:.9;font-weight:900;color:var(--blue);letter-spacing:-.05em;animation:nk-pop-in .58s cubic-bezier(.2,.8,.2,1) .03s both}
   .title{font-size:1.6rem;font-weight:800;margin:6px 0 8px}
   .msg{font-size:.95rem;line-height:1.7;color:var(--txt-2);max-width:48ch}
@@ -42,7 +64,15 @@
     <div class="hero">
       <div class="brand">NETKING · Route Missing</div>
       <div class="title-row">
-        <div class="badge">🌐</div>
+        <div class="badge-wrapper">
+          <div class="loader-ring"></div>
+          <div class="badge">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="searching-svg">
+              <circle cx="11" cy="11" r="7" stroke-dasharray="4,3" class="pulse-dash"></circle>
+              <path d="M21 21l-4.35-4.35"></path>
+            </svg>
+          </div>
+        </div>
         <div>
           <div class="code">404</div>
           <div class="title">Halaman yang kamu cari tidak ada</div>
