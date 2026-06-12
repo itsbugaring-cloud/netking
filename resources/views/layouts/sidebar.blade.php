@@ -211,14 +211,7 @@
         </form>
       </div>
     </div>
-    <button type="button" class="sb-head-btn" id="sidebar-search-trigger" onclick="nkOpenGlobalSearch()" aria-label="Search">
-      <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false" class="sb-head-icon">
-        <circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
-        <path d="M10.35 10.35L13.25 13.25" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path>
-      </svg>
-    </button>
   </div>
-</div>
 
 {{-- Dashboard standalone (not inside any section) --}}
 <a href="{{ route('admin.dashboard') }}"

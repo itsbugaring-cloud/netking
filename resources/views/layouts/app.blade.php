@@ -5638,9 +5638,9 @@
     }
     .page-item.active .page-link,
     .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-        background: #2563eb !important;
+        background: var(--blue) !important;
         color: white !important;
-        border-color: #2563eb !important;
+        border-color: var(--blue) !important;
     }
     .page-item.disabled .page-link,
     .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
