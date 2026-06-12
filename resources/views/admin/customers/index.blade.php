@@ -42,7 +42,10 @@
     box-shadow: 0 16px 34px rgba(15, 23, 42, .06);
   }
   .cust-hero-card {
-    padding: .95rem 1rem;
+    padding: .85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     background:
       radial-gradient(circle at top right, rgba(59, 130, 246, .12), transparent 38%),
       linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
@@ -74,7 +77,7 @@
     border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--border));
   }
   .cust-stat-card {
-    padding: .85rem .95rem;
+    padding: .85rem 1rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
