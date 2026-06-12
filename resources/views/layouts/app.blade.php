@@ -5900,7 +5900,8 @@
           width: '100%',
           placeholder: placeholder,
           allowClear: $el.find('option[value=""]').length > 0,
-          minimumResultsForSearch: hideSearch ? Infinity : 10
+          minimumResultsForSearch: hideSearch ? Infinity : 10,
+          dropdownParent: $('body')  // FIX: render dropdown at body level, bypassing workspace-shell overflow:hidden
         }, extra || {});
       }
 
@@ -5913,7 +5914,7 @@
           $(modal).find('.form-select').not('.no-select2').not('[data-select2-id]').each(function() {
             var $el = $(this);
             $el.select2(buildSelect2Options($el, {
-              dropdownParent: $(modal)
+              dropdownParent: $(modal)  // For modals, keep parent as modal so z-index stays correct
             }));
           });
         });
