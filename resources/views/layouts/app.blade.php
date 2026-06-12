@@ -6597,6 +6597,44 @@
         if (items[nkCmdIdx]) items[nkCmdIdx].scrollIntoView({ block: 'nearest' });
       });
     })();
+    
+    // Global DataTables Advanced Pagination Builder
+    $(document).on('init.dt', function(e, settings) {
+        var api = new $.fn.dataTable.Api(settings);
+        var wrapper = $(api.table().container());
+        
+        // Find the DataTables components
+        var info = wrapper.find('.dataTables_info');
+        var length = wrapper.find('.dataTables_length');
+        var paginate = wrapper.find('.dataTables_paginate');
+        
+        // Only build if not already built and components exist
+        if (wrapper.find('.adv-pagination-container').length === 0 && info.length) {
+            // Create the wrapper with inline styles just to be absolutely sure it renders a card
+            var container = $('<div class="adv-pagination-container d-flex justify-content-between align-items-center mt-3" style="border: 1px solid var(--border) !important; background: var(--surface) !important; border-radius: 12px !important; padding: 1rem 1.5rem !important; width: 100% !important; margin-top: 1.5rem !important;"></div>');
+            var rightDiv = $('<div class="d-flex align-items-center gap-3"></div>');
+            
+            // Remove d-none if it was added by dom string
+            info.removeClass('d-none');
+            length.removeClass('d-none');
+            paginate.removeClass('d-none');
+            
+            // Assemble the layout
+            rightDiv.append(length).append(paginate);
+            container.append(info).append(rightDiv);
+            
+            // Append to the bottom of the DataTables wrapper
+            wrapper.append(container);
+            
+            // Clean up any empty row/col wrappers left behind by Bootstrap 5 integration
+            wrapper.find('.row:empty').remove();
+            wrapper.children('.row').each(function() {
+                if ($(this).children().length === 0 || $(this).text().trim() === '') {
+                    $(this).hide();
+                }
+            });
+        }
+    });
   </script>
 </body>
 

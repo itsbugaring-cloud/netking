@@ -115,7 +115,7 @@
 <script>
   $(function() {
     var table = $('#areas-table').DataTable({
-      dom: '<rt><"adv-pagination-container d-flex justify-content-between align-items-center mt-3"i<"d-flex align-items-center gap-3"lp>>',
+      dom: '<"d-none"ilp>rt',
       pageLength: 25,
       autoWidth: false,
       scrollX: true,
