@@ -292,12 +292,12 @@
       @foreach($payments as $payment)
         @php
           $customer = $payment->customer;
-          $ageMinutes = $payment->created_at->diffInMinutes(now());
-          $ageHours   = $payment->created_at->diffInHours(now());
-          $ageDays    = $payment->created_at->diffInDays(now());
+          $ageMinutes = (int) $payment->created_at->diffInMinutes(now());
+          $ageHours   = (int) $payment->created_at->diffInHours(now());
+          $ageDays    = (int) $payment->created_at->diffInDays(now());
           if ($ageDays > 0)        $ageLabel = $ageDays . ' hari lalu';
           elseif ($ageHours > 0)   $ageLabel = $ageHours . ' jam lalu';
-          else                     $ageLabel = max(1,$ageMinutes) . ' menit lalu';
+          else                     $ageLabel = max(1, $ageMinutes) . ' menit lalu';
         @endphp
         <div class="pcard" id="pcard-{{ $payment->id }}">
           <div class="pcard-inner">
