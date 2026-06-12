@@ -5311,57 +5311,35 @@
     .nk-search-wrap { position:relative; display:flex; align-items:center; }
     .nk-search-wrap i {
       position:absolute;
-      left:.35rem;
+      left:.65rem;
       color:var(--txt-3);
-      font-size:.92rem;
-      pointer-events:auto;
-      cursor:text;
+      font-size:1.1rem;
+      pointer-events:none;
       transition:color .15s ease;
     }
     .nk-search-input {
-      height:30px;
-      padding:.2rem .2rem .2rem 1.4rem;
-      font-size:.81rem;
-      border:none;
-      border-bottom:1px solid color-mix(in srgb,var(--blue) 22%,var(--border));
-      border-radius:0;
-      background:transparent;
-      color:var(--txt);
-      outline:none;
-      width:250px;
-      max-width:100%;
-      font-family:inherit;
-      transition:border-color .15s ease, color .15s ease;
+      height: 38px;
+      padding: .375rem .75rem .375rem 2.2rem;
+      font-size: .875rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--txt);
+      outline: none;
+      width: 280px;
+      max-width: 100%;
+      font-family: inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
     }
     .nk-search-input:focus {
-      border-color: color-mix(in srgb,var(--blue) 70%,var(--border));
-      box-shadow:none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 15%, transparent);
     }
     .nk-search-input::placeholder {
       color:var(--txt-3);
     }
     .nk-search-wrap:focus-within i { color:var(--blue); }
-    .nk-search-wrap.nk-table-search-trigger {
-      width:auto;
-      height:auto;
-      border:none;
-      border-radius:0;
-      justify-content:center;
-      cursor:pointer;
-      background:transparent;
-      transition:opacity .15s ease;
-    }
-    .nk-search-wrap.nk-table-search-trigger:hover {
-      opacity:.8;
-    }
-    .nk-search-wrap.nk-table-search-trigger i {
-      position:static;
-      color:var(--blue);
-      cursor:pointer;
-    }
-    .nk-search-wrap.nk-table-search-trigger .nk-search-input {
-      display:none !important;
-    }
+    
     .nk-length-select { padding:.3rem .4rem; font-size:.8125rem; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--txt); outline:none; font-family:inherit; cursor:pointer; width:70px; }
 
     /* === COMPACT OVERRIDES: smaller dropdowns & pagination everywhere === */
@@ -6507,19 +6485,14 @@
         var targetWrap = event.target.closest('.nk-search-wrap');
         if (!targetWrap) return;
         var icon = event.target.closest('.nk-search-wrap i');
-        if (!icon && !event.target.closest('.nk-search-wrap.nk-table-search-trigger')) return;
 
         var input = targetWrap.querySelector('input, textarea');
         if (!input) return;
 
-        var isTableSearch = targetWrap.classList.contains('nk-table-search-trigger');
-        if (!isTableSearch) {
+        // Allow normal interaction with the search input
+        if (icon && document.activeElement !== input) {
           input.focus();
-          return;
         }
-
-        event.preventDefault();
-        nkOpenTableSearch(input);
       });
     });
     document.addEventListener('keydown', function(event) {
