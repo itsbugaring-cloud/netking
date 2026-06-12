@@ -289,11 +289,11 @@
     </div>
 
     {{-- Toolbar: Server-side search/filter --}}
-    <div class="ms-panel-body pb-3 pt-3">
-      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div class="ms-panel-body" style="padding: 12px 16px; border-bottom: 1px solid var(--border);">
+      <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
         
-        {{-- Left: Elegant Status Tabs (Segmented Control Style) --}}
-        <div class="cust-filter-tabs d-flex align-items-center" role="tablist" aria-label="Filter status pelanggan" style="background: var(--surface-2); padding: 4px; border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; max-width: 100%;">
+        {{-- Left: Status Filter Tabs --}}
+        <div style="display:flex; align-items:center; gap:3px; background:var(--surface-2); padding:3px; border-radius:10px; border:1px solid var(--border);">
           @foreach($statusTabs as $value => $label)
             @php
               $isActiveTab = request('status', '') === $value;
@@ -301,32 +301,36 @@
               if ($value === '') unset($tabQuery['status']);
             @endphp
             <a href="{{ route('admin.customers.index', $tabQuery) }}"
-               style="border-radius: 8px; padding: 6px 16px; font-weight: 600; font-size: 0.8125rem; color: {{ $isActiveTab ? 'var(--blue)' : 'var(--txt-3)' }}; background: {{ $isActiveTab ? 'var(--surface)' : 'transparent' }}; box-shadow: {{ $isActiveTab ? '0 2px 6px rgba(0,0,0,0.04)' : 'none' }}; text-decoration: none; transition: all 0.2s ease; white-space: nowrap; border: {{ $isActiveTab ? '1px solid var(--border)' : '1px solid transparent' }};"
+               style="padding:5px 14px; border-radius:7px; font-size:0.8125rem; font-weight:600; white-space:nowrap; text-decoration:none; transition:all .15s; {{ $isActiveTab ? 'background:var(--surface); color:var(--blue); box-shadow:0 1px 4px rgba(0,0,0,.06); border:1px solid var(--border);' : 'color:var(--txt-3); border:1px solid transparent;' }}"
                aria-selected="{{ $isActiveTab ? 'true' : 'false' }}">
               {{ $label }}
             </a>
           @endforeach
         </div>
 
-        {{-- Right: Search & Pagination --}}
-        <form method="GET" action="{{ route('admin.customers.index') }}" class="d-flex flex-wrap gap-2 align-items-center">
-          <div class="nk-search-wrap" style="width: 260px; background: var(--surface-2); border-radius: 10px; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);">
-            <i class='bx bx-search' style="color: var(--txt-3);"></i>
-            <input type="text" name="search" class="nk-search-input" value="{{ request('search') }}" placeholder="Cari pelanggan..." style="background: transparent; border: none; box-shadow: none;">
-          </div>
+        {{-- Right: Search + Per Page + Submit --}}
+        <form method="GET" action="{{ route('admin.customers.index') }}" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
           <input type="hidden" name="status" value="{{ request('status') }}">
-          
-          <select name="per_page" class="form-select form-select-sm" data-hide-search onchange="this.form.submit()" style="width: 75px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); font-weight: 600; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);">
+          <div style="display:flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:5px 10px;">
+            <i class='bx bx-search' style="color:var(--txt-3); font-size:1rem;"></i>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pelanggan..." 
+                   style="border:none; outline:none; background:transparent; font-size:0.8125rem; color:var(--txt); width:190px;">
+          </div>
+          <select name="per_page" class="no-select2" onchange="this.form.submit()"
+                  style="height:34px; padding:0 8px; font-size:0.8125rem; font-weight:600; border:1px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--txt); outline:none; cursor:pointer;">
             <option value="25" @selected(($perPage ?? 50) == 25)>25</option>
             <option value="50" @selected(($perPage ?? 50) == 50)>50</option>
             <option value="100" @selected(($perPage ?? 50) == 100)>100</option>
             <option value="200" @selected(($perPage ?? 50) == 200)>200</option>
           </select>
-          <button type="submit" class="ms-btn" style="border-radius: 10px; padding: 0.4rem 0.7rem;"><i class='bx bx-filter-alt'></i></button>
+          <button type="submit" style="height:34px; padding:0 12px; background:var(--blue); color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:0.8125rem; font-weight:600; display:flex; align-items:center; gap:4px;">
+            <i class='bx bx-search'></i>
+          </button>
         </form>
 
       </div>
     </div>
+
 
     {{-- Table --}}
     <div class="ms-table-shell">

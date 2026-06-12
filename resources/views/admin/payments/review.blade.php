@@ -421,7 +421,10 @@
   </div>
 </div>
 
-{{-- Proof Image Modal --}}
+@endsection
+
+{{-- Proof Image Modal: OUTSIDE @section('content') so workspace-shell overflow:hidden doesn't block clicks --}}
+@push('modals')
 <div class="modal fade" id="proofModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content" style="border-radius:16px;border:1px solid var(--border);overflow:hidden;background:var(--surface);">
@@ -435,7 +438,7 @@
     </div>
   </div>
 </div>
-@endsection
+@endpush
 
 @section('scripts')
 <script>
@@ -490,14 +493,10 @@ function submitBulkApprove() {
 }
 
 function showProof(url, name) {
-  const modalEl = document.getElementById('proofModal');
-  if (modalEl.parentNode !== document.body) {
-    document.body.appendChild(modalEl);
-  }
-  
   document.getElementById('proofModalImg').src = url;
   document.getElementById('proofModalTitle').textContent = 'Bukti — ' + (name || 'Pelanggan');
-  new bootstrap.Modal(modalEl).show();
+  var modalEl = document.getElementById('proofModal');
+  bootstrap.Modal.getOrCreateInstance(modalEl).show();
 }
 </script>
 @endsection
