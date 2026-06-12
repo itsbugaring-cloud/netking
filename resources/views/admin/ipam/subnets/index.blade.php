@@ -203,7 +203,7 @@
 <script>
   $(function() {
     var table = $('#subnets-table').DataTable({
-      dom: '<"d-none"ilp>rt',
+      dom: 'rt<"d-flex justify-content-between align-items-center mb-3"ip>',
       pageLength: 25,
       autoWidth: false,
       scrollX: true,

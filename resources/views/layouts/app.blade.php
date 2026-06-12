@@ -5694,6 +5694,21 @@
     .adv-pagination-container .col-sm-12 {
         display: contents !important;
     }
+
+    .dataTables_wrapper .d-flex.justify-content-between.align-items-center.mb-3 {
+        padding: 1rem 1.5rem !important;
+        border-bottom: 1px solid var(--border) !important;
+        background: transparent;
+        margin-bottom: 0 !important;
+    }
+    
+    .dataTables_wrapper .d-flex.justify-content-between.align-items-center.mt-3 {
+        padding: 1rem 1.5rem !important;
+        border-top: 1px solid var(--border) !important;
+        background: transparent;
+        margin-top: 0 !important;
+    }
+    
     .dataTables_info {
         font-size: 0.85rem !important;
         color: var(--txt-2) !important;
@@ -5723,6 +5738,11 @@
     .dataTables_length label { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0; font-size: 0.85rem; font-weight: 500; color: var(--txt-2); }
     .dataTables_paginate {
         display: flex !important;
+        align-items: center !important;
+        gap: 0.2rem !important;
+        padding-top: 0 !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .pagination {
         align-items: center !important;
         gap: 0.2rem !important;
         padding-top: 0 !important;
@@ -6597,39 +6617,7 @@
         if (items[nkCmdIdx]) items[nkCmdIdx].scrollIntoView({ block: 'nearest' });
       });
     })();
-    
-    // Global DataTables Advanced Pagination Builder
-    $(document).on('init.dt', function(e, settings) {
-        var api = new $.fn.dataTable.Api(settings);
-        var wrapper = $(api.table().container());
-        
-        var info = wrapper.find('.dataTables_info');
-        var paginate = wrapper.find('.dataTables_paginate');
-        
-        if (wrapper.find('.nk-pager-wrap').length === 0 && info.length) {
-            // Build the exact same structure as vendor/pagination/netking.blade.php
-            var container = $('<nav class="nk-pager-wrap" style="width: 100%; border-top: 1px solid var(--border);"></nav>');
-            
-            // Clean up info
-            info.removeClass('d-none').addClass('nk-pager-info');
-            info.css({'display': 'block', 'padding': '0', 'font-size': '0.85rem', 'color': 'var(--txt-2)', 'font-weight': '400'});
-            
-            // Clean up paginate
-            paginate.removeClass('d-none').addClass('nk-pager');
-            paginate.css({'display': 'flex', 'align-items': 'center', 'gap': '0.2rem', 'justify-content': 'flex-end'});
-            
-            container.append(info).append(paginate);
-            
-            // Put it seamlessly inside the table shell at the bottom
-            wrapper.closest('.ms-table-shell').append(container);
-            
-            // Clean up any empty row/col wrappers
-            wrapper.find('.row:empty').remove();
-            wrapper.children('.row').each(function() {
-                if ($(this).children().length === 0 || $(this).text().trim() === '') $(this).hide();
-            });
-        }
-    });
+    // Global DataTables Advanced Pagination Builder removed for a simpler CSS based approach
   </script>
 </body>
 
