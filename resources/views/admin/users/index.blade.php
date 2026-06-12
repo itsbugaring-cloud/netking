@@ -109,7 +109,7 @@
 <script>
   $(function() {
     var table = $('#users-table').DataTable({
-      dom: 'rt<"d-flex justify-content-between align-items-center mb-3"ip>',
+      dom: 'rt<"d-flex justify-content-between align-items-center mt-3"ilp>',
       pageLength: 25,
       autoWidth: false,
       scrollX: true,
