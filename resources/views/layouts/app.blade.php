@@ -688,9 +688,9 @@
     .dataTables_wrapper .dataTables_paginate .paginate_button.current,
     .dataTables_wrapper .dataTables_paginate .paginate_button.active,
     .pagination .page-item.active .page-link {
-      background-color: var(--blue) !important;
+      background-color: #2563eb !important;
       color: #fff !important;
-      border-color: var(--blue) !important;
+      border-color: #2563eb !important;
     }
 
     .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current),
@@ -1873,9 +1873,9 @@
     }
 
     .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-      background: var(--blue);
-      border-color: var(--blue);
-      color: #fff;
+      background: #2563eb !important;
+      border-color: #2563eb !important;
+      color: #fff !important;
     }
 
     /* ======= BUTTONS ======= */
@@ -2059,8 +2059,8 @@
     }
 
     .pagination .page-item.active .page-link {
-      background: var(--blue) !important;
-      border-color: var(--blue) !important;
+      background: #2563eb !important;
+      border-color: #2563eb !important;
       color: #fff !important;
       box-shadow: none !important;
       outline: none !important;
@@ -5049,58 +5049,6 @@
     /* Reset Bootstrap CSS vars on ALL pagination containers */
     .workspace-shell .main .pagination,
     .workspace-shell .main .dataTables_wrapper .pagination {
-      --bs-pagination-color: var(--txt) !important;
-      --bs-pagination-bg: transparent !important;
-      --bs-pagination-border-color: transparent !important;
-      --bs-pagination-border-radius: 6px !important;
-      --bs-pagination-hover-color: var(--txt) !important;
-      --bs-pagination-hover-bg: var(--surface-2) !important;
-      --bs-pagination-hover-border-color: transparent !important;
-      --bs-pagination-active-color: var(--txt) !important;
-      --bs-pagination-active-bg: transparent !important;
-      --bs-pagination-active-border-color: var(--border) !important;
-      --bs-pagination-disabled-color: var(--txt-3) !important;
-      --bs-pagination-disabled-bg: transparent !important;
-      --bs-pagination-disabled-border-color: transparent !important;
-      display: flex !important; align-items: center !important; gap: 2px !important;
-    }
-    /* All page-link elements */
-    .workspace-shell .main .pagination .page-link,
-    .workspace-shell .main .dataTables_wrapper .pagination .page-link {
-      min-width: 32px !important; height: 32px !important; padding: 0 8px !important;
-      border-radius: 6px !important; font-size: .8125rem !important; font-weight: 400 !important;
-      border: 1px solid transparent !important; background: transparent !important;
-      color: var(--txt) !important; text-decoration: none !important; box-shadow: none !important;
-      margin: 0 !important; display: inline-flex !important; align-items: center !important;
-      justify-content: center !important; line-height: 1 !important;
-      transition: background .12s, border-color .12s !important;
-    }
-    .workspace-shell .main .pagination .page-link:hover,
-    .workspace-shell .main .dataTables_wrapper .pagination .page-link:hover {
-      background: var(--surface-2) !important; color: var(--txt) !important; border-color: transparent !important;
-    }
-    /* Active page — Bootstrap5 DT uses .page-item.active */
-    .workspace-shell .main .pagination .page-item.active .page-link,
-    .workspace-shell .main .dataTables_wrapper .pagination .page-item.active .page-link {
-      background: var(--blue) !important; background-image: none !important;
-      border-color: var(--blue) !important; color: #fff !important;
-      font-weight: 600 !important; box-shadow: none !important; outline: none !important;
-    }
-    /* Disabled */
-    .workspace-shell .main .pagination .page-item.disabled .page-link,
-    .workspace-shell .main .dataTables_wrapper .pagination .page-item.disabled .page-link {
-      opacity: .55 !important; cursor: not-allowed !important; pointer-events: none !important;
-      background: transparent !important; color: var(--txt) !important;
-    }
-    /* Remove first/last item special border-radius (removes pill effect) */
-    .workspace-shell .main .pagination .page-item:first-child .page-link,
-    .workspace-shell .main .pagination .page-item:last-child .page-link,
-    .workspace-shell .main .dataTables_wrapper .pagination .page-item:first-child .page-link,
-    .workspace-shell .main .dataTables_wrapper .pagination .page-item:last-child .page-link {
-      border-radius: 6px !important;
-    }
-    .workspace-shell .main .dataTables_wrapper .dataTables_paginate span { display: contents !important; }
-
     .workspace-shell .main .dataTables_wrapper .dataTables_info,
     .workspace-shell .main .pagination-meta,
     .workspace-shell .main .dataTables_wrapper .dataTables_length,
