@@ -5358,63 +5358,88 @@
       border-radius: 6px !important;
       box-shadow: none !important;
     }
-    /* Select2 compact */
-    .workspace-shell .main .select2-container .select2-selection--single {
-      min-height: 30px !important;
-      height: 30px !important;
-      font-size: .75rem !important;
-      border-radius: 6px !important;
-      padding-top: 0 !important;
-      padding-bottom: 0 !important;
+    /* ══ Select2 — Unified style matching Bootstrap .dropdown-menu (Opsi) ══ */
+    .workspace-shell .main .select2-container .select2-selection--single,
+    .workspace-shell .main .select2-container .select2-selection--multiple {
+      min-height: 34px !important;
+      height: 34px !important;
+      font-size: .8375rem !important;
+      border-radius: 8px !important;
+      border: 1px solid var(--border) !important;
+      background: var(--surface) !important;
       display: flex !important;
       align-items: center !important;
+      box-shadow: none !important;
     }
     .workspace-shell .main .select2-container .select2-selection__rendered {
-      line-height: 28px !important;
-      font-size: .75rem !important;
-      padding-top: 0 !important;
-      padding-bottom: 0 !important;
-      padding-left: .6rem !important;
-      padding-right: 1.8rem !important;
+      font-size: .8375rem !important;
+      font-weight: 500 !important;
+      color: var(--txt) !important;
+      line-height: 34px !important;
+      padding-left: .75rem !important;
+      padding-right: 2rem !important;
       white-space: nowrap !important;
       overflow: hidden !important;
       text-overflow: ellipsis !important;
     }
     .workspace-shell .main .select2-container .select2-selection__arrow {
-      height: 28px !important;
-      width: 24px !important;
+      height: 32px !important;
+      width: 26px !important;
       top: 1px !important;
       right: 4px !important;
     }
-    .workspace-shell .main .select2-container--bootstrap-5 .select2-dropdown {
-      padding: .25rem !important;
-      border-radius: 8px !important;
+    /* Dropdown panel — identical to .dropdown-menu (must be global because it's appended to body) */
+    .select2-container--bootstrap-5 .select2-dropdown,
+    .select2-dropdown {
+      border-radius: 12px !important;
+      padding: .4rem !important;
       margin-top: 4px !important;
-      overflow: hidden !important;
-      border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--border)) !important;
-      box-shadow: 0 10px 28px rgba(15, 23, 42, .12) !important;
+      border: 1px solid var(--border) !important;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+      background: var(--surface) !important;
+      overflow: visible !important;
+      min-width: 160px !important;
     }
-    .workspace-shell .main .select2-search--dropdown {
-      padding: 0 0 .25rem 0 !important;
+    .select2-search--dropdown {
+      padding: .25rem .25rem .2rem !important;
     }
-    .workspace-shell .main .select2-search--dropdown .select2-search__field,
-    .workspace-shell .main .select2-container--bootstrap-5 .select2-search .select2-search__field {
-      min-height: 30px !important;
-      height: 30px !important;
-      font-size: .75rem !important;
-      padding: .2rem .55rem !important;
-      border-radius: 6px !important;
+    .select2-search--dropdown .select2-search__field,
+    .select2-container--bootstrap-5 .select2-search .select2-search__field {
+      height: 32px !important;
+      font-size: .8rem !important;
+      padding: .25rem .6rem !important;
+      border-radius: 7px !important;
+      border: 1px solid var(--border) !important;
+      background: var(--bg) !important;
+      color: var(--txt) !important;
+      box-shadow: none !important;
       margin: 0 !important;
     }
-    .workspace-shell .main .select2-results > .select2-results__options {
-      max-height: 260px !important;
+    .select2-results > .select2-results__options {
+      max-height: 280px !important;
     }
-    .workspace-shell .main .select2-results__option {
-      font-size: .73rem !important;
-      line-height: 1.2 !important;
-      padding: .34rem .5rem !important;
+    /* Each option — identical to .dropdown-item */
+    .select2-results__option {
+      font-size: .8375rem !important;
+      font-weight: 500 !important;
+      line-height: 1.4 !important;
+      padding: .4rem .75rem !important;
       border-radius: 6px !important;
+      color: var(--txt) !important;
+      background: transparent !important;
       white-space: normal !important;
+      transition: background .1s !important;
+    }
+    .select2-results__option--highlighted:not(.select2-results__option--selected) {
+      background: var(--bg) !important;
+      color: var(--txt) !important;
+    }
+    /* Selected item — light blue like Opsi active */
+    .select2-results__option--selected,
+    .select2-results__option[aria-selected="true"] {
+      background: color-mix(in srgb, var(--blue) 10%, var(--surface)) !important;
+      color: var(--blue) !important;
+      font-weight: 600 !important;
     }
     .workspace-shell .main .select2-container .select2-selection__placeholder {
       color: var(--txt-3) !important;
@@ -5422,6 +5447,7 @@
     .workspace-shell .main .select2-container .select2-selection__arrow b {
       border-width: 5px 4px 0 4px !important;
     }
+
     /* Tables: borderless everywhere */
     .workspace-shell .main .table,
     .workspace-shell .main .table th,
