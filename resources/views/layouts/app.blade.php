@@ -5689,7 +5689,7 @@
     
     /* Checkbox inside Dropdown */
     .dropdown-item input[type="checkbox"] {
-        accent-color: var(--nk-primary);
+        accent-color: var(--blue, #2563eb);
         width: 16px; height: 16px; cursor: pointer;
     }
 
@@ -5713,9 +5713,9 @@
         transition: all 0.15s;
     }
     .page-item.active .page-link {
-        background: var(--nk-primary) !important;
+        background: var(--blue, #2563eb) !important;
         color: white !important;
-        border-color: var(--nk-primary) !important;
+        border-color: var(--blue, #2563eb) !important;
     }
     .page-item.disabled .page-link {
         opacity: 0.5;
