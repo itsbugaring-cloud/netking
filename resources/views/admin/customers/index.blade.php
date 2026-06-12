@@ -422,24 +422,24 @@
               </td>
               <td style="color:var(--txt-3);white-space:nowrap;">{{ ($customer->billing_start_date ?? $customer->created_at)->format('d M Y') }}</td>
               <td>
-                <div class="d-flex gap-1">
-                  <a href="{{ route('admin.payments.manual', $customer) }}" class="cust-action-btn" data-tooltip="Tandai Bayar" title="Tandai Bayar" style="color:#16a34a;background:rgba(22,163,106,.1);border-color:rgba(22,163,106,.22);">
-                    <i class='bx bx-money'></i>
-                  </a>
-                  <a href="{{ route('admin.customers.show', $customer) }}" class="cust-action-btn view" data-tooltip="Lihat Detail" title="Lihat Detail">
-                    <i class='bx bx-show'></i>
-                  </a>
-                  @unless($isFinance)
-                  <a href="{{ route('admin.customers.edit', $customer) }}" class="cust-action-btn edit" data-tooltip="Edit" title="Edit">
-                    <i class='bx bx-edit'></i>
-                  </a>
-                  <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" class="m-0" data-confirm="Hapus {{ $customer->name }}?">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="cust-action-btn delete" data-tooltip="Hapus" title="Hapus">
-                      <i class='bx bx-trash'></i>
-                    </button>
-                  </form>
-                  @endunless
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius:6px;font-size:0.8rem;padding:0.25rem 0.5rem;background:var(--surface);border:1px solid var(--border);">
+                    Opsi
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><a class="dropdown-item" href="{{ route('admin.payments.manual', $customer) }}"><i class='bx bx-money' style="color:#16a34a;"></i> Tandai Bayar</a></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.customers.show', $customer) }}"><i class='bx bx-show'></i> Lihat Detail</a></li>
+                    @unless($isFinance)
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.customers.edit', $customer) }}"><i class='bx bx-edit'></i> Edit Pelanggan</a></li>
+                    <li>
+                      <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" class="m-0" data-confirm="Hapus {{ $customer->name }}?">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="dropdown-item text-danger"><i class='bx bx-trash' style="color:var(--red);"></i> Hapus</button>
+                      </form>
+                    </li>
+                    @endunless
+                  </ul>
                 </div>
               </td>
             </tr>
