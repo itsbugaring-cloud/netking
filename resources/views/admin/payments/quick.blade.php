@@ -367,13 +367,13 @@
   {{-- Search bar --}}
   <form method="GET" action="{{ route('admin.payments.quick') }}" class="quick-toolbar">
     <div class="quick-search-panel">
-      <div class="quick-panel-kicker" style="font-size: .9rem; margin-bottom: 1rem;"><i class='bx bx-search-alt-2'></i> Pencarian Pelanggan</div>
+      <div class="quick-panel-kicker" style="margin-bottom: 1rem;"><i class='bx bx-search-alt-2'></i> Pencarian Pelanggan</div>
       <div class="d-flex w-100 justify-content-center gap-2">
         <div class="nk-search-wrap">
           <i class='bx bx-user-circle'></i>
           <input type="text" name="q" class="nk-search-input" value="{{ $search ?? '' }}" placeholder="Ketik nama, PPPoE user, atau no. HP..." autofocus>
         </div>
-        <button type="submit" class="ms-btn px-4" style="font-size: 1.1rem; border-radius: 12px;">
+        <button type="submit" class="ms-btn px-4" style="border-radius: 12px;">
           Cari
         </button>
       </div>
@@ -550,7 +550,7 @@
 
   <div class="ms-panel mt-3" style="border: none !important; box-shadow: none !important; background: transparent !important;">
     <div class="d-flex justify-content-between align-items-center mb-3" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapseHistory" aria-expanded="false" aria-controls="collapseHistory">
-      <span class="ms-panel-title" style="font-size: 1.25rem; user-select: none;">
+      <span class="ms-panel-title" style="user-select: none;">
         <i class='bx bx-history me-2' style="color:var(--blue);"></i>Riwayat Pembayaran Manual <i class='bx bx-chevron-down ms-1' id="historyToggleIcon" style="transition: transform 0.3s;"></i>
       </span>
       <span class="badge" style="background: var(--blue); color: #fff; padding: .4rem .8rem; border-radius: 999px;">{{ $manualPaymentCount }} Transaksi (Bulan Ini)</span>

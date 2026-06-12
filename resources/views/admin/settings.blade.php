@@ -245,18 +245,18 @@
                 
                 <div style="padding: 1rem 1.25rem; background: var(--surface-2); border-bottom: 1px solid var(--border);">
                   <label style="font-size: 0.8rem; font-weight: 600; color: var(--txt-3); display: block; margin-bottom: 0.4rem;">IP Server / VPS Netking Anda:</label>
-                  <input type="text" id="vpsIpInput" class="form-control form-control-sm" value="{{ $_SERVER['SERVER_ADDR'] ?? request()->ip() }}" style="max-width: 300px; font-weight: 600;" oninput="updateScriptIps(this.value)">
+                  <input type="text" id="vpsIpInput" class="form-control form-control-sm" value="{{ request()->getHost() }}" style="max-width: 300px; font-weight: 600;" oninput="updateScriptIps(this.value)">
                   <div style="font-size: 0.7rem; color: var(--txt-3); margin-top: 0.3rem;"><i class='bx bx-info-circle'></i> Sesuaikan IP ini dengan IP Publik VPS Akang. Script di bawah akan otomatis mengikuti IP yang diketik.</div>
                 </div>
 
                 <div class="card-body p-0">
                   <pre id="script-isolir" class="m-0 p-3" style="background: #1e1e1e; color: #569cd6; font-size: 0.85rem; border-radius: 0; white-space: pre-wrap;"><code><span style="color:#6a9955;"># 1. Pastikan Pelanggan Isolir tetap bisa akses Server Netking</span>
 /ip firewall filter
-add action=accept chain=forward comment="BYPASS SERVER NETKING" dst-address=<span style="color:#ce9178;" class="vps-ip-display">{{ $_SERVER['SERVER_ADDR'] ?? request()->ip() }}</span> src-address-list=isolir
+add action=accept chain=forward comment="BYPASS SERVER NETKING" dst-address=<span style="color:#ce9178;" class="vps-ip-display">{{ request()->getHost() }}</span> src-address-list=isolir
 
 <span style="color:#6a9955;"># 2. Redirect port 80 (HTTP) ke Landing Page Isolir Netking</span>
 /ip firewall nat
-add action=dst-nat chain=dstnat comment="REDIRECT ISOLIR KE NETKING" dst-port=80 protocol=tcp src-address-list=isolir to-addresses=<span style="color:#ce9178;" class="vps-ip-display">{{ $_SERVER['SERVER_ADDR'] ?? request()->ip() }}</span> to-ports=80
+add action=dst-nat chain=dstnat comment="REDIRECT ISOLIR KE NETKING" dst-port=80 protocol=tcp src-address-list=isolir to-addresses=<span style="color:#ce9178;" class="vps-ip-display">{{ request()->getHost() }}</span> to-ports=80
 
 <span style="color:#6a9955;"># 3. Blokir sisa trafik (HTTPS, Game, Sosmed) untuk pelanggan Isolir</span>
 /ip firewall filter
