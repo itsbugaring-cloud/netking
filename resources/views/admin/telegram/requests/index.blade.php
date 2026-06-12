@@ -100,40 +100,40 @@
   .tg-req-status {
     display: inline-flex;
     align-items: center;
-    gap: .35rem;
-    padding: .2rem .55rem;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    font-size: .73rem;
+    gap: .4rem;
+    padding: .35rem .75rem;
+    border-radius: 6px;
+    font-size: .75rem;
     font-weight: 600;
     line-height: 1;
-    color: var(--txt);
-    background: var(--surface);
-    text-transform: lowercase;
+    text-transform: capitalize;
   }
   .tg-req-status::before {
     content: '';
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 999px;
-    background: #94a3b8;
+    background: currentColor;
+    box-shadow: 0 0 6px currentColor;
   }
-  .tg-req-status.st-online::before { background: #16a34a; }
-  .tg-req-status.st-diterima::before { background: #2563eb; }
-  .tg-req-status.st-menunggu_push_olt::before { background: #f59e0b; }
-  .tg-req-status.st-menunggu_pppoe_up::before { background: #f97316; }
-  .tg-req-status.st-rejected::before { background: #ef4444; }
-  .tg-req-status.st-failed_mikrotik::before { background: #dc2626; }
-  .tg-req-page .tg-empty {
+  .tg-req-status.st-online { background: color-mix(in srgb, #10b981 12%, var(--surface)); color: #047857; border: 1px solid color-mix(in srgb, #10b981 30%, var(--border)); }
+  .tg-req-status.st-diterima { background: color-mix(in srgb, #3b82f6 12%, var(--surface)); color: #1d4ed8; border: 1px solid color-mix(in srgb, #3b82f6 30%, var(--border)); }
+  .tg-req-status.st-menunggu_push_olt { background: color-mix(in srgb, #f59e0b 12%, var(--surface)); color: #b45309; border: 1px solid color-mix(in srgb, #f59e0b 30%, var(--border)); }
+  .tg-req-status.st-menunggu_pppoe_up { background: color-mix(in srgb, #f97316 12%, var(--surface)); color: #c2410c; border: 1px solid color-mix(in srgb, #f97316 30%, var(--border)); }
+  .tg-req-status.st-rejected { background: color-mix(in srgb, #ef4444 12%, var(--surface)); color: #b91c1c; border: 1px solid color-mix(in srgb, #ef4444 30%, var(--border)); }
+  .tg-req-status.st-failed_mikrotik { background: color-mix(in srgb, #dc2626 12%, var(--surface)); color: #991b1b; border: 1px solid color-mix(in srgb, #dc2626 30%, var(--border)); }
+  
+  .tg-empty {
     text-align: center;
     padding: 3.5rem 1rem;
     color: var(--txt-3);
   }
-  .tg-req-page .tg-empty i {
+  .tg-empty i {
     display: block;
-    font-size: 2.75rem;
+    font-size: 3rem;
     color: var(--blue);
-    margin-bottom: .65rem;
+    margin-bottom: .85rem;
+    opacity: 0.5;
   }
   @media (max-width: 768px) {
     .tg-req-page .tg-toolbar-form,
@@ -166,19 +166,25 @@
       </span>
     </div>
 
-    <div class="ms-panel-body">
-      <div class="tg-toolbar">
-        <form class="tg-toolbar-form" method="GET" action="{{ route('admin.telegram.requests.index') }}">
-          <select name="status" class="form-select form-select-sm" style="max-width:180px;">
-            <option value="">Semua status</option>
-            @foreach($statuses as $s)
-              <option value="{{ $s }}" @selected($status === $s)>{{ $s }}</option>
-            @endforeach
-          </select>
-          <div class="tg-toolbar-actions">
-            <button class="ms-btn" type="submit"><i class='bx bx-filter-alt'></i> Terapkan</button>
-            <a class="ms-btn-secondary d-inline-flex justify-content-center" href="{{ route('admin.telegram.requests.index') }}">Reset</a>
+    <div class="ms-panel-body" style="padding-top: 1rem;">
+      <div class="tg-toolbar d-flex justify-content-between align-items-center mb-4" style="background: var(--surface-2); padding: 1rem 1.25rem; border-radius: 12px; border: 1px solid var(--border);">
+        <form class="tg-toolbar-form m-0 d-flex gap-3 align-items-center w-100" method="GET" action="{{ route('admin.telegram.requests.index') }}">
+          <div class="d-flex align-items-center gap-2 flex-grow-1">
+            <i class='bx bx-filter-alt text-muted' style="font-size: 1.2rem;"></i>
+            <select name="status" class="form-select form-select-sm border-0 bg-transparent shadow-none" style="max-width: 200px; font-weight: 600; color: var(--txt); font-size: .85rem; cursor: pointer;" onchange="this.form.submit()">
+              <option value="">-- Tampilkan Semua Status --</option>
+              @foreach($statuses as $s)
+                <option value="{{ $s }}" @selected($status === $s)>{{ ucfirst(str_replace('_', ' ', $s)) }}</option>
+              @endforeach
+            </select>
           </div>
+          @if($status || $q)
+          <div class="tg-toolbar-actions">
+            <a class="ms-btn-ghost" href="{{ route('admin.telegram.requests.index') }}" style="color: var(--red);">
+                <i class='bx bx-x'></i> Clear Filter
+            </a>
+          </div>
+          @endif
         </form>
       </div>
 
@@ -199,10 +205,18 @@
             </thead>
             <tbody>
             @forelse($items as $it)
-              <tr>
-                <td><code>{{ $it['ref'] }}</code></td>
+              <tr style="transition: background 0.2s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
                 <td>
-                  <span class="tg-req-status st-{{ $it['status'] }}">{{ $it['status'] }}</span>
+                    @php
+                        $shortRef = explode('-', $it['ref']);
+                        $shortRef = count($shortRef) > 1 ? $shortRef[1] : $it['ref'];
+                    @endphp
+                    <code style="font-size: .7rem; padding: 4px 8px; border-radius: 4px; background: color-mix(in srgb, var(--blue) 5%, var(--surface)); color: var(--blue); border: 1px solid color-mix(in srgb, var(--blue) 15%, var(--border));">
+                        #{{ substr($shortRef, 0, 8) }}
+                    </code>
+                </td>
+                <td>
+                  <span class="tg-req-status st-{{ $it['status'] }}">{{ str_replace('_', ' ', $it['status']) }}</span>
                 </td>
                 <td>{{ $it['area_name'] ?: '-' }}</td>
                 <td>

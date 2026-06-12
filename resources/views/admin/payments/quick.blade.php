@@ -15,16 +15,24 @@
     background: transparent !important;
   }
   .quick-toolbar {
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(260px, .8fr);
-    gap: .85rem;
-    align-items: stretch;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
   }
-  .quick-toolbar-left {
+  .quick-search-panel {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
+    box-shadow: 0 10px 22px rgba(15, 23, 42, .04);
+    padding: 1.5rem;
     display: flex;
-    gap: .75rem;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    text-align: center;
+    background:
+      radial-gradient(circle at top right, rgba(59, 130, 246, .12), transparent 34%),
+      linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white), var(--surface));
   }
   .quick-search-panel,
   .quick-side-panel {
@@ -87,23 +95,29 @@
   .nk-search-wrap {
     display: flex;
     align-items: center;
-    gap: .4rem;
+    gap: .75rem;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: .3rem .6rem;
-    min-height: 38px;
+    border-radius: 12px;
+    padding: .75rem 1rem;
     width: 100%;
+    max-width: 600px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.03);
+    transition: all .2s;
+  }
+  .nk-search-wrap:focus-within {
+    border-color: var(--blue);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, .15);
   }
   .nk-search-wrap i {
-    color: var(--txt-3);
-    font-size: .9rem;
+    color: var(--blue);
+    font-size: 1.5rem;
   }
   .nk-search-input {
     border: none;
     outline: none;
     background: transparent;
-    font-size: .78rem;
+    font-size: 1.1rem;
     color: var(--txt);
     width: 100%;
   }
@@ -194,25 +208,41 @@
     resize: vertical;
   }
   .radio-group {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    align-items: center;
   }
   .radio-group label {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: .35rem;
-    font-size: .875rem;
-    font-weight: 500;
-    color: var(--txt);
-    text-transform: none;
-    letter-spacing: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
     cursor: pointer;
+    transition: all .2s;
   }
   .radio-group input[type="radio"] {
-    width: auto;
-    accent-color: var(--blue);
+    display: none;
+  }
+  .radio-group input[type="radio"]:checked + .radio-card-content {
+    color: var(--blue);
+  }
+  .radio-group label:has(input[type="radio"]:checked) {
+    border-color: var(--blue);
+    background: color-mix(in srgb, var(--blue) 5%, var(--surface));
+    box-shadow: 0 4px 12px rgba(59, 130, 246, .1);
+  }
+  .radio-card-content {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--txt-3);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
   }
   .not-found-msg {
     text-align: center;
@@ -337,32 +367,21 @@
   {{-- Search bar --}}
   <form method="GET" action="{{ route('admin.payments.quick') }}" class="quick-toolbar">
     <div class="quick-search-panel">
-      <div class="quick-panel-kicker">Lookup Pelanggan</div>
-      <div class="quick-toolbar-left">
+      <div class="quick-panel-kicker" style="font-size: .9rem; margin-bottom: 1rem;"><i class='bx bx-search-alt-2'></i> Pencarian Pelanggan</div>
+      <div class="d-flex w-100 justify-content-center gap-2">
         <div class="nk-search-wrap">
-          <i class='bx bx-search'></i>
-          <input type="text" name="q" class="nk-search-input" value="{{ $search ?? '' }}" placeholder="Cari kode pelanggan, nama, PPPoE user, atau no. HP..." autofocus>
+          <i class='bx bx-user-circle'></i>
+          <input type="text" name="q" class="nk-search-input" value="{{ $search ?? '' }}" placeholder="Ketik nama, PPPoE user, atau no. HP..." autofocus>
         </div>
-        <button type="submit" class="ms-btn">
-          <i class='bx bx-search'></i> Cari
+        <button type="submit" class="ms-btn px-4" style="font-size: 1.1rem; border-radius: 12px;">
+          Cari
         </button>
       </div>
       <input type="hidden" name="manual_month" value="{{ $manualMonth ?? now()->month }}">
       <input type="hidden" name="manual_year" value="{{ $manualYear ?? now()->year }}">
-    </div>
-    <div class="quick-side-panel">
-      <div class="quick-panel-kicker">Snapshot</div>
-      <div class="quick-side-grid">
-        <div class="quick-mini-card">
-          <div class="quick-mini-label">Periode Manual</div>
-          <div class="quick-mini-value">{{ $selectedMonthName }}</div>
-          <div class="quick-mini-note">{{ $manualYear ?? now()->year }}</div>
-        </div>
-        <div class="quick-mini-card">
-          <div class="quick-mini-label">Data Manual</div>
-          <div class="quick-mini-value">{{ $manualPaymentCount }}</div>
-          <div class="quick-mini-note">entri terlihat</div>
-        </div>
+      
+      <div class="mt-3 text-muted" style="font-size: .8rem;">
+        <i class='bx bx-info-circle'></i> Mencari dari total <strong style="color:var(--txt);">{{ \App\Models\Customer::count() }}</strong> pelanggan terdaftar
       </div>
     </div>
   </form>
@@ -498,14 +517,14 @@
             {{-- Metode --}}
             <div class="form-group full-width">
               <label>Metode Pembayaran</label>
-              <div class="radio-group">
+              <div class="radio-group mt-2">
                 <label>
                   <input type="radio" name="metode" value="transfer" {{ old('metode', 'transfer') == 'transfer' ? 'checked' : '' }}>
-                  Transfer
+                  <div class="radio-card-content"><i class='bx bx-transfer'></i> Transfer Bank</div>
                 </label>
                 <label>
                   <input type="radio" name="metode" value="cash" {{ old('metode') == 'cash' ? 'checked' : '' }}>
-                  Cash
+                  <div class="radio-card-content"><i class='bx bx-money'></i> Cash / Tunai</div>
                 </label>
               </div>
             </div>
@@ -529,16 +548,17 @@
     </div>
   @endif
 
-  <div class="ms-panel mt-4">
-    <div class="ms-panel-head">
-      <span class="ms-panel-title">
-        <i class='bx bx-trash me-2' style="color:#dc2626;"></i>Bulk Hapus Pembayaran Manual
+  <div class="ms-panel mt-5" style="border: none !important; box-shadow: none !important; background: transparent !important;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="ms-panel-title" style="font-size: 1.25rem;">
+        <i class='bx bx-history me-2' style="color:var(--blue);"></i>Riwayat Pembayaran Manual
       </span>
+      <span class="badge" style="background: var(--blue); color: #fff; padding: .4rem .8rem; border-radius: 999px;">{{ $manualPaymentCount }} Transaksi (Bulan Ini)</span>
     </div>
-    <div class="ms-panel-body">
-      <form method="GET" action="{{ route('admin.payments.quick') }}" class="manual-toolbar">
+    <div class="ms-panel-body p-0">
+      <form method="GET" action="{{ route('admin.payments.quick') }}" class="manual-toolbar p-3 mb-4 rounded" style="background: var(--surface); border: 1px solid var(--border);">
         <div class="field">
-          <div class="field-label">Bulan</div>
+          <div class="field-label">Periode Bulan</div>
           <select name="manual_month" class="form-select form-select-sm" data-hide-search>
             @php $months = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; @endphp
             @for($m = 1; $m <= 12; $m++)
@@ -547,7 +567,7 @@
           </select>
         </div>
         <div class="field">
-          <div class="field-label">Tahun</div>
+          <div class="field-label">Periode Tahun</div>
           <select name="manual_year" class="form-select form-select-sm" data-hide-search>
             @for($y = 2024; $y <= 2027; $y++)
             <option value="{{ $y }}" {{ (int) ($manualYear ?? now()->year) === $y ? 'selected' : '' }}>{{ $y }}</option>
@@ -555,7 +575,7 @@
           </select>
         </div>
         <div>
-          <button type="submit" class="ms-btn-secondary">Tampilkan</button>
+          <button type="submit" class="ms-btn-secondary" style="height: 30px;"><i class='bx bx-filter-alt'></i> Tampilkan</button>
         </div>
       </form>
 
@@ -568,14 +588,16 @@
         @csrf
         @method('PATCH')
       </form>
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <label class="d-flex align-items-center gap-2 mb-0" style="font-size:.8rem;color:var(--txt-3);">
+
+      <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+        <label class="d-flex align-items-center gap-2 mb-0" style="font-size:.8rem;color:var(--txt-3); cursor: pointer;">
           <input type="checkbox" id="select-all-global-manual-payments">
-          Pilih semua
+          Pilih semua untuk Hapus Massal
         </label>
         <div class="manual-actions">
-          <button type="submit" form="bulk-update-manual-payment-dates-form" class="ms-btn-secondary">Simpan Semua Tanggal</button>
-          <button type="submit" form="bulk-delete-manual-payments-global-form" class="ms-btn-ghost" style="color:#dc2626;border-color:color-mix(in srgb, #dc2626 24%, var(--border));">Hapus yang dipilih</button>
+          <button type="submit" form="bulk-delete-manual-payments-global-form" class="btn btn-sm btn-outline-danger" style="display: none;" id="btn-bulk-delete">
+             <i class='bx bx-trash'></i> Hapus Terpilih
+          </button>
         </div>
       </div>
 
@@ -616,7 +638,7 @@
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="tanggal_bayar" value="{{ optional($payment->approved_at)->format('Y-m-d') }}" class="single-date-mirror">
-                    <button type="submit" class="ms-btn-secondary single-date-save" style="padding:.42rem .7rem;">Simpan</button>
+                    <button type="submit" class="btn btn-sm btn-light" style="padding:.4rem .6rem;" title="Simpan Perubahan"><i class='bx bx-check'></i></button>
                   </form>
                 </div>
               </td>
@@ -655,13 +677,25 @@
     }
 
     var selectAll = document.getElementById('select-all-global-manual-payments');
+    var btnDelete = document.getElementById('btn-bulk-delete');
+    
+    function toggleDeleteBtn() {
+        var checked = document.querySelectorAll('.global-manual-payment-checkbox:checked').length;
+        if (btnDelete) btnDelete.style.display = checked > 0 ? 'inline-flex' : 'none';
+    }
+
     if (selectAll) {
       selectAll.addEventListener('change', function() {
         document.querySelectorAll('.global-manual-payment-checkbox').forEach(function(cb) {
           cb.checked = selectAll.checked;
         });
+        toggleDeleteBtn();
       });
     }
+
+    document.querySelectorAll('.global-manual-payment-checkbox').forEach(function(cb) {
+        cb.addEventListener('change', toggleDeleteBtn);
+    });
 
     document.querySelectorAll('.single-date-save').forEach(function(btn) {
       btn.addEventListener('click', function() {
