@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\Customer;
 use App\Models\Payment;
+use App\Services\MikroTikService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -24,7 +26,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Approve a pending payment.
+     * Approve a pending payment + auto de-isolir MikroTik jika pelanggan terisolir.
      */
     public function approve(Request $request, Payment $payment)
     {
@@ -43,7 +45,57 @@ class PaymentController extends Controller
             $validated['periode_tahun'] ?? null
         );
 
-        return back()->with('success', 'Pembayaran disetujui.');
+        $customer = $payment->customer->load('area');
+        $deisolate = $this->tryDeisolate($customer);
+
+        if (!$deisolate['success']) {
+            return back()->with('warning', 'Pembayaran disetujui, namun de-isolir MikroTik gagal: ' . $deisolate['error'] . '. Lakukan de-isolir manual.');
+        }
+
+        $msg = $deisolate['deisolated'] ? 'Pembayaran disetujui & isolasi dicabut.' : 'Pembayaran disetujui.';
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Bulk approve multiple pending payments + auto de-isolir per customer.
+     */
+    public function bulkApprove(Request $request)
+    {
+        $validated = $request->validate([
+            'payment_ids'   => 'required|array|min:1',
+            'payment_ids.*' => 'integer|exists:payments,id',
+        ]);
+
+        $payments = Payment::with(['customer.area'])
+            ->whereIn('id', $validated['payment_ids'])
+            ->where('status', 'pending')
+            ->get();
+
+        if ($payments->isEmpty()) {
+            return back()->with('error', 'Tidak ada pembayaran pending yang valid untuk disetujui.');
+        }
+
+        $approved       = 0;
+        $failedDeisolate = [];
+
+        foreach ($payments as $payment) {
+            $payment->approve(auth()->id());
+            $approved++;
+
+            $result = $this->tryDeisolate($payment->customer);
+            if (!$result['success']) {
+                $failedDeisolate[] = $payment->customer->name ?? "ID #{$payment->customer_id}";
+            }
+        }
+
+        if ($failedDeisolate) {
+            return back()->with('warning',
+                "{$approved} pembayaran disetujui. De-isolir MikroTik gagal untuk: " .
+                implode(', ', $failedDeisolate) . ". Lakukan de-isolir manual."
+            );
+        }
+
+        return back()->with('success', "{$approved} pembayaran disetujui" . ($approved > 0 ? ' & isolasi dicabut.' : '.'));
     }
 
     /**
@@ -75,7 +127,7 @@ class PaymentController extends Controller
         $manualYear = (int) ($request->input('manual_year', now()->year));
 
         if ($search) {
-            $customer = \App\Models\Customer::where('customer_code', $search)
+            $customer = Customer::where('customer_code', $search)
                 ->orWhere('pppoe_user', 'like', "%{$search}%")
                 ->orWhere('name', 'like', "%{$search}%")
                 ->orWhere('phone', $search)
@@ -117,30 +169,29 @@ class PaymentController extends Controller
         }
 
         $validated = $request->validate([
-            'periode_bulan' => 'required|integer|min:1|max:12',
-            'periode_tahun' => 'required|integer|min:2020|max:2030',
-            'jumlah' => 'required|numeric|min:0',
-            'tanggal_bayar' => 'required|date',
-            'metode' => 'required|in:transfer,cash',
+            'periode_bulan'   => 'required|integer|min:1|max:12',
+            'periode_tahun'   => 'required|integer|min:2020|max:2030',
+            'jumlah'          => 'required|numeric|min:0',
+            'tanggal_bayar'   => 'required|date',
+            'metode'          => 'required|in:transfer,cash',
             'rekening_tujuan' => 'required|string|max:50',
-            'catatan' => 'nullable|string|max:1000',
+            'catatan'         => 'nullable|string|max:1000',
         ]);
 
         Payment::create([
-            'customer_id' => $customer->id,
-            'periode_bulan' => $validated['periode_bulan'],
-            'periode_tahun' => $validated['periode_tahun'],
-            'jumlah' => $validated['jumlah'],
-            'metode' => $validated['metode'],
-            'rekening_tujuan' => $validated['rekening_tujuan'],
-            'status' => 'approved',
+            'customer_id'       => $customer->id,
+            'periode_bulan'     => $validated['periode_bulan'],
+            'periode_tahun'     => $validated['periode_tahun'],
+            'jumlah'            => $validated['jumlah'],
+            'metode'            => $validated['metode'],
+            'rekening_tujuan'   => $validated['rekening_tujuan'],
+            'status'            => 'approved',
             'approved_by_user_id' => auth()->id(),
-            'approved_at' => Carbon::parse($validated['tanggal_bayar'])->startOfDay(),
-            'catatan' => $validated['catatan'] ?? null,
+            'approved_at'       => Carbon::parse($validated['tanggal_bayar'])->startOfDay(),
+            'catatan'           => $validated['catatan'] ?? null,
             'created_by_user_id' => auth()->id(),
         ]);
 
-        // If came from quick payment page, redirect back there
         $referer = $request->headers->get('referer', '');
         if (str_contains($referer, 'payments/quick')) {
             return redirect()->route('admin.payments.quick')
@@ -167,7 +218,7 @@ class PaymentController extends Controller
         ]);
 
         $payment->update([
-            'approved_at' => Carbon::parse($validated['tanggal_bayar'])->startOfDay(),
+            'approved_at'        => Carbon::parse($validated['tanggal_bayar'])->startOfDay(),
             'approved_by_user_id' => auth()->id(),
         ]);
 
@@ -180,31 +231,25 @@ class PaymentController extends Controller
     public function bulkUpdateManualDates(Request $request)
     {
         $validated = $request->validate([
-            'payment_dates' => 'required|array|min:1',
+            'payment_dates'   => 'required|array|min:1',
             'payment_dates.*' => 'nullable|date',
         ]);
 
         $paymentIds = array_keys($validated['payment_dates']);
-        $payments = Payment::whereIn('id', $paymentIds)->get()->keyBy('id');
+        $payments   = Payment::whereIn('id', $paymentIds)->get()->keyBy('id');
 
         $updated = 0;
         foreach ($validated['payment_dates'] as $paymentId => $tanggalBayar) {
-            if (!$tanggalBayar) {
-                continue;
-            }
+            if (!$tanggalBayar) continue;
 
             $payment = $payments->get((int) $paymentId);
-            if (!$payment) {
-                continue;
-            }
+            if (!$payment) continue;
 
             $isManualEntry = $payment->created_by_user_id !== null && empty($payment->bukti_path);
-            if (!$isManualEntry) {
-                continue;
-            }
+            if (!$isManualEntry) continue;
 
             $payment->update([
-                'approved_at' => Carbon::parse($tanggalBayar)->startOfDay(),
+                'approved_at'        => Carbon::parse($tanggalBayar)->startOfDay(),
                 'approved_by_user_id' => auth()->id(),
             ]);
             $updated++;
@@ -226,7 +271,7 @@ class PaymentController extends Controller
             return back()->with('error', 'Hanya pembayaran manual yang bisa dihapus dari sini.');
         }
 
-        $customer = $payment->customer;
+        $customer    = $payment->customer;
         $periodLabel = sprintf('%02d/%s', (int) $payment->periode_bulan, (string) $payment->periode_tahun);
 
         $payment->delete();
@@ -246,15 +291,16 @@ class PaymentController extends Controller
     public function bulkDestroy(Request $request)
     {
         $validated = $request->validate([
-            'payment_ids' => 'required|array|min:1',
+            'payment_ids'   => 'required|array|min:1',
             'payment_ids.*' => 'integer|exists:payments,id',
-            'customer_id' => 'nullable|integer|exists:customers,id',
+            'customer_id'   => 'nullable|integer|exists:customers,id',
         ]);
 
-        $payments = Payment::whereIn('id', $validated['payment_ids'])
-            ->get();
+        $payments = Payment::whereIn('id', $validated['payment_ids'])->get();
 
-        $manualPayments = $payments->filter(fn (Payment $payment) => $payment->created_by_user_id !== null && empty($payment->bukti_path));
+        $manualPayments = $payments->filter(
+            fn (Payment $p) => $p->created_by_user_id !== null && empty($p->bukti_path)
+        );
 
         if ($manualPayments->isEmpty()) {
             return back()->with('error', 'Tidak ada pembayaran manual yang valid untuk dihapus.');
@@ -265,7 +311,7 @@ class PaymentController extends Controller
         }
 
         $customerId = (int) ($validated['customer_id'] ?? 0);
-        if ($customerId > 0 && $manualPayments->contains(fn (Payment $payment) => (int) $payment->customer_id !== $customerId)) {
+        if ($customerId > 0 && $manualPayments->contains(fn (Payment $p) => (int) $p->customer_id !== $customerId)) {
             return back()->with('error', 'Ada pembayaran dari pelanggan lain di pilihan Anda. Penghapusan dibatalkan.');
         }
 
@@ -281,5 +327,50 @@ class PaymentController extends Controller
             ->with('success', $deletedCount . ' pembayaran manual berhasil dihapus.');
     }
 
+    // ─── Private Helpers ───────────────────────────────────────────────────────
 
+    /**
+     * Coba de-isolir customer dari MikroTik address-list.
+     * Return ['success' => bool, 'deisolated' => bool, 'error' => string|null]
+     */
+    private function tryDeisolate(Customer $customer): array
+    {
+        if (!$customer->is_isolated || !$customer->remote_ip) {
+            return ['success' => true, 'deisolated' => false, 'error' => null];
+        }
+
+        $area = $customer->area ?? Area::find($customer->area_id);
+        if (!$area || !$area->router_ip) {
+            // Tidak ada router — update DB saja
+            $customer->update(['is_isolated' => false, 'isolated_at' => null]);
+            return ['success' => true, 'deisolated' => true, 'error' => null];
+        }
+
+        try {
+            $mikrotik = MikroTikService::forArea($area);
+            $listName = config('netking.isolir_list', 'isolir');
+            $check    = $mikrotik->findInAddressList($customer->remote_ip, $listName);
+
+            if (!($check['found'] ?? false)) {
+                // Tidak ada di address-list, sync DB saja
+                $customer->update(['is_isolated' => false, 'isolated_at' => null]);
+                return ['success' => true, 'deisolated' => true, 'error' => null];
+            }
+
+            $entryId = $check['data'][0]['.id'] ?? null;
+            if (!$entryId) {
+                return ['success' => false, 'deisolated' => false, 'error' => 'Entry ID tidak ditemukan di address-list.'];
+            }
+
+            $result = $mikrotik->removeFromAddressList($entryId);
+            if ($result['success']) {
+                $customer->update(['is_isolated' => false, 'isolated_at' => null]);
+                return ['success' => true, 'deisolated' => true, 'error' => null];
+            }
+
+            return ['success' => false, 'deisolated' => false, 'error' => $result['error'] ?? 'Unknown MikroTik error.'];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'deisolated' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

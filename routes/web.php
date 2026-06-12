@@ -131,6 +131,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/quick', [PaymentController::class, 'quickPayment'])->name('quick');
             Route::get('/review', [PaymentController::class, 'reviewIndex'])->name('review');
             Route::post('/{payment}/approve', [PaymentController::class, 'approve'])->name('approve');
+            Route::post('/bulk-approve', [PaymentController::class, 'bulkApprove'])->name('bulk-approve');
             Route::post('/{payment}/reject', [PaymentController::class, 'reject'])->name('reject');
             Route::patch('/{payment}/manual-date', [PaymentController::class, 'updateManualDate'])->name('manual-date');
             Route::patch('/manual-dates/bulk', [PaymentController::class, 'bulkUpdateManualDates'])->name('manual-dates.bulk');
@@ -138,7 +139,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/{payment}', [PaymentController::class, 'destroy'])->name('destroy');
             Route::get('/manual/{customer}', [PaymentController::class, 'manualPaymentForm'])->name('manual');
             Route::post('/manual/{customer}', [PaymentController::class, 'manualPaymentStore'])->name('manual.store');
-
         });
     });
 

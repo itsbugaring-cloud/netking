@@ -123,11 +123,15 @@
                 @error('package_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
               <div class="col-md-6">
-                <label class="form-label">Harga Khusus</label>
+                <label class="form-label">Harga Khusus <span class="text-muted fw-normal" style="font-size:.75rem;">(opsional)</span></label>
                 <div class="input-group">
                   <span class="input-group-text">Rp</span>
-                  <input type="number" id="package-price" name="package_price" class="form-control @error('package_price') is-invalid @enderror" value="{{ old('package_price', $customer->package_price) }}" placeholder="Kosongkan untuk harga default">
+                  <input type="number" id="package-price" name="package_price" step="1"
+                         class="form-control @error('package_price') is-invalid @enderror"
+                         value="{{ old('package_price', $customer->package_price ? (int)$customer->package_price : '') }}"
+                         placeholder="Kosongkan untuk pakai harga paket">
                 </div>
+                <div class="form-text">Tanpa desimal, contoh: 150000</div>
                 @error('package_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
               <div class="col-md-6">
@@ -137,9 +141,23 @@
                 @error('billing_start_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
               <div class="col-md-6">
-                <label class="form-label">Jatuh Tempo (Tanggal)</label>
-                <input type="number" name="billing_due_day" class="form-control @error('billing_due_day') is-invalid @enderror" value="{{ old('billing_due_day', $customer->billing_due_day) }}" min="1" max="31" placeholder="Default: {{ config('billing.invoice_due_day', 20) }}">
-                <div class="form-text">Kosongkan untuk pakai default (tgl {{ config('billing.invoice_due_day', 20) }}). Isi 25 kalau mau jatuh tempo tgl 25.</div>
+                <label class="form-label">Tanggal Jatuh Tempo
+                  <span class="text-muted fw-normal" style="font-size:.75rem;">(opsional)</span>
+                </label>
+                <select name="billing_due_day" id="billing-due-day"
+                        class="form-select @error('billing_due_day') is-invalid @enderror"
+                        onchange="onDueDayChange()">
+                  <option value="">Default — tgl {{ config('billing.invoice_due_day', 20) }} setiap bulan</option>
+                  @for($d = 1; $d <= 28; $d++)
+                    <option value="{{ $d }}" {{ old('billing_due_day', $customer->billing_due_day) == $d ? 'selected' : '' }}>
+                      Tanggal {{ $d }}
+                    </option>
+                  @endfor
+                </select>
+                <div class="form-text" id="due-day-hint">Tagihan jatuh tempo tiap
+                  <strong>tgl {{ old('billing_due_day', $customer->billing_due_day) ?: config('billing.invoice_due_day', 20) }}</strong> setiap bulan.
+                  Pelanggan yang sudah lewat tanggal ini & belum bayar akan diisolir otomatis.
+                </div>
                 @error('billing_due_day')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
               <div class="col-12">
@@ -215,8 +233,20 @@
 
 @section('scripts')
 <script>
-const DUE_DAY = {{ (int) config('billing.invoice_due_day', 20) }};
+let DUE_DAY = {{ (int) (old('billing_due_day', $customer->billing_due_day) ?: config('billing.invoice_due_day', 20)) }};
+const DEFAULT_DUE_DAY = {{ (int) config('billing.invoice_due_day', 20) }};
 const BASE_DAYS = {{ (int) config('billing.proration_base_days', 30) }};
+
+function onDueDayChange() {
+  const sel = document.getElementById('billing-due-day');
+  const hint = document.getElementById('due-day-hint');
+  const chosen = sel ? parseInt(sel.value) || DEFAULT_DUE_DAY : DEFAULT_DUE_DAY;
+  DUE_DAY = chosen;
+  if (hint) {
+    hint.innerHTML = 'Tagihan jatuh tempo tiap <strong>tgl ' + chosen + '</strong> setiap bulan. Pelanggan yang sudah lewat tanggal ini & belum bayar akan diisolir otomatis.';
+  }
+  refreshProrationPreview();
+}
 
 function toggleAppPassword() {
   const input = document.getElementById('portal_password_input');
