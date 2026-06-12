@@ -5706,38 +5706,67 @@
     }
 
     /* ── Global Advanced Pagination Styles ── */
-    .pagination {
-        gap: 0.5rem;
-        margin-bottom: 0;
-    }
-    .page-item .page-link {
+    .pagination { gap: 0.5rem; margin-bottom: 0; }
+    .page-item .page-link,
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
-        min-width: 32px; height: 32px;
+        min-width: 32px !important; height: 32px !important;
         padding: 0 0.5rem !important;
         border: 1px solid var(--border) !important;
         background: var(--surface) !important;
         color: var(--txt) !important;
         border-radius: 8px !important;
         font-size: 0.85rem !important;
-        font-weight: 600;
-        transition: all 0.15s;
+        font-weight: 600 !important;
+        transition: all 0.15s !important;
+        box-shadow: none !important;
+        line-height: 1 !important;
+        margin-left: 0.2rem !important;
     }
-    .page-item.active .page-link {
-        background: var(--blue, #2563eb) !important;
+    .page-item.active .page-link,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #2563eb !important;
         color: white !important;
-        border-color: var(--blue, #2563eb) !important;
+        border-color: #2563eb !important;
     }
-    .page-item.disabled .page-link {
-        opacity: 0.5;
-        background: var(--bg) !important;
+    .page-item.disabled .page-link,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+        opacity: 0.5 !important;
+        background: var(--surface) !important;
+        color: var(--txt-3) !important;
     }
-    .page-item .page-link:hover:not(:disabled) {
+    .page-item .page-link:hover:not(:disabled):not(.active),
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
         background: var(--bg) !important;
         border-color: var(--txt-3) !important;
+        color: var(--txt) !important;
     }
     
+    /* Advanced Pagination Container for DataTables Wrapper */
+    .dataTables_wrapper > .d-flex.justify-content-between.align-items-center.mt-3 {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 1rem !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
+        background: var(--surface) !important;
+        margin-top: 1.5rem !important;
+    }
+    .dataTables_info {
+        font-size: 0.85rem !important;
+        color: var(--txt-2) !important;
+        font-weight: 500 !important;
+        padding-top: 0 !important;
+    }
+    .dataTables_paginate {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.2rem !important;
+        padding-top: 0 !important;
+    }
     /* Remove default Bootstrap override for first/last elements since we use gap */
     .page-item:first-child .page-link, .page-item:last-child .page-link {
         border-radius: 8px !important;
