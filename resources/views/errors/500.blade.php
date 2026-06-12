@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>500 — Gangguan Server | NETKING</title>
-<!-- Load Spline Viewer Script -->
-<script type="module" src="https://cdn.jsdelivr.net/npm/@splinetool/viewer@1.9.0/build/spline-viewer.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   body {
@@ -23,7 +21,7 @@
     height: 100%;
     z-index: 1;
   }
-  spline-viewer {
+  #canvas3d {
     width: 100%;
     height: 100%;
     display: block;
@@ -64,15 +62,9 @@
   .title {
     font-size: 2rem;
     font-weight: 800;
-    margin-bottom: 12px;
+    margin-bottom: 32px;
     color: #0f172a;
     line-height: 1.25;
-  }
-  .msg {
-    font-size: .95rem;
-    line-height: 1.6;
-    color: #334155;
-    margin-bottom: 32px;
   }
   .actions {
     display: flex;
@@ -130,6 +122,7 @@
     }
     .title {
       font-size: 1.7rem;
+      margin-bottom: 24px;
     }
     .actions {
       flex-direction: column;
@@ -141,9 +134,9 @@
 </style>
 </head>
 <body>
-  <!-- Spline 3D Scene Background -->
+  <!-- Spline 3D Scene Background Canvas -->
   <div class="spline-container">
-    <spline-viewer url="https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode" loading="eager"></spline-viewer>
+    <canvas id="canvas3d"></canvas>
   </div>
 
   <!-- Overlay Text & Buttons -->
@@ -151,7 +144,6 @@
     <div class="glass-card">
       <div class="brand">NETKING</div>
       <h1 class="title">Gangguan Server</h1>
-      <p class="msg">Terjadi kesalahan internal pada server kami. Silakan coba lagi nanti.</p>
       
       <div class="actions">
         <a href="/admin/dashboard" class="btn btn-primary">Kembali ke Dashboard</a>
@@ -160,31 +152,43 @@
     </div>
   </div>
 
-  <!-- Script to Remove Spline Watermark -->
-  <script>
-    const hideSplineLogo = () => {
-      const viewer = document.querySelector('spline-viewer');
-      if (viewer && viewer.shadowRoot) {
-        if (!viewer.shadowRoot.querySelector('#hide-logo-style')) {
-          const style = document.createElement('style');
-          style.id = 'hide-logo-style';
-          style.textContent = `
-            #logo, #ar, a[href*="spline.design"] {
-              display: none !important;
-              opacity: 0 !important;
-              visibility: hidden !important;
-              pointer-events: none !important;
-            }
-          `;
-          viewer.shadowRoot.appendChild(style);
-        }
-      }
-    };
+  <!-- Load Spline Runtime from jsDelivr and Initialize Scene -->
+  <script type="module">
+    import { Application } from 'https://cdn.jsdelivr.net/npm/@splinetool/runtime@1.12.96/build/runtime.js';
 
-    const interval = setInterval(hideSplineLogo, 50);
-    window.addEventListener('DOMContentLoaded', hideSplineLogo);
-    window.addEventListener('load', hideSplineLogo);
-    setTimeout(() => clearInterval(interval), 10000);
+    const canvas = document.getElementById('canvas3d');
+    const spline = new Application(canvas);
+    
+    spline.load('https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode')
+      .then(() => {
+        // Hide floor meshes to make the robot float cleanly in space
+        if (spline.scene) {
+          spline.scene.traverse((object) => {
+            const name = (object.name || '').toLowerCase();
+            if (
+              name.includes('floor') ||
+              name.includes('ground') ||
+              name.includes('base') ||
+              name.includes('table') ||
+              name.includes('plane') ||
+              name.includes('grid') ||
+              name.includes('platform') ||
+              name.includes('desk') ||
+              name.includes('stage') ||
+              name === 'rectangle' ||
+              name === 'triangle'
+            ) {
+              object.visible = false;
+              if (object.scale) {
+                object.scale.set(0, 0, 0);
+              }
+            }
+          });
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load Spline scene:', err);
+      });
   </script>
 </body>
 </html>
