@@ -142,7 +142,7 @@
 @if($selectedArea)
 <div class="modal modal-blur fade" id="backupModal" tabindex="-1">
     <div class="modal-dialog modal-sm">
-        <form method="POST" action="{{ route('admin.backups.store') }}">
+        <form method="POST" action="{{ route('admin.backups.store') }}" onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerHTML='<i class=\'bx bx-loader-alt bx-spin\'></i> Memproses...';">
             @csrf
             <input type="hidden" name="area_id" value="{{ $selectedArea->id }}">
             <div class="modal-content">

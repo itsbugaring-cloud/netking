@@ -5995,13 +5995,30 @@
 
   @livewireScripts
   @yield('scripts')
+  <!-- COMMAND PALETTE MODAL -->
+  <div id="cmd-backdrop" class="cmd-backdrop" style="display:none;" onclick="nkCloseGlobalSearch()"></div>
+  <div id="cmd-palette" class="cmd-palette" style="display:none;">
+    <div class="cmd-header">
+      <i class='bx bx-search cmd-header-icon'></i>
+      <input type="text" id="global-search" class="cmd-input" placeholder="Cari pelanggan, pembayaran, area, OLT..." autocomplete="off" spellcheck="false">
+      <kbd class="cmd-kbd">ESC</kbd>
+    </div>
+    <div class="cmd-body" id="cmd-body">
+      <div class="cmd-empty" id="cmd-hint">
+        <i class='bx bx-search-alt'></i>
+        Ketik minimal 2 karakter untuk mencari...
+      </div>
+    </div>
+    <div class="cmd-footer">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigasi</span>
+      <span><kbd>↵</kbd> buka</span>
+      <span><kbd>ESC</kbd> tutup</span>
+    </div>
+  </div>
   @stack('scripts')
-
   <script>
     /* ── Global Initializers ── */
-
     window.nkNotify = function(type, title, message) {
-      if (window.Swal) {
         var accent = {
           success: '#22c55e',
           error: '#ef4444',
