@@ -211,13 +211,25 @@
           setTimeout(() => loader.remove(), 400);
         }
 
-        // Repeatedly hide floor meshes to override any internal updates
-        const hideFloor = () => {
+        // Periodically remove watermark elements and hide floor meshes
+        const cleanupScene = () => {
+          // 1. Remove any absolute-positioned watermark links in DOM
+          document.querySelectorAll('a[href*="spline"]').forEach(el => el.remove());
+          document.querySelectorAll('div').forEach(el => {
+            if (el.textContent && el.textContent.includes('Spline')) {
+              const style = window.getComputedStyle(el);
+              if (style.position === 'absolute' || style.position === 'fixed') {
+                el.remove();
+              }
+            }
+          });
+
+          // 2. Traverse Three.js scene and hide floor meshes
           if (spline.scene) {
             spline.scene.traverse((object) => {
               if (object.isMesh) {
                 const name = (object.name || '').toLowerCase();
-                if (
+                const matchesKeyword = (
                   name.includes('floor') ||
                   name.includes('ground') ||
                   name.includes('base') ||
@@ -235,7 +247,25 @@
                   name.includes('bg') ||
                   name.includes('backdrop') ||
                   name.includes('shadow')
-                ) {
+                );
+
+                // Compute size for geometry bounds check (hides unnamed floors)
+                let isVeryLarge = false;
+                if (object.geometry) {
+                  if (!object.geometry.boundingBox) {
+                    object.geometry.computeBoundingBox();
+                  }
+                  const box = object.geometry.boundingBox;
+                  if (box) {
+                    const width = box.max.x - box.min.x;
+                    const depth = box.max.z - box.min.z;
+                    if (width > 60 || depth > 60) {
+                      isVeryLarge = true;
+                    }
+                  }
+                }
+
+                if (matchesKeyword || isVeryLarge) {
                   object.visible = false;
                   if (object.scale) {
                     object.scale.set(0, 0, 0);
@@ -246,10 +276,10 @@
           }
         };
 
-        hideFloor();
-        // Run repeatedly for the first 5 seconds to ensure it stays hidden
-        const floorInterval = setInterval(hideFloor, 100);
-        setTimeout(() => clearInterval(floorInterval), 5000);
+        cleanupScene();
+        // Run cleanups frequently for the first 10 seconds to ensure clean rendering
+        const cleanupInterval = setInterval(cleanupScene, 100);
+        setTimeout(() => clearInterval(cleanupInterval), 10000);
       })
       .catch(err => {
         console.error('Failed to load Spline scene:', err);
