@@ -212,6 +212,7 @@
       </div>
     </div>
   </div>
+</div>
 
 {{-- Dashboard standalone (not inside any section) --}}
 <a href="{{ route('admin.dashboard') }}"
