@@ -27,7 +27,7 @@
     display: block;
   }
   
-  /* Visual Loader Spinner Overlay */
+  /* CubeLoader Styles */
   .loader-container {
     position: absolute;
     inset: 0;
@@ -38,19 +38,133 @@
     z-index: 5;
     transition: opacity 0.4s ease, visibility 0.4s ease;
   }
-  .loader {
-    width: 48px;
-    height: 48px;
-    border: 5px solid rgba(37, 99, 235, 0.15);
-    border-bottom-color: #2563eb;
-    border-radius: 50%;
-    display: inline-block;
-    box-sizing: border-box;
-    animation: rotation 1s linear infinite;
+  .perspective-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    padding: 48px;
+    min-height: 400px;
+    background: transparent;
+    perspective: 1200px;
   }
-  @keyframes rotation {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  .preserve-3d-loader {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+  }
+  .cube-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    animation: cubeSpin 8s linear infinite;
+  }
+  .cube-core {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    border-radius: 50%;
+    filter: blur(12px);
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.8);
+    animation: pulse-fast 2s ease-in-out infinite;
+  }
+  .side-wrapper-loader {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+  }
+  .face-loader {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    animation: breathe 3s ease-in-out infinite;
+    backdrop-filter: blur(2px);
+  }
+  
+  .front-loader-face {
+    background: rgba(6, 182, 212, 0.1);
+    border: 2px solid #22d3ee;
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.4);
+  }
+  .side-loader-face {
+    background: rgba(168, 85, 247, 0.1);
+    border: 2px solid #c084fc;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+  }
+  .top-loader-face {
+    background: rgba(99, 102, 241, 0.1);
+    border: 2px solid #818cf8;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  }
+
+  .front-loader  { transform: rotateY(0deg); }
+  .back-loader   { transform: rotateY(180deg); }
+  .right-loader  { transform: rotateY(90deg); }
+  .left-loader   { transform: rotateY(-90deg); }
+  .top-loader    { transform: rotateX(90deg); }
+  .bottom-loader { transform: rotateX(-90deg); }
+
+  .floor-shadow {
+    position: absolute;
+    bottom: -80px;
+    width: 96px;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.4);
+    filter: blur(24px);
+    border-radius: 100%;
+    animation: shadow-breathe 3s ease-in-out infinite;
+  }
+
+  .loading-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .loading-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    color: #67e8f9;
+    text-transform: uppercase;
+  }
+  .loading-subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  @keyframes cubeSpin {
+    0% { transform: rotateX(0deg) rotateY(0deg); }
+    100% { transform: rotateX(360deg) rotateY(360deg); }
+  }
+  @keyframes breathe {
+    0%, 100% { transform: translateZ(48px); opacity: 0.8; }
+    50% { transform: translateZ(80px); opacity: 0.4; border-color: rgba(255,255,255,0.8); }
+  }
+  @keyframes pulse-fast {
+    0%, 100% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 1; }
+  }
+  @keyframes shadow-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.5); opacity: 0.2; }
   }
 
   .overlay-content {
@@ -160,6 +274,7 @@
   }
 
   /* Global Watermark Hiding */
+  #logo,
   a[href*="spline.design"],
   a[href*="spline"],
   .spline-container + a,
@@ -174,9 +289,49 @@
 <body>
   <!-- Spline 3D Scene Background Canvas -->
   <div class="spline-container">
-    <!-- Loader Spinner equivalent to Suspense fallback -->
+    <!-- CubeLoader as loader fallback -->
     <div class="loader-container" id="spline-loader">
-      <span class="loader"></span>
+      <div class="perspective-container">
+        <!-- 3D Scene Wrapper -->
+        <div class="preserve-3d-loader">
+          <!-- THE SPINNING CUBE CONTAINER -->
+          <div class="cube-container">
+            <!-- Internal Core -->
+            <div class="cube-core"></div>
+            <!-- Front -->
+            <div class="side-wrapper-loader front-loader">
+              <div class="face-loader front-loader-face"></div>
+            </div>
+            <!-- Back -->
+            <div class="side-wrapper-loader back-loader">
+              <div class="face-loader front-loader-face"></div>
+            </div>
+            <!-- Right -->
+            <div class="side-wrapper-loader right-loader">
+              <div class="face-loader side-loader-face"></div>
+            </div>
+            <!-- Left -->
+            <div class="side-wrapper-loader left-loader">
+              <div class="face-loader side-loader-face"></div>
+            </div>
+            <!-- Top -->
+            <div class="side-wrapper-loader top-loader">
+              <div class="face-loader top-loader-face"></div>
+            </div>
+            <!-- Bottom -->
+            <div class="side-wrapper-loader bottom-loader">
+              <div class="face-loader top-loader-face"></div>
+            </div>
+          </div>
+          <!-- Floor Shadow -->
+          <div class="floor-shadow"></div>
+        </div>
+        <!-- Loading Text -->
+        <div class="loading-text-container">
+          <h3 class="loading-title">Loading</h3>
+          <p class="loading-subtitle">Preparing your experience, please wait…</p>
+        </div>
+      </div>
     </div>
     <canvas id="canvas3d"></canvas>
   </div>
@@ -212,72 +367,72 @@
         }
 
         // Set spline scene background to transparent
-        if (spline.scene) {
-          spline.scene.background = null;
+        const scene = spline._scene || spline.scene;
+        if (scene) {
+          scene.background = null;
         }
         if (spline.renderer) {
           spline.renderer.setClearAlpha(0);
         }
 
-        // Periodically remove watermark elements and hide floor meshes
+        // Clean watermark recursively and hide the floor mesh
         const cleanupScene = () => {
-          // 1. Remove any absolute-positioned watermark links in DOM
-          document.querySelectorAll('a').forEach(el => {
-            if (el.href && el.href.includes('spline')) {
-              el.remove();
-            }
-          });
-          document.querySelectorAll('div').forEach(el => {
-            if (el.textContent && el.textContent.includes('Spline')) {
-              const style = window.getComputedStyle(el);
-              if (style.position === 'absolute' || style.position === 'fixed') {
-                el.remove();
+          // 1. Recursive CSS injector to hide watermark inside any shadow DOM
+          const injectCSS = (root) => {
+            if (!root) return;
+            const styleId = 'hide-spline-watermark';
+            if (!root.getElementById(styleId)) {
+              const style = document.createElement('style');
+              style.id = styleId;
+              style.textContent = `
+                #logo, a[href*="spline.design"], a[href*="spline"], [class*="spline"], spline-viewer + a, .spline-container + a {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                  pointer-events: none !important;
+                }
+              `;
+              if (root.head) {
+                root.head.appendChild(style);
+              } else {
+                root.appendChild(style);
               }
             }
-          });
+            root.querySelectorAll('*').forEach(el => {
+              if (el.shadowRoot) {
+                injectCSS(el.shadowRoot);
+              }
+            });
+          };
+          injectCSS(document);
 
-          // 2. Traverse Three.js scene and hide floor meshes (safe size + keyword checks)
-          if (spline.scene) {
-            spline.scene.traverse((object) => {
+          // 2. Remove watermark elements from main DOM & shadow DOMs directly
+          const removeElements = (root) => {
+            if (!root) return;
+            root.querySelectorAll('a').forEach(a => {
+              if (a.href && a.href.includes('spline')) {
+                a.remove();
+              }
+            });
+            const logo = root.getElementById ? root.getElementById('logo') : null;
+            if (logo) {
+              logo.remove();
+            }
+            root.querySelectorAll('*').forEach(el => {
+              if (el.shadowRoot) {
+                removeElements(el.shadowRoot);
+              }
+            });
+          };
+          removeElements(document);
+
+          // 3. Traverse Three.js scene and hide the rotated ground plane mesh named "Plane"
+          if (scene) {
+            scene.traverse((object) => {
               try {
                 if (object.isMesh) {
                   const name = (object.name || '').toLowerCase();
-                  const matchesKeyword = (
-                    name.includes('floor') ||
-                    name.includes('ground') ||
-                    name.includes('base') ||
-                    name.includes('table') ||
-                    name.includes('plane') ||
-                    name.includes('grid') ||
-                    name.includes('platform') ||
-                    name.includes('desk') ||
-                    name.includes('stage') ||
-                    name.includes('rect') ||
-                    name.includes('tri') ||
-                    name.includes('poly') ||
-                    name.includes('shape') ||
-                    name.includes('extrusion') ||
-                    name.includes('bg') ||
-                    name.includes('backdrop') ||
-                    name.includes('shadow')
-                  );
-
-                  let isVeryLarge = false;
-                  if (object.geometry && typeof object.geometry.computeBoundingBox === 'function') {
-                    if (!object.geometry.boundingBox) {
-                      object.geometry.computeBoundingBox();
-                    }
-                    const box = object.geometry.boundingBox;
-                    if (box) {
-                      const width = box.max.x - box.min.x;
-                      const depth = box.max.z - box.min.z;
-                      if (width > 50 || depth > 50) {
-                        isVeryLarge = true;
-                      }
-                    }
-                  }
-
-                  if (matchesKeyword || isVeryLarge) {
+                  if (name === 'plane') {
                     object.visible = false;
                     if (object.scale) {
                       object.scale.set(0, 0, 0);
@@ -285,7 +440,7 @@
                   }
                 }
               } catch (e) {
-                // Ignore any Three.js traverse evaluation errors
+                // Ignore traverse errors
               }
             });
           }
