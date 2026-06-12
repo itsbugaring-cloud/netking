@@ -490,9 +490,14 @@ function submitBulkApprove() {
 }
 
 function showProof(url, name) {
+  const modalEl = document.getElementById('proofModal');
+  if (modalEl.parentNode !== document.body) {
+    document.body.appendChild(modalEl);
+  }
+  
   document.getElementById('proofModalImg').src = url;
   document.getElementById('proofModalTitle').textContent = 'Bukti — ' + (name || 'Pelanggan');
-  new bootstrap.Modal(document.getElementById('proofModal')).show();
+  new bootstrap.Modal(modalEl).show();
 }
 </script>
 @endsection
