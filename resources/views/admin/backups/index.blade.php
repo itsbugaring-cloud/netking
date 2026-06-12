@@ -14,6 +14,11 @@
     .backup-table td { font-size: .8125rem; vertical-align: middle; }
     .backup-badge-binary { display: inline-flex; align-items: center; gap: .2rem; font-size: .7rem; padding: .15rem .5rem; border-radius: 999px; font-weight: 600; background: color-mix(in srgb, var(--purple, #9b59b6) 12%, var(--surface)); color: var(--purple, #9b59b6); border: 1px solid color-mix(in srgb, var(--purple, #9b59b6) 25%, var(--border)); }
     .backup-badge-text { display: inline-flex; align-items: center; gap: .2rem; font-size: .7rem; padding: .15rem .5rem; border-radius: 999px; font-weight: 600; background: color-mix(in srgb, var(--green) 12%, var(--surface)); color: var(--green); border: 1px solid color-mix(in srgb, var(--green) 25%, var(--border)); }
+
+    /* Fix Modal z-index bug */
+    #backupModal { z-index: 1060 !important; }
+    #backupModal .modal-dialog { pointer-events: auto; }
+    .modal-backdrop { z-index: 1055 !important; }
 </style>
 @endsection
 
