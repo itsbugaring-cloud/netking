@@ -356,7 +356,7 @@
     const canvas = document.getElementById('canvas3d');
     const spline = new Application(canvas);
     
-    spline.load('https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode')
+    spline.load('https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode')
       .then(() => {
         // Hide loader smoothly once loading is complete
         const loader = document.getElementById('spline-loader');
