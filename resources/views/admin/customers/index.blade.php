@@ -153,28 +153,6 @@
     font-size: .8125rem !important;
   }
 
-  /* ── Search input ────────────────────────────────────────────────────── */
-  .nk-search-wrap {
-    display: flex;
-    align-items: center;
-    gap: .4rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: .3rem .6rem;
-    max-width: 200px;
-  }
-  .nk-search-wrap i { color: var(--txt-3); font-size: .9rem; }
-  .nk-search-input {
-    border: none;
-    outline: none;
-    background: transparent;
-    font-size: .78rem;
-    color: var(--txt);
-    width: 100%;
-  }
-  .nk-search-input::placeholder { color: var(--txt-3); }
-
   .cust-status-toolbar {
     display:flex;
     align-items:center;

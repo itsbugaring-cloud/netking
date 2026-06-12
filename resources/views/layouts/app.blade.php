@@ -5308,38 +5308,41 @@
     .nk-list-page table code { background:color-mix(in srgb,var(--blue) 8%,var(--surface)); color:color-mix(in srgb,var(--blue) 80%,var(--txt)); border:1px solid color-mix(in srgb,var(--blue) 18%,var(--border)); padding:2px 7px; border-radius:6px; font-size:.78rem; font-weight:600; }
     /* Table controls bar */
     .nk-table-controls { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; justify-content:space-between; padding:.6rem 0 .4rem; margin-bottom: 1rem; }
-    .nk-search-wrap { position:relative; display:flex; align-items:center; }
-    .nk-search-wrap i, .nk-search-wrap .bx-search {
-      position:absolute !important;
-      left:.65rem !important;
-      color:var(--txt-3);
-      font-size:1.1rem;
-      pointer-events:none;
-      transition:color .15s ease;
-      z-index: 5;
-    }
-    .nk-search-input {
-      height: 38px;
-      padding: .375rem .75rem .375rem 2.2rem;
-      font-size: .875rem;
+    .nk-search-wrap {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 8px;
-      background: var(--surface);
-      color: var(--txt);
-      outline: none;
+      padding: .375rem .75rem;
       width: 280px;
       max-width: 100%;
-      font-family: inherit;
       transition: border-color .15s ease, box-shadow .15s ease;
     }
-    .nk-search-input:focus {
+    .nk-search-wrap i, .nk-search-wrap .bx-search {
+      color: var(--txt-3);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      transition: color .15s ease;
+    }
+    .nk-search-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--txt);
+      font-size: .875rem;
+      width: 100%;
+      font-family: inherit;
+    }
+    .nk-search-wrap:focus-within {
       border-color: var(--blue);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 15%, transparent);
     }
     .nk-search-input::placeholder {
-      color:var(--txt-3);
+      color: var(--txt-3);
     }
-    .nk-search-wrap:focus-within i { color:var(--blue); }
+    .nk-search-wrap:focus-within i { color: var(--blue); }
     
     .nk-length-select { padding:.3rem .4rem; font-size:.8125rem; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--txt); outline:none; font-family:inherit; cursor:pointer; width:70px; }
 
