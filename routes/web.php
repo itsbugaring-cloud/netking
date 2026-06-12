@@ -108,6 +108,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/profile', fn() => view('admin.profile'))->name('profile');
         Route::put('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
         Route::put('/password', [\App\Http\Controllers\Admin\ProfileController::class, 'password'])->name('password.update');
+
+        // UI Demo Component
+        Route::get('/ui-demo', fn() => view('admin.ui-demo'))->name('ui-demo');
     });
 
     // ── Routes accessible by Admin and Finance ──────────────────────────────
