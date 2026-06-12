@@ -155,12 +155,13 @@
 <script>
   $(function() {
     var table = $('#olts-table').DataTable({
-      dom: '<rt><"d-flex justify-content-between align-items-center mt-3"ip>',
+      dom: '<rt><"adv-pagination-container"i<"d-flex align-items-center gap-3"lp>>',
       pageLength: 25,
       autoWidth: false,
       order: [[1, 'asc']],
       language: {
-        info: '_START_-_END_ dari _TOTAL_',
+        info: 'Menampilkan <b>_START_</b> hingga <b>_END_</b> dari <b>_TOTAL_</b> hasil',
+        lengthMenu: '_MENU_ per hal',
         infoEmpty: 'Tidak ada data',
         zeroRecords: 'Tidak ditemukan',
         paginate: { previous: '&lsaquo;', next: '&rsaquo;' }

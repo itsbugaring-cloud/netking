@@ -5678,7 +5678,7 @@
     }
     
     /* Advanced Pagination Container for DataTables Wrapper */
-    .dataTables_wrapper > .d-flex.justify-content-between.align-items-center.mt-3 {
+    .adv-pagination-container {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
@@ -5694,6 +5694,27 @@
         font-weight: 500 !important;
         padding-top: 0 !important;
     }
+    .dataTables_length { margin-bottom: 0 !important; }
+    .dataTables_length select {
+        display: inline-block !important;
+        width: auto !important;
+        padding: 0.25rem 2rem 0.25rem 0.75rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--txt) !important;
+        background-color: var(--surface) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        -moz-appearance: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 0.75rem center !important;
+        background-size: 16px 12px !important;
+    }
+    .dataTables_length label { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0; font-size: 0.85rem; font-weight: 500; color: var(--txt-2); }
     .dataTables_paginate {
         display: flex !important;
         align-items: center !important;

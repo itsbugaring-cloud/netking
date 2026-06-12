@@ -24,14 +24,7 @@
           <i class='bx bx-search'></i>
           <input type="text" id="areas-search" class="nk-search-input" placeholder="Cari area...">
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <span style="font-size:.78rem;color:var(--txt-3);">Tampilkan</span>
-          <select id="areas-length" class="form-select form-select-sm">
-            <option value="10">10</option>
-            <option value="25" selected>25</option>
-            <option value="50">50</option>
-          </select>
-        </div>
+        
       </div>
       <div class="table-responsive">
         <table class="table table-flat mb-0" id="areas-table">
@@ -122,13 +115,14 @@
 <script>
   $(function() {
     var table = $('#areas-table').DataTable({
-      dom: '<rt><"d-flex justify-content-between align-items-center mt-3"ip>',
+      dom: '<rt><"adv-pagination-container"i<"d-flex align-items-center gap-3"lp>>',
       pageLength: 25,
       autoWidth: false,
       scrollX: true,
       order: [[1, 'asc']],
       language: {
-        info: '_START_-_END_ dari _TOTAL_',
+        info: 'Menampilkan <b>_START_</b> hingga <b>_END_</b> dari <b>_TOTAL_</b> hasil',
+        lengthMenu: '_MENU_ per hal',
         infoEmpty: 'Tidak ada data',
         zeroRecords: 'Tidak ditemukan',
         paginate: { previous: '&lsaquo;', next: '&rsaquo;' }
@@ -136,7 +130,7 @@
       columnDefs: [{ orderable: false, targets: [6] }]
     });
     $('#areas-search').on('input', function() { table.search(this.value).draw(); });
-    $('#areas-length').on('change', function() { table.page.len(+this.value).draw(); });
+    
     $('form[data-confirm]').on('submit', function(e) {
       if (!confirm($(this).data('confirm'))) e.preventDefault();
     });

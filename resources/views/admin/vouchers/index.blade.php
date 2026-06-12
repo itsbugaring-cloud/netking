@@ -112,7 +112,7 @@
         search: '',
         searchPlaceholder: 'Cari voucher...',
         lengthMenu: 'Tampilkan _MENU_',
-        info: '_START_-_END_ dari _TOTAL_',
+        info: 'Menampilkan <b>_START_</b> hingga <b>_END_</b> dari <b>_TOTAL_</b> hasil',
         paginate: {
           previous: '&lsaquo;',
           next: '&rsaquo;'
