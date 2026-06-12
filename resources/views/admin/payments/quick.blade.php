@@ -549,14 +549,16 @@
   @endif
 
   <div class="ms-panel mt-3" style="border: none !important; box-shadow: none !important; background: transparent !important;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <span class="ms-panel-title" style="font-size: 1.25rem;">
-        <i class='bx bx-history me-2' style="color:var(--blue);"></i>Riwayat Pembayaran Manual
+    <div class="d-flex justify-content-between align-items-center mb-3" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapseHistory" aria-expanded="false" aria-controls="collapseHistory">
+      <span class="ms-panel-title" style="font-size: 1.25rem; user-select: none;">
+        <i class='bx bx-history me-2' style="color:var(--blue);"></i>Riwayat Pembayaran Manual <i class='bx bx-chevron-down ms-1' id="historyToggleIcon" style="transition: transform 0.3s;"></i>
       </span>
       <span class="badge" style="background: var(--blue); color: #fff; padding: .4rem .8rem; border-radius: 999px;">{{ $manualPaymentCount }} Transaksi (Bulan Ini)</span>
     </div>
-    <div class="ms-panel-body p-0">
-      <form method="GET" action="{{ route('admin.payments.quick') }}" class="manual-toolbar p-3 mb-4 rounded" style="background: var(--surface); border: 1px solid var(--border);">
+    
+    <div class="collapse" id="collapseHistory">
+      <div class="ms-panel-body p-0 pt-2">
+        <form method="GET" action="{{ route('admin.payments.quick') }}" class="manual-toolbar p-3 mb-4 rounded" style="background: var(--surface); border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
         <div class="field">
           <div class="field-label">Periode Bulan</div>
           <select name="manual_month" class="form-select form-select-sm" data-hide-search>
@@ -654,6 +656,7 @@
         Tidak ada pembayaran manual untuk periode ini.
       </div>
       @endif
+      </div>
     </div>
   </div>
 </div>
@@ -708,6 +711,17 @@
         }
       });
     });
+
+    var collapseHistory = document.getElementById('collapseHistory');
+    var historyIcon = document.getElementById('historyToggleIcon');
+    if (collapseHistory && historyIcon) {
+      collapseHistory.addEventListener('show.bs.collapse', function () {
+        historyIcon.style.transform = 'rotate(180deg)';
+      });
+      collapseHistory.addEventListener('hide.bs.collapse', function () {
+        historyIcon.style.transform = 'rotate(0deg)';
+      });
+    }
   })();
 </script>
 @endsection
