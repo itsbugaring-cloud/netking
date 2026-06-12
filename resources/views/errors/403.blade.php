@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>403 — Akses Ditolak | NETKING</title>
 <!-- Load Spline Viewer Script -->
-<script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.0/build/spline-viewer.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@splinetool/viewer@1.9.0/build/spline-viewer.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
@@ -32,12 +32,12 @@
     width: 100%;
     height: 100%;
   }
-
+ 
   @keyframes nk-pop-in {
     from { opacity: 0; transform: translateY(20px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
-
+ 
   .title{font-size:1.6rem;font-weight:800;margin:15px 0 8px;color:var(--txt)}
   .msg{font-size:.92rem;line-height:1.6;color:var(--txt-2);max-width:42ch;margin-bottom:28px}
   .actions{display:flex;gap:12px;justify-content:center;width:100%}
@@ -63,7 +63,7 @@
       <!-- Spline 3D Scene -->
       <div class="spline-wrapper">
         <!-- MASUKKAN URL SCENE SPLINE KAMU DI SINI -->
-        <spline-viewer url="https://prod.spline.design/cop32OkaP0aYJb6R/scene.splinecode"></spline-viewer>
+        <spline-viewer url="https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode" loading="eager"></spline-viewer>
       </div>
 
       <h1 class="title">Akses Ditolak</h1>

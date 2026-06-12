@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>404 — Halaman Tidak Ditemukan | NETKING</title>
 <!-- Load Spline Viewer Script -->
-<script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.0/build/spline-viewer.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@splinetool/viewer@1.9.0/build/spline-viewer.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
@@ -63,7 +63,7 @@
       <!-- Spline 3D Scene -->
       <div class="spline-wrapper">
         <!-- MASUKKAN URL SCENE SPLINE KAMU DI SINI -->
-        <spline-viewer url="https://prod.spline.design/cop32OkaP0aYJb6R/scene.splinecode"></spline-viewer>
+        <spline-viewer url="https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode" loading="eager"></spline-viewer>
       </div>
 
       <h1 class="title">Halaman Tidak Ditemukan</h1>
