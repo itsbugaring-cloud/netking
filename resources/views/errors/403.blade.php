@@ -12,7 +12,7 @@
     height: 100vh;
     overflow: hidden;
     position: relative;
-    background: #f1f5f9;
+    background: #f4f6fa;
   }
   .spline-container {
     position: absolute;
@@ -131,6 +131,17 @@
       width: 100%;
     }
   }
+
+  /* Global Watermark Hiding */
+  a[href*="spline.design"],
+  a[href*="spline"],
+  .spline-container + a,
+  body > a {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
 </style>
 </head>
 <body>
@@ -161,30 +172,45 @@
     
     spline.load('https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode')
       .then(() => {
-        // Hide floor meshes to make the robot float cleanly in space
-        if (spline.scene) {
-          spline.scene.traverse((object) => {
-            const name = (object.name || '').toLowerCase();
-            if (
-              name.includes('floor') ||
-              name.includes('ground') ||
-              name.includes('base') ||
-              name.includes('table') ||
-              name.includes('plane') ||
-              name.includes('grid') ||
-              name.includes('platform') ||
-              name.includes('desk') ||
-              name.includes('stage') ||
-              name === 'rectangle' ||
-              name === 'triangle'
-            ) {
-              object.visible = false;
-              if (object.scale) {
-                object.scale.set(0, 0, 0);
+        // Repeatedly hide floor meshes to override any internal updates
+        const hideFloor = () => {
+          if (spline.scene) {
+            spline.scene.traverse((object) => {
+              if (object.isMesh) {
+                const name = (object.name || '').toLowerCase();
+                if (
+                  name.includes('floor') ||
+                  name.includes('ground') ||
+                  name.includes('base') ||
+                  name.includes('table') ||
+                  name.includes('plane') ||
+                  name.includes('grid') ||
+                  name.includes('platform') ||
+                  name.includes('desk') ||
+                  name.includes('stage') ||
+                  name.includes('rect') ||
+                  name.includes('tri') ||
+                  name.includes('poly') ||
+                  name.includes('shape') ||
+                  name.includes('extrusion') ||
+                  name.includes('bg') ||
+                  name.includes('backdrop') ||
+                  name.includes('shadow')
+                ) {
+                  object.visible = false;
+                  if (object.scale) {
+                    object.scale.set(0, 0, 0);
+                  }
+                }
               }
-            }
-          });
-        }
+            });
+          }
+        };
+
+        hideFloor();
+        // Run repeatedly for the first 5 seconds to ensure it stays hidden
+        const floorInterval = setInterval(hideFloor, 100);
+        setTimeout(() => clearInterval(floorInterval), 5000);
       })
       .catch(err => {
         console.error('Failed to load Spline scene:', err);
