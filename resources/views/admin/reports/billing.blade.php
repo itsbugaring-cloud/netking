@@ -105,10 +105,13 @@
             <tr>
               <td style="color:var(--txt-3);font-size:.8rem;">{{ $customers->firstItem() + $i }}</td>
               <td>
-                <a href="{{ route('admin.customers.show', $c) }}" style="font-weight:600;color:var(--txt);text-decoration:none;">
-                  {{ $c->name }}
-                </a>
-                <div style="font-size:.72rem;color:var(--txt-3);">{{ $c->phone ?? '-' }}</div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:hsl({{ crc32($c->name) % 360 }},50%,58%);font-size:.95rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">{{ strtoupper(substr($c->name,0,1)) }}</div>
+                  <div>
+                    <a href="{{ route('admin.customers.show', $c) }}" style="font-weight:700;font-size:.9rem;color:var(--txt);text-decoration:none;">{{ $c->name }}</a>
+                    <div style="font-size:.72rem;color:var(--txt-3);">{{ $c->phone ?? '-' }}</div>
+                  </div>
+                </div>
               </td>
               <td><code style="font-size:.75rem;">{{ $c->customer_code ?? '—' }}</code></td>
               <td style="font-size:.8125rem;">{{ $c->area->name ?? '-' }}</td>

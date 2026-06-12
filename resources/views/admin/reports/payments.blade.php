@@ -104,7 +104,12 @@
             @forelse($payments as $idx => $pmt)
             <tr>
               <td>{{ $payments->firstItem() + $idx }}</td>
-              <td>{{ $pmt->customer?->name ?? '-' }}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:hsl({{ crc32($pmt->customer?->name ?? 'x') % 360 }},50%,58%);font-size:.95rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">{{ strtoupper(substr($pmt->customer?->name ?? '?', 0, 1)) }}</div>
+                  <div style="font-weight:700;font-size:.875rem;color:var(--txt);">{{ $pmt->customer?->name ?? '-' }}</div>
+                </div>
+              </td>
               <td>{{ $pmt->customer?->area?->name ?? '-' }}</td>
               <td>{{ sprintf('%02d/%04d', $pmt->periode_bulan, $pmt->periode_tahun) }}</td>
               <td class="text-end">{{ number_format($pmt->jumlah, 0, ',', '.') }}</td>

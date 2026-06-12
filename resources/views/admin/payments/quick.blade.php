@@ -624,9 +624,14 @@
                 <input type="checkbox" name="payment_ids[]" value="{{ $payment->id }}" form="bulk-delete-manual-payments-global-form" class="global-manual-payment-checkbox" style="width:16px;height:16px;">
               </td>
               <td>
-                <div style="font-weight:600;color:var(--txt);">{{ $payment->customer?->name ?? '—' }}</div>
-                <div style="color:var(--txt-3);font-size:.74rem;">
-                  {{ $payment->customer?->customer_code ?? '—' }} · {{ $payment->customer?->pppoe_user ?? '—' }}
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:hsl({{ crc32($payment->customer?->name ?? 'x') % 360 }},50%,58%);font-size:.95rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">{{ strtoupper(substr($payment->customer?->name ?? '?', 0, 1)) }}</div>
+                  <div>
+                    <div style="font-weight:700;color:var(--txt);">{{ $payment->customer?->name ?? '—' }}</div>
+                    <div style="color:var(--txt-3);font-size:.74rem;">
+                      {{ $payment->customer?->customer_code ?? '—' }} · {{ $payment->customer?->pppoe_user ?? '—' }}
+                    </div>
+                  </div>
                 </div>
               </td>
               <td>{{ $payment->customer?->area?->name ?? '—' }}</td>
