@@ -6619,6 +6619,27 @@
             length.removeClass('d-none');
             paginate.removeClass('d-none');
             
+            // Clean up the length control DOM to prevent Bootstrap 5 from breaking it
+            var select = length.find('select');
+            if (select.length) {
+                // Keep the select but remove all the buggy Bootstrap wrappers/labels
+                var newLength = $('<div class="d-flex align-items-center" style="gap: 8px;"></div>');
+                select.css({
+                    'display': 'inline-block',
+                    'width': 'auto',
+                    'padding': '0.375rem 2.25rem 0.375rem 0.75rem',
+                    'border': '1px solid var(--border)',
+                    'border-radius': '8px',
+                    'background-color': 'var(--surface)',
+                    'font-size': '0.85rem',
+                    'font-weight': '500',
+                    'color': 'var(--txt)'
+                });
+                newLength.append(select);
+                newLength.append($('<span style="font-size: 0.85rem; font-weight: 500; color: var(--txt-2); white-space: nowrap;">per hal</span>'));
+                length.empty().append(newLength);
+            }
+            
             // Assemble the layout
             rightDiv.append(length).append(paginate);
             container.append(info).append(rightDiv);
