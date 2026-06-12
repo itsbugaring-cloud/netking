@@ -351,7 +351,7 @@
 
   <!-- Load Spline Runtime from jsDelivr and Initialize Scene -->
   <script type="module">
-    import { Application } from 'https://cdn.jsdelivr.net/npm/@splinetool/runtime@1.12.96/build/runtime.js';
+    import { Application } from 'https://cdn.jsdelivr.net/npm/@splinetool/runtime@1.9.56/build/runtime.js';
 
     const canvas = document.getElementById('canvas3d');
     const spline = new Application(canvas);
