@@ -12,7 +12,7 @@
     height: 100vh;
     overflow: hidden;
     position: relative;
-    background: #f4f6fa;
+    background: radial-gradient(circle at top, rgba(59, 130, 246, 0.08), transparent 45%), linear-gradient(180deg, #f8fbff 0%, #f4f6fa 100%);
   }
   .spline-container {
     position: absolute;
@@ -211,10 +211,22 @@
           setTimeout(() => loader.remove(), 400);
         }
 
+        // Set spline scene background to transparent
+        if (spline.scene) {
+          spline.scene.background = null;
+        }
+        if (spline.renderer) {
+          spline.renderer.setClearAlpha(0);
+        }
+
         // Periodically remove watermark elements and hide floor meshes
         const cleanupScene = () => {
           // 1. Remove any absolute-positioned watermark links in DOM
-          document.querySelectorAll('a[href*="spline"]').forEach(el => el.remove());
+          document.querySelectorAll('a').forEach(el => {
+            if (el.href && el.href.includes('spline')) {
+              el.remove();
+            }
+          });
           document.querySelectorAll('div').forEach(el => {
             if (el.textContent && el.textContent.includes('Spline')) {
               const style = window.getComputedStyle(el);
@@ -224,53 +236,56 @@
             }
           });
 
-          // 2. Traverse Three.js scene and hide floor meshes
+          // 2. Traverse Three.js scene and hide floor meshes (safe size + keyword checks)
           if (spline.scene) {
             spline.scene.traverse((object) => {
-              if (object.isMesh) {
-                const name = (object.name || '').toLowerCase();
-                const matchesKeyword = (
-                  name.includes('floor') ||
-                  name.includes('ground') ||
-                  name.includes('base') ||
-                  name.includes('table') ||
-                  name.includes('plane') ||
-                  name.includes('grid') ||
-                  name.includes('platform') ||
-                  name.includes('desk') ||
-                  name.includes('stage') ||
-                  name.includes('rect') ||
-                  name.includes('tri') ||
-                  name.includes('poly') ||
-                  name.includes('shape') ||
-                  name.includes('extrusion') ||
-                  name.includes('bg') ||
-                  name.includes('backdrop') ||
-                  name.includes('shadow')
-                );
+              try {
+                if (object.isMesh) {
+                  const name = (object.name || '').toLowerCase();
+                  const matchesKeyword = (
+                    name.includes('floor') ||
+                    name.includes('ground') ||
+                    name.includes('base') ||
+                    name.includes('table') ||
+                    name.includes('plane') ||
+                    name.includes('grid') ||
+                    name.includes('platform') ||
+                    name.includes('desk') ||
+                    name.includes('stage') ||
+                    name.includes('rect') ||
+                    name.includes('tri') ||
+                    name.includes('poly') ||
+                    name.includes('shape') ||
+                    name.includes('extrusion') ||
+                    name.includes('bg') ||
+                    name.includes('backdrop') ||
+                    name.includes('shadow')
+                  );
 
-                // Compute size for geometry bounds check (hides unnamed floors)
-                let isVeryLarge = false;
-                if (object.geometry) {
-                  if (!object.geometry.boundingBox) {
-                    object.geometry.computeBoundingBox();
+                  let isVeryLarge = false;
+                  if (object.geometry && typeof object.geometry.computeBoundingBox === 'function') {
+                    if (!object.geometry.boundingBox) {
+                      object.geometry.computeBoundingBox();
+                    }
+                    const box = object.geometry.boundingBox;
+                    if (box) {
+                      const width = box.max.x - box.min.x;
+                      const depth = box.max.z - box.min.z;
+                      if (width > 50 || depth > 50) {
+                        isVeryLarge = true;
+                      }
+                    }
                   }
-                  const box = object.geometry.boundingBox;
-                  if (box) {
-                    const width = box.max.x - box.min.x;
-                    const depth = box.max.z - box.min.z;
-                    if (width > 60 || depth > 60) {
-                      isVeryLarge = true;
+
+                  if (matchesKeyword || isVeryLarge) {
+                    object.visible = false;
+                    if (object.scale) {
+                      object.scale.set(0, 0, 0);
                     }
                   }
                 }
-
-                if (matchesKeyword || isVeryLarge) {
-                  object.visible = false;
-                  if (object.scale) {
-                    object.scale.set(0, 0, 0);
-                  }
-                }
+              } catch (e) {
+                // Ignore any Three.js traverse evaluation errors
               }
             });
           }
