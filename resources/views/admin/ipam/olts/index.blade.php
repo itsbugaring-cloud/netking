@@ -155,7 +155,7 @@
 <script>
   $(function() {
     var table = $('#olts-table').DataTable({
-      dom: 'rt<"adv-pagination-container"i<"d-flex align-items-center gap-3"lp>>',
+      dom: '<rt><"adv-pagination-container d-flex justify-content-between align-items-center mt-3"i<"d-flex align-items-center gap-3"lp>>',
       pageLength: 25,
       autoWidth: false,
       order: [[1, 'asc']],
