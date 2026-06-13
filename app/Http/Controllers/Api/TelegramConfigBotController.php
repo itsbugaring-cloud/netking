@@ -2401,16 +2401,42 @@ class TelegramConfigBotController extends Controller
             return null;
         }
 
-        if (preg_match('/SN(?:_ONT)?\s*[:=]\s*([A-Z0-9-]{6,24})/i', $text, $m)) {
+        // ── Prioritas 1: P-SN (format CData, misal: P-SN: CDTCAFC589B6)
+        if (preg_match('/\bP[-_]?SN\s*[:=]?\s*([A-Z0-9]{6,24})/i', $text, $m)) {
+            return strtoupper(trim($m[1]));
+        }
+
+        // ── Prioritas 2: PON SN (format Tenda, misal: PON SN: TDTCE4907498)
+        if (preg_match('/\bPON\s+SN\s*[:=]?\s*([A-Z0-9]{6,24})/i', $text, $m)) {
+            return strtoupper(trim($m[1]));
+        }
+
+        // ── Prioritas 3: GPON SN / SN ONT (format generik)
+        if (preg_match('/\b(?:GPON[-_\s]?)?SN(?:[-_]ONT)?\s*[:=]\s*([A-Z0-9]{6,24})/i', $text, $m)) {
             return strtoupper(str_replace('-', '', trim($m[1])));
         }
 
-        if (preg_match('/\b([A-Z0-9]{8,20})\b/i', $text, $m)) {
-            return strtoupper(trim($m[1]));
+        // ── Skip Product S/N yang panjang (biasanya numeric 15+ digit — bukan SN OLT)
+        // ── Fallback: ambil alphanumeric 8–20 karakter yang bukan pure angka (SN OLT selalu mix)
+        if (preg_match_all('/\b([A-Z][A-Z0-9]{7,19}|[A-Z0-9]{4,}[A-Z][A-Z0-9]{3,})\b/i', $text, $matches)) {
+            foreach ($matches[1] as $candidate) {
+                $candidate = strtoupper($candidate);
+                // Skip pure numeric (bukan SN OLT)
+                if (ctype_digit($candidate)) {
+                    continue;
+                }
+                // Skip terlalu pendek atau terlalu panjang
+                $len = strlen($candidate);
+                if ($len < 8 || $len > 20) {
+                    continue;
+                }
+                return $candidate;
+            }
         }
 
         return null;
     }
+
 
     private function sendMyHistory(string $chatId): void
     {
