@@ -802,7 +802,7 @@ class TelegramConfigBotController extends Controller
 
         $loadingMessageId = $this->startProgressMessage($chatId, 'Membaca foto SN', '⏳ OCR sedang baca label SN...');
 
-        $ocr = $this->extractSnFromTelegramPhoto((string) $largest['file_id']);
+        $ocr = $this->extractSnFromTelegramPhoto((string) $largest['file_id'], $typedSn);
         if (($ocr['success'] ?? false) !== true) {
             $state['draft']['photo_ocr_error'] = (string) ($ocr['error'] ?? 'OCR gagal membaca foto');
             $state['updated_at'] = now()->toDateTimeString();
@@ -1907,7 +1907,7 @@ class TelegramConfigBotController extends Controller
         return number_format($latitude, 6, '.', '') . ', ' . number_format($longitude, 6, '.', '');
     }
 
-    private function extractSnFromTelegramPhoto(string $fileId): array
+    private function extractSnFromTelegramPhoto(string $fileId, string $expectedSn = ''): array
     {
         $fileUrl = $this->resolveTelegramFileUrl($fileId);
         if ($fileUrl === null) {
@@ -1968,6 +1968,18 @@ class TelegramConfigBotController extends Controller
                 }
 
                 $bestRaw = $rawText;
+                
+                // Cek langsung jika kita punya expectedSn (abaikan spasi & strip)
+                $cleanRawText = strtoupper(str_replace([' ', '-', "\n", "\r", "\t", ':'], '', $rawText));
+                $cleanExpected = strtoupper(str_replace([' ', '-'], '', $expectedSn));
+                if ($cleanExpected !== '' && str_contains($cleanRawText, $cleanExpected)) {
+                    return [
+                        'success' => true,
+                        'raw_text' => $rawText,
+                        'sn' => $cleanExpected,
+                    ];
+                }
+
                 $sn = $this->extractSnFromText($rawText);
                 if ($sn !== null) {
                     return [
