@@ -334,6 +334,7 @@ class TelegramConfigBotController extends Controller
         $state = $this->getState($chatId);
         $state['collecting'] = true;
         $state['field_index'] = 0;
+        unset($state['edit_field']); // <-- Wajib dihapus agar tidak nyangkut dari sesi sebelumnya
         $state['draft'] = $state['draft'] ?? [];
         $state['draft']['pppoe_pass'] = self::DEFAULT_PPPOE_PASSWORD;
         $state['draft']['tanggal_pasang'] = now()->toDateString();
@@ -2564,6 +2565,7 @@ class TelegramConfigBotController extends Controller
         $state = $this->getState($chatId);
         $state['collecting'] = false;
         $state['field_index'] = 0;
+        unset($state['edit_field']); // <-- Wajib dihapus agar tidak nyangkut!
         if ($clearDraft) {
             $state['draft'] = ['pppoe_pass' => 'netking'];
         }
