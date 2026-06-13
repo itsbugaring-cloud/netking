@@ -1935,17 +1935,40 @@ class TelegramConfigBotController extends Controller
 
             file_put_contents($tmpImage, $download->body());
 
+            // ── Preprocessing dengan ImageMagick (jika tersedia) ──
+            // Resize 2x + grayscale + contrast boost → Tesseract lebih akurat baca label
+            $processedImage = $tmpBase . '_pre.png';
+            $preProcess = new Process([
+                'convert',
+                $tmpImage,
+                '-resize', '200%',
+                '-colorspace', 'Gray',
+                '-contrast-stretch', '0.05x0.05%',
+                '-unsharp', '0x1',
+                $processedImage,
+            ]);
+            $preProcess->setTimeout(10);
+            $preProcess->run();
+            $ocrTarget = (file_exists($processedImage) && filesize($processedImage) > 0)
+                ? $processedImage
+                : $tmpImage;
+
             $attempts = [
-                ['--psm', '6'],
-                ['--psm', '7'],
-                ['--psm', '11'],
+                [$ocrTarget, '--psm', '6'],
+                [$ocrTarget, '--psm', '11'],
+                [$ocrTarget, '--psm', '3'],
+                [$tmpImage,  '--psm', '6'],   // fallback: gambar asli tanpa preprocessing
+                [$tmpImage,  '--psm', '11'],
             ];
 
-            $bestRaw = '';
+            $bestRaw  = '';
+            $cleanExpected = strtoupper(str_replace([' ', '-'], '', $expectedSn));
+
             foreach ($attempts as $args) {
+                $imgFile = array_shift($args);
                 $process = new Process([
                     'tesseract',
-                    $tmpImage,
+                    $imgFile,
                     'stdout',
                     ...$args,
                     '-c',
@@ -1968,43 +1991,55 @@ class TelegramConfigBotController extends Controller
                 }
 
                 $bestRaw = $rawText;
-                
-                // Cek langsung jika kita punya expectedSn (abaikan spasi & strip)
-                $cleanRawText = strtoupper(str_replace([' ', '-', "\n", "\r", "\t", ':'], '', $rawText));
-                $cleanExpected = strtoupper(str_replace([' ', '-'], '', $expectedSn));
+
+                // Bersihkan teks OCR: hapus spasi, newline, titik dua, strip
+                $cleanRawText = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $rawText));
+
+                // ── Cek 1: exact substring match (typed SN ada di dalam raw OCR text)
                 if ($cleanExpected !== '' && str_contains($cleanRawText, $cleanExpected)) {
-                    return [
-                        'success' => true,
-                        'raw_text' => $rawText,
-                        'sn' => $cleanExpected,
-                    ];
+                    return ['success' => true, 'raw_text' => $rawText, 'sn' => $cleanExpected];
                 }
 
+                // ── Cek 2: Fuzzy match — cari substring sepanjang SN dgn Levenshtein ≤ 2
+                // Menangani kasus OCR misread 1-2 karakter (O vs 0, I vs 1, B vs 8, dll)
+                if ($cleanExpected !== '' && strlen($cleanExpected) >= 8) {
+                    $snLen = strlen($cleanExpected);
+                    $rawLen = strlen($cleanRawText);
+                    for ($i = 0; $i <= $rawLen - $snLen; $i++) {
+                        $sub = substr($cleanRawText, $i, $snLen);
+                        if (levenshtein($sub, $cleanExpected) <= 2) {
+                            return ['success' => true, 'raw_text' => $rawText, 'sn' => $cleanExpected];
+                        }
+                    }
+                }
+
+                // ── Cek 3: Regex extract dari format label terkenal
                 $sn = $this->extractSnFromText($rawText);
                 if ($sn !== null) {
-                    return [
-                        'success' => true,
-                        'raw_text' => $rawText,
-                        'sn' => strtoupper($sn),
-                    ];
+                    return ['success' => true, 'raw_text' => $rawText, 'sn' => strtoupper($sn)];
                 }
             }
 
             return [
-                'success' => false,
-                'error' => $bestRaw !== '' ? 'OCR belum menemukan serial SN yang valid' : 'OCR tidak membaca teks dari foto',
+                'success'  => false,
+                'error'    => $bestRaw !== '' ? 'OCR belum menemukan serial SN yang valid' : 'OCR tidak membaca teks dari foto',
                 'raw_text' => $bestRaw,
             ];
         } catch (\Throwable $e) {
             return ['success' => false, 'error' => $e->getMessage()];
+
         } finally {
             if (is_file($tmpImage)) {
                 @unlink($tmpImage);
+            }
+            if (isset($processedImage) && is_file($processedImage)) {
+                @unlink($processedImage);
             }
             if (is_file($tmpBase)) {
                 @unlink($tmpBase);
             }
         }
+
     }
 
     private function resolveTelegramFileUrl(string $fileId): ?string
