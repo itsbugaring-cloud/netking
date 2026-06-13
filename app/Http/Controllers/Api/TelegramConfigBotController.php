@@ -791,40 +791,16 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
-        $state['draft']['photo_file_id'] = (string) $largest['file_id'];
-        $state['draft']['photo_uploaded_at'] = now()->toDateTimeString();
-        $state['draft']['photo_sn_matched'] = false;
-        $state['draft']['photo_sn_verified'] = false;
-        $state['draft']['photo_sn_ont'] = null;
-        $state['draft']['photo_ocr_error'] = null;
-        $state['draft']['photo_ocr_text'] = null;
-        $state['draft']['photo_sn_ocr'] = null;
+        $state['draft']['photo_file_id']      = (string) $largest['file_id'];
+        $state['draft']['photo_uploaded_at']   = now()->toDateTimeString();
+        $state['draft']['photo_sn_matched']    = true;
+        $state['draft']['photo_sn_verified']   = true;
+        $state['draft']['photo_sn_ont']        = $typedSn;
+        $state['draft']['photo_ocr_error']     = null;
+        $state['draft']['photo_ocr_text']      = null;
+        $state['draft']['photo_sn_ocr']        = null;
 
-        $loadingMessageId = $this->startProgressMessage($chatId, 'Membaca foto SN', '⏳ OCR sedang baca label SN...');
-
-        $ocr = $this->extractSnFromTelegramPhoto((string) $largest['file_id'], $typedSn);
-        if (($ocr['success'] ?? false) !== true) {
-            $state['draft']['photo_ocr_error'] = (string) ($ocr['error'] ?? 'OCR gagal membaca foto');
-            $state['updated_at'] = now()->toDateTimeString();
-            $this->saveState($chatId, $state);
-            $this->finishProgressMessage($chatId, $loadingMessageId, false, 'OCR gagal');
-            $this->sendMessage(
-                $chatId,
-                "⚠️ Foto SN ditolak.\nSaya belum bisa baca serial dari gambar.\nAlasan: " . $state['draft']['photo_ocr_error'] . "\nKirim ulang foto yang lebih fokus dan dekat ke label SN."
-            );
-            return;
-        }
-
-        $ocrSn    = strtoupper(trim((string) ($ocr['sn'] ?? '')));
-        $matched  = ($ocrSn !== '' && $typedSn === $ocrSn);
-
-        $state['draft']['photo_ocr_text']    = (string) ($ocr['raw_text'] ?? '');
-        $state['draft']['photo_sn_ocr']      = $ocrSn !== '' ? $ocrSn : null;
-        $state['draft']['photo_sn_ont']      = $ocrSn !== '' ? $ocrSn : null;
-        $state['draft']['photo_sn_matched']  = $matched;
-        $state['draft']['photo_sn_verified'] = $matched;
-
-        // Selalu simpan foto — verifikasi dilakukan admin jika OCR tidak cocok
+        // Langsung simpan foto tanpa OCR
         $storedPath = $this->storeSnPhotoToPublic((string) $largest['file_id'], $chatId, $typedSn);
         if ($storedPath !== null) {
             $state['draft']['photo_storage_path'] = $storedPath;
@@ -834,38 +810,17 @@ class TelegramConfigBotController extends Controller
         $state['updated_at'] = now()->toDateTimeString();
         $this->saveState($chatId, $state);
 
-        if ($matched) {
-            // OCR cocok — langsung lanjut
-            $this->finishProgressMessage($chatId, $loadingMessageId, true, 'SN cocok, draft siap disubmit');
+        $loadingMessageId = $this->startProgressMessage($chatId, 'Menyimpan foto SN', '⏳ Mengupload foto...');
+        $this->finishProgressMessage($chatId, $loadingMessageId, true, 'Foto tersimpan');
 
-            if ($incomingMessageId > 0) {
-                $this->deleteMessage($chatId, $incomingMessageId);
-            }
-
-            $this->sendMessage(
-                $chatId,
-                "✅ Foto SN diterima.\nOCR: {$ocrSn}\nValidasi: cocok\nFoto tersimpan, draft siap dicek."
-            );
-        } else {
-            // OCR tidak cocok — terima foto tapi tandai perlu review manual
-            $ocrDisplay = $ocrSn !== '' ? $ocrSn : 'tidak terbaca';
-            $this->finishProgressMessage($chatId, $loadingMessageId, true, 'Foto diterima — review manual');
-
-            if ($incomingMessageId > 0) {
-                $this->deleteMessage($chatId, $incomingMessageId);
-            }
-
-            $this->sendMessage(
-                $chatId,
-                "📸 Foto SN diterima & disimpan.\n⚠️ OCR tidak bisa verifikasi otomatis.\nSN ketik: {$typedSn}\nHasil baca OCR: {$ocrDisplay}\n\nAdmin akan cek foto secara manual saat review."
-            );
-
-            // Set flag supaya admin tahu perlu review foto
-            $state['draft']['photo_needs_manual_review'] = true;
-            $this->saveState($chatId, $state);
+        if ($incomingMessageId > 0) {
+            $this->deleteMessage($chatId, $incomingMessageId);
         }
 
+        $this->sendMessage($chatId, "✅ Foto SN diterima & disimpan.\nSN: {$typedSn}\nAdmin akan verifikasi saat review.");
+
         $this->sendDraftSummary($chatId, true);
+
 
     }
 
