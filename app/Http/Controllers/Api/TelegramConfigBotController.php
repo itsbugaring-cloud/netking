@@ -815,45 +815,58 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
-        $ocrSn = strtoupper(trim((string) ($ocr['sn'] ?? '')));
-        $state['draft']['photo_ocr_text'] = (string) ($ocr['raw_text'] ?? '');
-        $state['draft']['photo_sn_ocr'] = $ocrSn !== '' ? $ocrSn : null;
-        $state['draft']['photo_sn_ont'] = $ocrSn !== '' ? $ocrSn : null;
-        $state['draft']['photo_sn_matched'] = $typedSn === $ocrSn;
-        $state['draft']['photo_sn_verified'] = $typedSn === $ocrSn;
+        $ocrSn    = strtoupper(trim((string) ($ocr['sn'] ?? '')));
+        $matched  = ($ocrSn !== '' && $typedSn === $ocrSn);
 
-        if ($typedSn === $ocrSn) {
-            $storedPath = $this->storeSnPhotoToPublic((string) $largest['file_id'], $chatId, $typedSn);
-            if ($storedPath !== null) {
-                $state['draft']['photo_storage_path'] = $storedPath;
-                $this->attachSnPhotoToInventory($typedSn, $storedPath);
-            }
+        $state['draft']['photo_ocr_text']    = (string) ($ocr['raw_text'] ?? '');
+        $state['draft']['photo_sn_ocr']      = $ocrSn !== '' ? $ocrSn : null;
+        $state['draft']['photo_sn_ont']      = $ocrSn !== '' ? $ocrSn : null;
+        $state['draft']['photo_sn_matched']  = $matched;
+        $state['draft']['photo_sn_verified'] = $matched;
+
+        // Selalu simpan foto — verifikasi dilakukan admin jika OCR tidak cocok
+        $storedPath = $this->storeSnPhotoToPublic((string) $largest['file_id'], $chatId, $typedSn);
+        if ($storedPath !== null) {
+            $state['draft']['photo_storage_path'] = $storedPath;
+            $this->attachSnPhotoToInventory($typedSn, $storedPath);
         }
 
         $state['updated_at'] = now()->toDateTimeString();
         $this->saveState($chatId, $state);
 
-        if (($state['draft']['photo_sn_matched'] ?? false) !== true) {
-            $this->finishProgressMessage($chatId, $loadingMessageId, false, 'SN tidak cocok');
+        if ($matched) {
+            // OCR cocok — langsung lanjut
+            $this->finishProgressMessage($chatId, $loadingMessageId, true, 'SN cocok, draft siap disubmit');
+
+            if ($incomingMessageId > 0) {
+                $this->deleteMessage($chatId, $incomingMessageId);
+            }
+
             $this->sendMessage(
                 $chatId,
-                "⚠️ SN di foto tidak cocok.\nSN teks: {$typedSn}\nHasil baca foto: " . ($ocrSn !== '' ? $ocrSn : 'tidak terbaca') . "\nKirim ulang foto yang lebih jelas."
+                "✅ Foto SN diterima.\nOCR: {$ocrSn}\nValidasi: cocok\nFoto tersimpan, draft siap dicek."
             );
-            return;
+        } else {
+            // OCR tidak cocok — terima foto tapi tandai perlu review manual
+            $ocrDisplay = $ocrSn !== '' ? $ocrSn : 'tidak terbaca';
+            $this->finishProgressMessage($chatId, $loadingMessageId, true, 'Foto diterima — review manual');
+
+            if ($incomingMessageId > 0) {
+                $this->deleteMessage($chatId, $incomingMessageId);
+            }
+
+            $this->sendMessage(
+                $chatId,
+                "📸 Foto SN diterima & disimpan.\n⚠️ OCR tidak bisa verifikasi otomatis.\nSN ketik: {$typedSn}\nHasil baca OCR: {$ocrDisplay}\n\nAdmin akan cek foto secara manual saat review."
+            );
+
+            // Set flag supaya admin tahu perlu review foto
+            $state['draft']['photo_needs_manual_review'] = true;
+            $this->saveState($chatId, $state);
         }
-
-        $this->finishProgressMessage($chatId, $loadingMessageId, true, 'SN cocok, draft siap disubmit');
-
-        if ($incomingMessageId > 0) {
-            $this->deleteMessage($chatId, $incomingMessageId);
-        }
-
-        $this->sendMessage(
-            $chatId,
-            "✅ Foto SN diterima.\nOCR: {$ocrSn}\nValidasi: cocok\nFoto tersimpan, draft siap dicek."
-        );
 
         $this->sendDraftSummary($chatId, true);
+
     }
 
     private function handleLocationInput(string $chatId, array $from, array $location, int $incomingMessageId = 0): void
