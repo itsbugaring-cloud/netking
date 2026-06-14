@@ -167,8 +167,8 @@
 <script>
   $(function() {
     var table = $('#olts-table').DataTable({
-      dom: '<"d-none"ilp>rt',
-      pageLength: 25,
+      dom: '<"d-flex justify-content-between align-items-center mb-3"l>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+      pageLength: 50,
       autoWidth: false,
       order: [[1, 'asc']],
       language: {
