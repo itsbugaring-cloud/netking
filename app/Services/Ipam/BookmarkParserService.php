@@ -94,25 +94,40 @@ class BookmarkParserService
     }
 
     /**
-     * Extract a valid IPv4 address from a URL string.
+     * Extract host (IP or domain, optionally with port) from a URL string.
      *
-     * Parses the URL host component and validates it as an IPv4 address.
-     * Handles URLs like http://192.168.1.1, http://10.10.50.1/path, etc.
+     * Handles all common MikroTik Winbox bookmark URL formats:
+     *  - Bare IP:           192.168.1.1
+     *  - Bare IP+port:      192.168.1.1:8291
+     *  - With http scheme:  http://192.168.1.1
+     *  - With port:         http://103.20.1.1:8080
+     *  - Domain:            http://olt.domain.com
      *
-     * @param string $url The URL to extract an IP from
-     * @return string|null The IPv4 address, or null if not a valid IPv4
+     * @param string $url The URL to extract a host from
+     * @return string|null The host (with optional port), or null if not parseable
      */
     private function extractIpFromUrl(string $url): ?string
     {
+        $url = trim($url);
+
+        if ($url === '') {
+            return null;
+        }
+
+        // If no scheme present, prepend http:// so parse_url works correctly
+        if (!preg_match('/^[a-z][a-z0-9+\-.]*:\/\//i', $url)) {
+            $url = 'http://' . $url;
+        }
+
         $parsed = parse_url($url);
 
-        if (!isset($parsed['host'])) {
+        if (empty($parsed['host'])) {
             return null;
         }
 
         $host = $parsed['host'];
 
-        // Include port if present so port-forwarded OLTs on the same IP are treated as unique
+        // Include port if present so port-forwarded OLTs on same IP are treated as unique
         if (isset($parsed['port'])) {
             $host .= ':' . $parsed['port'];
         }

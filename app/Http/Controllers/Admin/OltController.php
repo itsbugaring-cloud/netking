@@ -8,6 +8,8 @@ use App\Models\Area;
 use App\Models\Customer;
 use App\Models\Olt;
 use App\Models\Ont;
+use App\Models\Ipam\IpamOlt;
+use App\Services\Ipam\IpamAuditService;
 use App\Services\OltService;
 use Illuminate\Http\Request;
 
@@ -55,6 +57,9 @@ class OltController extends Controller
         ]);
 
         $olt = Olt::create($validated);
+
+        // Auto-sync to IPAM OLTs
+        $this->syncToIpam($olt);
 
         return redirect()->route('admin.olts.show', $olt)
             ->with('success', "OLT {$olt->name} created. Click 'Sync ONTs' to fetch inventory.");
@@ -149,6 +154,9 @@ class OltController extends Controller
 
         $olt->update($validated);
 
+        // Auto-sync to IPAM OLTs
+        $this->syncToIpam($olt);
+
         return redirect()->route('admin.olts.show', $olt)
             ->with('success', "OLT {$olt->name} updated.");
     }
@@ -156,10 +164,37 @@ class OltController extends Controller
     public function destroy(Olt $olt)
     {
         $name = $olt->name;
+        $ip   = $olt->ip_address;
         $olt->delete(); // cascades to onts
+
+        // Remove from IPAM if exists (soft removal — don't error if not found)
+        IpamOlt::where('ip_address', $ip)->delete();
 
         return redirect()->route('admin.olts.index')
             ->with('success', "OLT {$name} and all its ONT records deleted.");
+    }
+
+    /**
+     * Sync an Olt (Jaringan) record into ipam_olts.
+     * Creates a new IPAM OLT if not already present, or updates name if IP matches.
+     */
+    private function syncToIpam(Olt $olt): void
+    {
+        try {
+            $ipamOlt = IpamOlt::firstOrNew(['ip_address' => $olt->ip_address]);
+            $isNew   = !$ipamOlt->exists;
+            $ipamOlt->name = $olt->name;
+            $ipamOlt->save();
+
+            $action = $isNew ? 'import' : 'update';
+            IpamAuditService::log($action, 'olt', $ipamOlt->id,
+                ($isNew ? 'Auto-synced from Jaringan: ' : 'Auto-updated from Jaringan: ')
+                . "{$olt->name} ({$olt->ip_address})"
+            );
+        } catch (\Throwable $e) {
+            // Never block the main OLT save if IPAM sync fails
+            \Log::warning("IPAM auto-sync failed for OLT {$olt->name}: " . $e->getMessage());
+        }
     }
 
     /**
