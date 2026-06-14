@@ -75,7 +75,7 @@
         <form id="bulkDeleteForm" action="{{ route('admin.ipam.olts.bulkDestroy') }}" method="POST" class="d-inline-block ms-3" data-confirm="Hapus semua OLT terpilih?">
           @csrf @method('DELETE')
           <button type="submit" class="ms-btn-danger ms-btn-sm d-none" id="btnBulkDelete" style="height: 38px;">
-            <i class='bx bx-trash'></i> Hapus Terpilih (<span id="bulkCount">0</span>)
+            <i class='bx bx-trash'></i> Hapus Terpilih (<span class="bulkCount">0</span>)
           </button>
         </form>
       </div>
@@ -133,13 +133,10 @@
   </div>
 </div>
 
-{{-- Sticky Bulk Delete Banner --}}
-<div id="stickyBulkDeleteBar" class="fixed-bottom p-3 d-none shadow-lg text-center" style="background: rgba(255, 255, 255, 0.95); border-top: 1px solid var(--border); backdrop-filter: blur(5px); z-index: 1050; padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;">
-  <span class="me-3 fw-bold" style="color: var(--txt-1);"><span id="stickyBulkCount">0</span> OLT Terpilih</span>
-  <button type="submit" form="bulkDeleteForm" class="ms-btn-danger">
-    <i class='bx bx-trash'></i> Hapus Semua Terpilih
-  </button>
-</div>
+{{-- Floating Bulk Delete Button --}}
+<button type="submit" form="bulkDeleteForm" id="fabBulkDelete" class="btn btn-danger shadow-lg d-none align-items-center gap-2" style="position: fixed; bottom: 40px; right: 40px; z-index: 1050; border-radius: 50px; padding: 12px 24px; font-weight: 500;">
+  <i class='bx bx-trash fs-5'></i> Hapus Terpilih (<span class="bulkCount">0</span>)
+</button>
 
 {{-- Edit Modal --}}
 <div class="modal fade" id="editOltModal" tabindex="-1">
@@ -175,9 +172,8 @@
 <script>
   $(function() {
     var table = $('#olts-table').DataTable({
-      dom: '<"d-flex justify-content-between align-items-center mb-3"l>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
-      pageLength: -1,
-      lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "Semua"]],
+      dom: '<"d-none"ilp>rt',
+      pageLength: 25,
       autoWidth: false,
       order: [[1, 'asc']],
       language: {
@@ -199,12 +195,11 @@
       var checkedCount = $('.olt-checkbox:checked').length;
       if (checkedCount > 0) {
         $('#btnBulkDelete').removeClass('d-none');
-        $('#bulkCount').text(checkedCount);
-        $('#stickyBulkDeleteBar').removeClass('d-none');
-        $('#stickyBulkCount').text(checkedCount);
+        $('#fabBulkDelete').removeClass('d-none').addClass('d-flex');
+        $('.bulkCount').text(checkedCount);
       } else {
         $('#btnBulkDelete').addClass('d-none');
-        $('#stickyBulkDeleteBar').addClass('d-none');
+        $('#fabBulkDelete').addClass('d-none').removeClass('d-flex');
       }
       $('#selectAll').prop('checked', $('.olt-checkbox').length > 0 && checkedCount === $('.olt-checkbox').length);
     }
