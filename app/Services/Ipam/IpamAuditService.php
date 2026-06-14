@@ -17,7 +17,7 @@ class IpamAuditService
     public static function log(string $action, string $targetType, ?int $targetId, string $detail): void
     {
         IpamAuditLog::create([
-            'actor'       => auth()->user()->name ?? 'system',
+            'actor'       => auth()->user()?->name ?? 'system',
             'action'      => $action,
             'target_type' => $targetType,
             'target_id'   => $targetId,

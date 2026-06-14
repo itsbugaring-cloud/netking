@@ -68,6 +68,14 @@ class BookmarkParserService
                 continue;
             }
 
+            // Handle duplicate names by appending a suffix
+            $originalName = $name;
+            $counter = 1;
+            while (IpamOlt::where('name', $name)->exists()) {
+                $name = $originalName . ' (' . $counter . ')';
+                $counter++;
+            }
+
             $olt = IpamOlt::create([
                 'name' => $name,
                 'ip_address' => $ip,

@@ -332,7 +332,7 @@ class IpamController extends Controller
             return back()->with('error', 'Tidak ada OLT yang ditemukan dalam file bookmark.');
         }
 
-        $actor = auth()->user()->name ?? 'system';
+        $actor = auth()->user()?->name ?? 'system';
         $result = $this->bookmarkParser->importToDatabase($entries, $actor);
 
         $message = "Import selesai: {$result['created']} OLT ditambahkan, {$result['skipped']} duplikat dilewati.";
