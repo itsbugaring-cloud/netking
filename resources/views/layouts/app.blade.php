@@ -6782,8 +6782,6 @@
             if ($(this).text().trim() === '') $(this).hide();
         });
     });
-
-    });
   </script>
 </body>
 </html>
