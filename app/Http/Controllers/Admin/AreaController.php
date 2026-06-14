@@ -30,7 +30,7 @@ class AreaController extends Controller
     {
         $request->validate([
             'name'                   => 'required|string|max:255',
-            'router_ip'              => 'required|string|max:255|unique:areas,router_ip',
+            'router_ip'              => 'required|string|max:255',
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'required|string|max:255',
             'pools'                  => 'nullable|array',
@@ -123,7 +123,7 @@ class AreaController extends Controller
     {
         $request->validate([
             'name'                   => 'required|string|max:255',
-            'router_ip'              => "required|string|max:255|unique:areas,router_ip,{$area->id}",
+            'router_ip'              => "required|string|max:255",
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'nullable|string|max:255',
             'pools'                  => 'required|array|min:1',
