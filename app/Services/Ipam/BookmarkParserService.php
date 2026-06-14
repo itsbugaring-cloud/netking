@@ -112,9 +112,9 @@ class BookmarkParserService
 
         $host = $parsed['host'];
 
-        // Validate that the host is a valid IPv4 address
-        if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
-            return null;
+        // Include port if present so port-forwarded OLTs on the same IP are treated as unique
+        if (isset($parsed['port'])) {
+            $host .= ':' . $parsed['port'];
         }
 
         return $host;
