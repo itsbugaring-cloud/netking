@@ -6783,19 +6783,6 @@
         });
     });
 
-    $(document).ready(function() {
-      @if(session('success'))
-        if(window.toastr) toastr.success("{{ session('success') }}");
-      @endif
-      @if(session('error'))
-        if(window.toastr) toastr.error("{{ session('error') }}");
-      @endif
-      @if(session('warning'))
-        if(window.toastr) toastr.warning("{{ session('warning') }}");
-      @endif
-      @if(session('info'))
-        if(window.toastr) toastr.info("{{ session('info') }}");
-      @endif
     });
   </script>
 </body>
