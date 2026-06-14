@@ -6781,6 +6781,8 @@
         wrapper.children('.row').each(function() {
             if ($(this).text().trim() === '') $(this).hide();
         });
+    });
+
     $(document).ready(function() {
       @if(session('success'))
         if(window.toastr) toastr.success("{{ session('success') }}");
