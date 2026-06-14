@@ -148,6 +148,12 @@
           'title' => 'Routers',
         ],
         [
+          'route' => route('admin.ipam.olts.index'),
+          'active' => request()->routeIs('admin.ipam.olts*'),
+          'icon' => 'bx bx-hdd',
+          'title' => 'Data OLT',
+        ],
+        [
           'route' => route('admin.ipam.subnets.index'),
           'active' => request()->routeIs('admin.ipam.subnets*'),
           'icon' => 'bx bx-sitemap',
