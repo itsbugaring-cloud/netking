@@ -11,24 +11,15 @@ class MapController extends Controller
 {
     public function index(Request $request)
     {
-        try {
-            // Get all customers with valid coordinates
-            $customers = Customer::with('area')
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->get();
+        // Get all customers with valid coordinates
+        $customers = Customer::with('area')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
 
-            // Get all areas for filtering if needed
-            $areas = Area::all();
+        // Get all areas for filtering if needed
+        $areas = Area::all();
 
-            $html = view('admin.maps.index', compact('customers', 'areas'))->render();
-            return response($html);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ], 500);
-        }
+        return view('admin.maps.index', compact('customers', 'areas'));
     }
 }
