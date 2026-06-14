@@ -136,7 +136,7 @@
                 <div class="row g-2">
                     <div class="col-6">
                         <label class="form-label" style="font-size:0.75rem;font-weight:700;color:var(--txt-3);margin-bottom:0.25rem;">STATUS</label>
-                        <select id="filter-status" class="form-select form-select-sm" style="border-radius:8px;background:var(--surface);">
+                        <select id="filter-status" class="form-select form-select-sm no-select2" style="border-radius:8px;background:var(--surface);">
                             <option value="">Semua</option>
                             <option value="active">Aktif</option>
                             <option value="isolated">Terisolir</option>
@@ -144,7 +144,7 @@
                     </div>
                     <div class="col-6">
                         <label class="form-label" style="font-size:0.75rem;font-weight:700;color:var(--txt-3);margin-bottom:0.25rem;">AREA</label>
-                        <select id="filter-area" class="form-select form-select-sm" style="border-radius:8px;background:var(--surface);">
+                        <select id="filter-area" class="form-select form-select-sm no-select2" style="border-radius:8px;background:var(--surface);">
                             <option value="">Semua Area</option>
                             @foreach($areas as $area)
                                 <option value="{{ $area->id }}">{{ $area->name }}</option>
