@@ -65,13 +65,25 @@
   <div class="ms-panel">
     <div class="ms-panel-head d-flex align-items-center justify-content-between">
       <span class="ms-panel-title"><i class='bx bx-broadcast me-2'></i>Daftar OLT</span>
-      <form id="bulkDeleteForm" action="{{ route('admin.ipam.olts.bulkDestroy') }}" method="POST" data-confirm="Hapus semua OLT terpilih?">
-        @csrf @method('DELETE')
-        <button type="submit" id="btnBulkDelete" class="ms-btn-danger ms-btn-sm d-none">
-          <i class='bx bx-trash'></i> Hapus Terpilih (<span id="bulkCount">0</span>)
-        </button>
-      </form>
     </div>
+
+    {{-- Bulk Action Bar (matches Customers page pattern) --}}
+    <form id="bulkDeleteForm" action="{{ route('admin.ipam.olts.bulkDestroy') }}" method="POST" data-confirm="Hapus semua OLT terpilih?">
+      @csrf @method('DELETE')
+      <div id="bulk-bar" style="display:none; margin: 0 1rem .75rem;">
+        <div class="ms-panel" style="border:1px solid var(--border)!important;background:var(--surface)!important;border-radius:8px!important;box-shadow:none!important;">
+          <div class="ms-panel-body d-flex align-items-center justify-content-between gap-3 py-3">
+            <span class="ms-chip" id="bulk-count">0 dipilih</span>
+            <div class="d-flex gap-2">
+              <button type="submit" class="ms-btn-ghost">
+                <i class='bx bx-trash'></i> Hapus Terpilih
+              </button>
+              <button type="button" class="ms-btn-secondary" onclick="bulkClear()">Batal</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
     <div class="ms-table-shell">
       <div class="nk-table-controls">
         <div class="nk-search-wrap nk-table-search-trigger">
@@ -200,15 +212,20 @@
 
     // Bulk Delete Logic
     function updateBulkDelete() {
-      var checkedCount = $('.olt-checkbox:checked').length;
-      if (checkedCount > 0) {
-        $('#btnBulkDelete').removeClass('d-none');
-        $('#bulkCount').text(checkedCount);
+      var count = $('.olt-checkbox:checked').length;
+      if (count > 0) {
+        $('#bulk-bar').slideDown(200);
+        $('#bulk-count').text(count + ' dipilih');
       } else {
-        $('#btnBulkDelete').addClass('d-none');
-        $('#bulkCount').text('0');
+        $('#bulk-bar').slideUp(200);
       }
-      $('#selectAll').prop('checked', $('.olt-checkbox').length > 0 && checkedCount === $('.olt-checkbox').length);
+      $('#selectAll').prop('checked', $('.olt-checkbox').length > 0 && count === $('.olt-checkbox').length);
+    }
+
+    function bulkClear() {
+      $('#selectAll').prop('checked', false);
+      $('.olt-checkbox').prop('checked', false);
+      updateBulkDelete();
     }
 
     $('#selectAll').on('change', function() {

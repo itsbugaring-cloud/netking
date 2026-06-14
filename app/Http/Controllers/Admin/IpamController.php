@@ -344,13 +344,14 @@ class IpamController extends Controller
         $entries = $this->bookmarkParser->parse($htmlContent);
 
         if ($entries->isEmpty()) {
-            return back()->with('error', 'Tidak ada OLT yang ditemukan dalam file bookmark.');
+            return back()->with('error', 'Tidak ada OLT yang ditemukan dalam file bookmark. Pastikan file adalah ekspor bookmark MikroTik Winbox (HTML).');
         }
 
-        $actor = auth()->user()?->name ?? 'system';
+        $actor  = auth()->user()?->name ?? 'system';
         $result = $this->bookmarkParser->importToDatabase($entries, $actor);
 
-        $message = "Import selesai: {$result['created']} OLT ditambahkan, {$result['skipped']} duplikat dilewati.";
+        $total   = $result['created'] + $result['skipped'];
+        $message = "Import selesai: {$result['created']} OLT baru ditambahkan, {$result['skipped']} sudah ada (duplikat dilewati). Total terbaca dari file: {$total} entri.";
 
         return back()->with('success', $message);
     }
