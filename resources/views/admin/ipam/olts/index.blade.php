@@ -1,6 +1,15 @@
 @extends('layouts.app')
 @section('title', 'OLT Management')
 
+@section('styles')
+<style>
+  /* Fix modal z-index (prevent workspace-shell interference) */
+  #editOltModal { z-index: 1060 !important; }
+  #editOltModal .modal-dialog { pointer-events: auto; }
+  .modal-backdrop { z-index: 1055 !important; }
+</style>
+@endsection
+
 @section('content')
 <div class="ms-page nk-list-page ipam-olts-page">
   <div class="ms-page-head">
@@ -157,27 +166,27 @@
 </div>
 
 {{-- Edit Modal --}}
-<div class="modal fade" id="editOltModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
+<div class="modal fade" id="editOltModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:18px;border:1px solid var(--border);overflow:hidden;box-shadow:0 10px 25px rgba(15,23,42,0.1);">
       <form id="editOltForm" method="POST">
         @csrf @method('PUT')
-        <div class="modal-header">
-          <h5 class="modal-title">Edit OLT</h5>
+        <div class="modal-header" style="border-bottom:1px solid var(--border);padding:1rem 1.25rem;background:var(--surface);">
+          <h5 class="modal-title mb-0" style="font-weight:800;">Edit OLT</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="padding:1.25rem;">
           <div class="mb-3">
-            <label class="form-label">Nama OLT</label>
+            <label class="form-label" style="font-size:.8rem;font-weight:600;">Nama OLT</label>
             <input type="text" name="name" id="edit-olt-name" class="form-control" required>
           </div>
-          <div class="mb-3">
-            <label class="form-label">IP Address</label>
+          <div class="mb-0">
+            <label class="form-label" style="font-size:.8rem;font-weight:600;">IP Address</label>
             <input type="text" name="ip_address" id="edit-olt-ip" class="form-control" required>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="ms-btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <div class="modal-footer" style="border-top:1px solid var(--border);padding:1rem 1.25rem;background:var(--bg);">
+          <button type="button" class="ms-btn-ghost" data-bs-dismiss="modal">Batal</button>
           <button type="submit" class="ms-btn">Simpan</button>
         </div>
       </form>
