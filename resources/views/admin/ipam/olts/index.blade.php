@@ -134,7 +134,7 @@
 </div>
 
 {{-- Floating Bulk Delete Button --}}
-<button type="submit" form="bulkDeleteForm" id="fabBulkDelete" class="btn btn-danger shadow-lg d-none align-items-center gap-2" style="position: fixed; bottom: 40px; right: 40px; z-index: 1050; border-radius: 50px; padding: 12px 24px; font-weight: 500;">
+<button type="submit" form="bulkDeleteForm" id="fabBulkDelete" class="btn btn-danger shadow-lg d-flex align-items-center gap-2" style="position: fixed; bottom: 40px; right: 40px; z-index: 1050; border-radius: 50px; padding: 12px 24px; font-weight: 500; opacity: 0.5; pointer-events: none; transition: all 0.3s ease;">
   <i class='bx bx-trash fs-5'></i> Hapus Terpilih (<span class="bulkCount">0</span>)
 </button>
 
@@ -195,11 +195,12 @@
       var checkedCount = $('.olt-checkbox:checked').length;
       if (checkedCount > 0) {
         $('#btnBulkDelete').removeClass('d-none');
-        $('#fabBulkDelete').removeClass('d-none').addClass('d-flex');
+        $('#fabBulkDelete').css({opacity: 1, pointerEvents: 'auto'});
         $('.bulkCount').text(checkedCount);
       } else {
         $('#btnBulkDelete').addClass('d-none');
-        $('#fabBulkDelete').addClass('d-none').removeClass('d-flex');
+        $('#fabBulkDelete').css({opacity: 0.5, pointerEvents: 'none'});
+        $('.bulkCount').text('0');
       }
       $('#selectAll').prop('checked', $('.olt-checkbox').length > 0 && checkedCount === $('.olt-checkbox').length);
     }
