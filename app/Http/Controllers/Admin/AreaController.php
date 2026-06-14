@@ -7,6 +7,8 @@ use App\Models\Area;
 use App\Models\AreaIpPool;
 use App\Models\Customer;
 use App\Models\Package;
+use App\Models\Ipam\IpamRouter;
+use App\Services\Ipam\IpamAuditService;
 use App\Services\MikroTikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -101,6 +103,9 @@ class AreaController extends Controller
 
         $syncMsg = $this->autoSyncPppoe($area);
 
+        // Auto-sync MikroTik to IPAM Routers
+        $this->syncToIpamRouter($area);
+
         return redirect()->route('admin.areas.index')
             ->with('success', "Area created. {$syncMsg} {$routerSyncSummary}");
     }
@@ -164,6 +169,9 @@ class AreaController extends Controller
 
         $syncMsg = $this->autoSyncPppoe($area);
 
+        // Auto-sync MikroTik to IPAM Routers
+        $this->syncToIpamRouter($area);
+
         return redirect()->route('admin.areas.index')
             ->with('success', "Area updated. {$syncMsg} {$routerSyncSummary}");
     }
@@ -174,10 +182,48 @@ class AreaController extends Controller
             return back()->with('error', 'Cannot delete area with existing customers');
         }
 
+        $routerIp = $area->router_ip;
         $area->delete();
+
+        // Remove matching IPAM Router (don't error if not found)
+        if ($routerIp) {
+            IpamRouter::where('wireguard_ip', $routerIp)->delete();
+        }
 
         return redirect()->route('admin.areas.index')
             ->with('success', 'Area deleted successfully');
+    }
+
+    /**
+     * Auto-sync Area MikroTik router to ipam_routers table.
+     * Creates or updates the IpamRouter record based on router_ip.
+     */
+    private function syncToIpamRouter(Area $area): void
+    {
+        if (empty($area->router_ip)) {
+            return;
+        }
+
+        try {
+            $router = IpamRouter::firstOrNew(['wireguard_ip' => $area->router_ip]);
+            $isNew  = !$router->exists;
+
+            $router->device_name   = $area->router_identity ?: $area->name;
+            $router->auth_username = $area->router_user;
+            if (!empty($area->router_pass)) {
+                $router->auth_password = $area->router_pass;
+            }
+            $router->save();
+
+            $action = $isNew ? 'import' : 'update';
+            IpamAuditService::log(
+                $action, 'router', $router->id,
+                ($isNew ? 'Auto-synced from Area: ' : 'Auto-updated from Area: ')
+                . "{$router->device_name} ({$area->router_ip})"
+            );
+        } catch (\Throwable $e) {
+            \Log::warning("IPAM router auto-sync failed for Area {$area->name}: " . $e->getMessage());
+        }
     }
 
     /**
