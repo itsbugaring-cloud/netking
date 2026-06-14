@@ -62,25 +62,7 @@
     </div>
   </div>
 
-  {{-- Search --}}
-  <div class="ms-panel mb-3">
-    <div class="p-3">
-      <form action="{{ route('admin.ipam.routers.index') }}" method="GET">
-        <div class="d-flex gap-2">
-          <div class="flex-grow-1">
-            </div>
-          <button type="submit" class="ms-btn-secondary">
-            <i class='bx bx-search'></i> Cari
-          </button>
-          @if(request('search'))
-          <a href="{{ route('admin.ipam.routers.index') }}" class="ms-btn-secondary">
-            <i class='bx bx-x'></i> Reset
-          </a>
-          @endif
-        </div>
-      </form>
-    </div>
-  </div>
+
 
   {{-- Router Table --}}
   <div class="ms-panel">
