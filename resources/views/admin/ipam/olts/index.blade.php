@@ -74,7 +74,7 @@
         </div>
         <form id="bulkDeleteForm" action="{{ route('admin.ipam.olts.bulkDestroy') }}" method="POST" class="d-inline-block ms-3" data-confirm="Hapus semua OLT terpilih?">
           @csrf @method('DELETE')
-          <button type="submit" class="ms-btn-danger ms-btn-sm d-none" id="btnBulkDelete" style="height: 38px;">
+          <button type="submit" class="ms-btn-danger ms-btn-sm" id="btnBulkDelete" style="height: 38px; opacity: 0.5; pointer-events: none; transition: all 0.3s ease;">
             <i class='bx bx-trash'></i> Hapus Terpilih (<span class="bulkCount">0</span>)
           </button>
         </form>
@@ -130,13 +130,7 @@
         </table>
       </div>
     </div>
-  </div>
 </div>
-
-{{-- Floating Bulk Delete Button --}}
-<button type="submit" form="bulkDeleteForm" id="fabBulkDelete" class="btn btn-danger shadow-lg d-flex align-items-center gap-2" style="position: fixed; bottom: 40px; right: 40px; z-index: 1050; border-radius: 50px; padding: 12px 24px; font-weight: 500; opacity: 0.5; pointer-events: none; transition: all 0.3s ease;">
-  <i class='bx bx-trash fs-5'></i> Hapus Terpilih (<span class="bulkCount">0</span>)
-</button>
 
 {{-- Edit Modal --}}
 <div class="modal fade" id="editOltModal" tabindex="-1">
@@ -185,6 +179,18 @@
       },
       columnDefs: [{ orderable: false, targets: [0, 4] }]
     });
+
+    // Add Bulk Delete Button to Footer
+    table.on('draw', function() {
+      setTimeout(function() {
+        var footerLeftSide = $('#olts-table').closest('.ms-panel').find('.dt-custom-footer .d-flex.align-items-center.gap-4');
+        if (footerLeftSide.length && footerLeftSide.find('.bulkDeleteWrapper').length === 0) {
+          var btnHtml = '<div class="bulkDeleteWrapper" style="opacity: 0.5; pointer-events: none; transition: all 0.3s ease;"><button type="submit" form="bulkDeleteForm" class="ms-btn-danger ms-btn-sm"><i class="bx bx-trash"></i> Hapus Terpilih (<span class="bulkCount">0</span>)</button></div>';
+          footerLeftSide.append(btnHtml);
+        }
+      }, 100);
+    });
+
     $('#olts-search').on('input', function() { table.search(this.value).draw(); });
     $('form[data-confirm]').on('submit', function(e) {
       if (!confirm($(this).data('confirm'))) e.preventDefault();
@@ -194,12 +200,12 @@
     function updateBulkDelete() {
       var checkedCount = $('.olt-checkbox:checked').length;
       if (checkedCount > 0) {
-        $('#btnBulkDelete').removeClass('d-none');
-        $('#fabBulkDelete').css({opacity: 1, pointerEvents: 'auto'});
+        $('.bulkDeleteWrapper').css({opacity: 1, pointerEvents: 'auto'});
+        $('#btnBulkDelete').css({opacity: 1, pointerEvents: 'auto'});
         $('.bulkCount').text(checkedCount);
       } else {
-        $('#btnBulkDelete').addClass('d-none');
-        $('#fabBulkDelete').css({opacity: 0.5, pointerEvents: 'none'});
+        $('.bulkDeleteWrapper').css({opacity: 0.5, pointerEvents: 'none'});
+        $('#btnBulkDelete').css({opacity: 0.5, pointerEvents: 'none'});
         $('.bulkCount').text('0');
       }
       $('#selectAll').prop('checked', $('.olt-checkbox').length > 0 && checkedCount === $('.olt-checkbox').length);
