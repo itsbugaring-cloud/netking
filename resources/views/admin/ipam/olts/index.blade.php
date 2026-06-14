@@ -89,7 +89,7 @@
               <th style="width:50px;">#</th>
               <th>Nama</th>
               <th>IP Address</th>
-              <th style="width:120px;">Aksi</th>
+              <th style="width:100px;">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -102,17 +102,28 @@
               <td><span style="font-weight:500;">{{ $olt->name }}</span></td>
               <td><code>{{ $olt->ip_address }}</code></td>
               <td>
-                <div class="d-flex gap-1">
-                  <button type="button" class="nk-action-btn edit" title="Edit"
-                    onclick="editOlt({{ $olt->id }}, '{{ addslashes($olt->name) }}', '{{ $olt->ip_address }}')">
-                    <i class='bx bx-edit'></i>
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                    style="border-radius:6px;font-size:0.8rem;padding:0.25rem 0.5rem;background:var(--surface);border:1px solid var(--border);">
+                    Opsi
                   </button>
-                  <form action="{{ route('admin.ipam.olts.destroy', $olt) }}" method="POST" class="m-0" data-confirm="Hapus OLT {{ $olt->name }}?">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="nk-action-btn delete" title="Hapus">
-                      <i class='bx bx-trash'></i>
-                    </button>
-                  </form>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li>
+                      <button type="button" class="dropdown-item"
+                        onclick="editOlt({{ $olt->id }}, '{{ addslashes($olt->name) }}', '{{ $olt->ip_address }}')">
+                        <i class='bx bx-edit'></i> Edit
+                      </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <form action="{{ route('admin.ipam.olts.destroy', $olt) }}" method="POST" class="m-0" data-confirm="Hapus OLT {{ $olt->name }}?">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="dropdown-item text-danger">
+                          <i class='bx bx-trash' style="color:var(--red);"></i> Hapus
+                        </button>
+                      </form>
+                    </li>
+                  </ul>
                 </div>
               </td>
             </tr>
