@@ -72,11 +72,20 @@
           <i class='bx bx-search'></i>
           <input type="text" id="olts-search" class="nk-search-input" placeholder="Cari OLT...">
         </div>
+        <form id="bulkDeleteForm" action="{{ route('admin.ipam.olts.bulkDestroy') }}" method="POST" class="d-inline-block ms-3" data-confirm="Hapus semua OLT terpilih?">
+          @csrf @method('DELETE')
+          <button type="submit" class="ms-btn-danger ms-btn-sm d-none" id="btnBulkDelete" style="height: 38px;">
+            <i class='bx bx-trash'></i> Hapus Terpilih (<span id="bulkCount">0</span>)
+          </button>
+        </form>
       </div>
       <div class="table-responsive">
         <table class="table table-flat mb-0" id="olts-table">
           <thead>
             <tr>
+              <th style="width: 40px;" class="text-center">
+                <input type="checkbox" id="selectAll" class="form-check-input">
+              </th>
               <th style="width:50px;">#</th>
               <th>Nama</th>
               <th>IP Address</th>
@@ -86,6 +95,9 @@
           <tbody>
             @forelse($olts as $index => $olt)
             <tr>
+              <td class="text-center">
+                <input type="checkbox" class="form-check-input olt-checkbox" name="ids[]" value="{{ $olt->id }}" form="bulkDeleteForm">
+              </td>
               <td style="color:var(--txt-3);">{{ $index + 1 }}</td>
               <td><span style="font-weight:500;">{{ $olt->name }}</span></td>
               <td><code>{{ $olt->ip_address }}</code></td>
@@ -106,7 +118,7 @@
             </tr>
             @empty
             <tr>
-              <td colspan="4">
+              <td colspan="5">
                 <div class="text-center py-5" style="color:var(--txt-3);">
                   <i class='bx bx-broadcast fs-1 d-block mb-2'></i>
                   <div style="font-size:.9375rem;font-weight:500;">Belum ada OLT</div>
@@ -166,11 +178,37 @@
         zeroRecords: 'Tidak ditemukan',
         paginate: { previous: '&lsaquo;', next: '&rsaquo;' }
       },
-      columnDefs: [{ orderable: false, targets: [3] }]
+      columnDefs: [{ orderable: false, targets: [0, 4] }]
     });
     $('#olts-search').on('input', function() { table.search(this.value).draw(); });
     $('form[data-confirm]').on('submit', function(e) {
       if (!confirm($(this).data('confirm'))) e.preventDefault();
+    });
+
+    // Bulk Delete Logic
+    function updateBulkDelete() {
+      var checkedCount = $('.olt-checkbox:checked').length;
+      if (checkedCount > 0) {
+        $('#btnBulkDelete').removeClass('d-none');
+        $('#bulkCount').text(checkedCount);
+      } else {
+        $('#btnBulkDelete').addClass('d-none');
+      }
+      $('#selectAll').prop('checked', $('.olt-checkbox').length > 0 && checkedCount === $('.olt-checkbox').length);
+    }
+
+    $('#selectAll').on('change', function() {
+      $('.olt-checkbox').prop('checked', $(this).prop('checked'));
+      updateBulkDelete();
+    });
+
+    $(document).on('change', '.olt-checkbox', function() {
+      updateBulkDelete();
+    });
+    
+    // On table redraw (search/sort), update header checkbox state
+    table.on('draw', function () {
+      updateBulkDelete();
     });
   });
 

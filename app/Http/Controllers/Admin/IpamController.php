@@ -319,6 +319,21 @@ class IpamController extends Controller
         return back()->with('success', "OLT {$name} berhasil dihapus.");
     }
 
+    public function bulkDestroyOlt(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:ipam_olts,id'
+        ]);
+        
+        $count = count($validated['ids']);
+        IpamOlt::whereIn('id', $validated['ids'])->delete();
+        
+        IpamAuditService::log('delete_bulk', 'olt', null, "Deleted $count OLTs");
+        
+        return back()->with('success', "Berhasil menghapus $count OLT terpilih.");
+    }
+
     public function importBookmarks(Request $request): RedirectResponse
     {
         $request->validate([

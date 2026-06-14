@@ -534,6 +534,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/olts', [IpamController::class, 'olts'])->name('olts.index');
             Route::post('/olts', [IpamController::class, 'storeOlt'])->name('olts.store');
             Route::put('/olts/{olt}', [IpamController::class, 'updateOlt'])->name('olts.update');
+            Route::delete('/olts/bulk', [IpamController::class, 'bulkDestroyOlt'])->name('olts.bulkDestroy');
             Route::delete('/olts/{olt}', [IpamController::class, 'destroyOlt'])->name('olts.destroy');
             Route::post('/olts/import-bookmarks', [IpamController::class, 'importBookmarks'])->name('olts.importBookmarks');
             Route::get('/subnets', [IpamController::class, 'subnets'])->name('subnets.index');
