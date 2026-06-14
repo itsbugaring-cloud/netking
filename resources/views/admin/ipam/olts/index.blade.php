@@ -65,6 +65,12 @@
   <div class="ms-panel">
     <div class="ms-panel-head d-flex align-items-center justify-content-between">
       <span class="ms-panel-title"><i class='bx bx-broadcast me-2'></i>Daftar OLT</span>
+      <form id="bulkDeleteForm" action="{{ route('admin.ipam.olts.bulkDestroy') }}" method="POST" data-confirm="Hapus semua OLT terpilih?">
+        @csrf @method('DELETE')
+        <button type="submit" id="btnBulkDelete" class="ms-btn-danger ms-btn-sm d-none">
+          <i class='bx bx-trash'></i> Hapus Terpilih (<span id="bulkCount">0</span>)
+        </button>
+      </form>
     </div>
     <div class="ms-table-shell">
       <div class="nk-table-controls">
@@ -72,12 +78,6 @@
           <i class='bx bx-search'></i>
           <input type="text" id="olts-search" class="nk-search-input" placeholder="Cari OLT...">
         </div>
-        <form id="bulkDeleteForm" action="{{ route('admin.ipam.olts.bulkDestroy') }}" method="POST" class="d-inline-block ms-3" data-confirm="Hapus semua OLT terpilih?">
-          @csrf @method('DELETE')
-          <button type="submit" class="ms-btn-danger ms-btn-sm" id="btnBulkDelete" style="height: 38px; opacity: 0.5; pointer-events: none; transition: all 0.3s ease;">
-            <i class='bx bx-trash'></i> Hapus Terpilih (<span class="bulkCount">0</span>)
-          </button>
-        </form>
       </div>
       <div class="table-responsive">
         <table class="table table-flat mb-0" id="olts-table">
@@ -130,6 +130,7 @@
         </table>
       </div>
     </div>
+  </div>
 </div>
 
 {{-- Edit Modal --}}
@@ -180,18 +181,8 @@
       columnDefs: [{ orderable: false, targets: [0, 4] }]
     });
 
-    // Add Bulk Delete Button to Footer
-    table.on('draw', function() {
-      setTimeout(function() {
-        var footerLeftSide = $('#olts-table').closest('.ms-panel').find('.dt-custom-footer .d-flex.align-items-center.gap-4');
-        if (footerLeftSide.length && footerLeftSide.find('.bulkDeleteWrapper').length === 0) {
-          var btnHtml = '<div class="bulkDeleteWrapper" style="opacity: 0.5; pointer-events: none; transition: all 0.3s ease;"><button type="submit" form="bulkDeleteForm" class="ms-btn-danger ms-btn-sm"><i class="bx bx-trash"></i> Hapus Terpilih (<span class="bulkCount">0</span>)</button></div>';
-          footerLeftSide.append(btnHtml);
-        }
-      }, 100);
-    });
-
     $('#olts-search').on('input', function() { table.search(this.value).draw(); });
+
     $('form[data-confirm]').on('submit', function(e) {
       if (!confirm($(this).data('confirm'))) e.preventDefault();
     });
@@ -200,13 +191,11 @@
     function updateBulkDelete() {
       var checkedCount = $('.olt-checkbox:checked').length;
       if (checkedCount > 0) {
-        $('.bulkDeleteWrapper').css({opacity: 1, pointerEvents: 'auto'});
-        $('#btnBulkDelete').css({opacity: 1, pointerEvents: 'auto'});
-        $('.bulkCount').text(checkedCount);
+        $('#btnBulkDelete').removeClass('d-none');
+        $('#bulkCount').text(checkedCount);
       } else {
-        $('.bulkDeleteWrapper').css({opacity: 0.5, pointerEvents: 'none'});
-        $('#btnBulkDelete').css({opacity: 0.5, pointerEvents: 'none'});
-        $('.bulkCount').text('0');
+        $('#btnBulkDelete').addClass('d-none');
+        $('#bulkCount').text('0');
       }
       $('#selectAll').prop('checked', $('.olt-checkbox').length > 0 && checkedCount === $('.olt-checkbox').length);
     }
@@ -219,9 +208,8 @@
     $(document).on('change', '.olt-checkbox', function() {
       updateBulkDelete();
     });
-    
-    // On table redraw (search/sort), update header checkbox state
-    table.on('draw', function () {
+
+    table.on('draw', function() {
       updateBulkDelete();
     });
   });
