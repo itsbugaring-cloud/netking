@@ -133,6 +133,14 @@
   </div>
 </div>
 
+{{-- Sticky Bulk Delete Banner --}}
+<div id="stickyBulkDeleteBar" class="fixed-bottom p-3 d-none shadow-lg text-center" style="background: rgba(255, 255, 255, 0.95); border-top: 1px solid var(--border); backdrop-filter: blur(5px); z-index: 1050; padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;">
+  <span class="me-3 fw-bold" style="color: var(--txt-1);"><span id="stickyBulkCount">0</span> OLT Terpilih</span>
+  <button type="submit" form="bulkDeleteForm" class="ms-btn-danger">
+    <i class='bx bx-trash'></i> Hapus Semua Terpilih
+  </button>
+</div>
+
 {{-- Edit Modal --}}
 <div class="modal fade" id="editOltModal" tabindex="-1">
   <div class="modal-dialog">
@@ -168,7 +176,8 @@
   $(function() {
     var table = $('#olts-table').DataTable({
       dom: '<"d-flex justify-content-between align-items-center mb-3"l>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
-      pageLength: 50,
+      pageLength: -1,
+      lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "Semua"]],
       autoWidth: false,
       order: [[1, 'asc']],
       language: {
@@ -191,8 +200,11 @@
       if (checkedCount > 0) {
         $('#btnBulkDelete').removeClass('d-none');
         $('#bulkCount').text(checkedCount);
+        $('#stickyBulkDeleteBar').removeClass('d-none');
+        $('#stickyBulkCount').text(checkedCount);
       } else {
         $('#btnBulkDelete').addClass('d-none');
+        $('#stickyBulkDeleteBar').addClass('d-none');
       }
       $('#selectAll').prop('checked', $('.olt-checkbox').length > 0 && checkedCount === $('.olt-checkbox').length);
     }
