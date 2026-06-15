@@ -807,6 +807,19 @@
   }
 
   @media (max-width: 767.98px) {
+    .dashboard-page {
+      margin: -1.5rem;
+      padding: 16px;
+      overflow-x: hidden;
+      width: 100vw;
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+    
+    .ops-radar-chip.c1 { top: 12px; right: 12px; }
+    .ops-radar-chip.c2 { bottom: 12px; left: 12px; }
+    .ops-radar-chip.c3 { bottom: 20px; right: 16px; }
+
     .ops-head {
       flex-direction: column;
       align-items: stretch;

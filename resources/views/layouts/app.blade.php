@@ -5851,7 +5851,6 @@
     }
   </style>
   @yield('styles')
-  @livewireStyles
 </head>
 
 <body>
@@ -6112,7 +6111,6 @@
   <!-- NProgress -->
   <script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
 
-  @livewireScripts
   @yield('scripts')
   <!-- COMMAND PALETTE MODAL -->
   <div id="cmd-backdrop" class="cmd-backdrop" style="display:none;" onclick="nkCloseGlobalSearch()"></div>
