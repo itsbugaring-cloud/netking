@@ -24,12 +24,10 @@ Schedule::command('olt:sync-all')
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auto-isolir pelanggan overdue setiap hari jam 10:00 WIB
-// NONAKTIF — aktifkan dengan menghapus /* dan */ di bawah ini
+// AKTIF — berjalan secara otomatis setiap hari jam 10 pagi
 // ─────────────────────────────────────────────────────────────────────────────
-/*
 Schedule::command('billing:auto-isolate')
     ->dailyAt('10:00')
     ->timezone('Asia/Jakarta')
     ->withoutOverlapping(30)
     ->appendOutputTo(storage_path('logs/auto-isolate.log'));
-*/
