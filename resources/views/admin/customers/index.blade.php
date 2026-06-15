@@ -345,7 +345,7 @@
 
     {{-- Table --}}
     <div class="ms-table-shell">
-      <div class="table-responsive mt-2">
+      <div class="table-responsive mt-2" style="min-height: 300px;">
         <table class="table table-flat mb-0" id="customers-table">
           <thead>
             <tr>
