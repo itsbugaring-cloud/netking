@@ -874,10 +874,50 @@
     box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
   }
 
-  html[data-theme="dark"] .ops-kpi:hover { box-shadow: 0 12px 28px rgba(91, 99, 211, 0.12), 0 0 0 1px rgba(91, 99, 211, 0.2); border-color: transparent; }
-  html[data-theme="dark"] .ops-kpi:nth-child(2):hover { box-shadow: 0 12px 28px rgba(22, 163, 74, 0.12), 0 0 0 1px rgba(22, 163, 74, 0.2); }
-  html[data-theme="dark"] .ops-kpi:nth-child(3):hover { box-shadow: 0 12px 28px rgba(249, 115, 22, 0.12), 0 0 0 1px rgba(249, 115, 22, 0.2); }
-  html[data-theme="dark"] .ops-kpi:nth-child(4):hover { box-shadow: 0 12px 28px rgba(225, 29, 72, 0.12), 0 0 0 1px rgba(225, 29, 72, 0.2); }
+  /* Advanced Glassmorphism & Spotlight Glow */
+  html[data-theme="dark"] .ops-glow-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  html[data-theme="dark"] .ops-glow-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(600px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255,255,255,0.08), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  html[data-theme="dark"] .ops-glow-card:hover::after {
+    opacity: 1;
+  }
+
+  html[data-theme="dark"] .ops-kpi:hover { border-color: rgba(255,255,255,0.15); box-shadow: 0 16px 40px rgba(0,0,0,0.5); }
+  
+  /* Ensure content stays above the glow */
+  .ops-hero-metric-label, .ops-hero-metric-value, .ops-hero-metric-note,
+  .ops-kpi-top, .ops-kpi-meta {
+    position: relative;
+    z-index: 1;
+  }
+
+  .ops-sparkline {
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 60px;
+    opacity: 0.35;
+    z-index: 0;
+    pointer-events: none;
+  }
 
   html[data-theme="dark"] .ops-radar-chip {
     background: rgba(30, 30, 35, .72);
@@ -950,17 +990,17 @@
       </div>
     </div>
     <div class="ops-hero-metrics">
-      <div class="ops-hero-metric">
+      <div class="ops-hero-metric ops-glow-card">
         <div class="ops-hero-metric-label">Pelanggan aktif</div>
         <div class="ops-hero-metric-value">{{ number_format($stats['active_customers'] ?? 0) }}</div>
         <div class="ops-hero-metric-note">{{ $activeRate }}% dari total layanan</div>
       </div>
-      <div class="ops-hero-metric">
+      <div class="ops-hero-metric ops-glow-card">
         <div class="ops-hero-metric-label">Pending review</div>
         <div class="ops-hero-metric-value">{{ number_format($stats['pending_payments'] ?? 0) }}</div>
         <div class="ops-hero-metric-note">approval pembayaran</div>
       </div>
-      <div class="ops-hero-metric">
+      <div class="ops-hero-metric ops-glow-card">
         <div class="ops-hero-metric-label">MRR bulanan</div>
         <div class="ops-hero-metric-value">Rp {{ number_format($stats['mrr'] ?? 0, 0, ',', '.') }}</div>
         <div class="ops-hero-metric-note">Perkiraan pendapatan langganan</div>
@@ -970,7 +1010,8 @@
 
   <div class="ops-kpis">
     {{-- Total Pelanggan --}}
-    <div class="ops-kpi">
+    <div class="ops-kpi ops-glow-card">
+      <div id="spark-kpi-1" class="ops-sparkline"></div>
       <div class="ops-kpi-top">
         <div>
           <div class="ops-kpi-label">Total Pelanggan</div>
@@ -987,7 +1028,8 @@
     @php $rateColor = $activeRate >= 90 ? 'rgba(22,163,74,.1)' : ($activeRate >= 70 ? 'rgba(217,119,6,.1)' : 'rgba(220,38,38,.1)');
          $rateBorder = $activeRate >= 90 ? 'rgba(22,163,74,.25)' : ($activeRate >= 70 ? 'rgba(217,119,6,.25)' : 'rgba(220,38,38,.25)');
          $rateText = $activeRate >= 90 ? '#16a34a' : ($activeRate >= 70 ? '#d97706' : '#dc2626'); @endphp
-    <div class="ops-kpi">
+    <div class="ops-kpi ops-glow-card">
+      <div id="spark-kpi-2" class="ops-sparkline"></div>
       <div class="ops-kpi-top">
         <div>
           <div class="ops-kpi-label">Area Layanan</div>
@@ -1005,7 +1047,8 @@
          $pendingBg = $pending > 0 ? 'rgba(217,119,6,.1)' : 'rgba(22,163,74,.1)';
          $pendingBorder = $pending > 0 ? 'rgba(217,119,6,.25)' : 'rgba(22,163,74,.25)';
          $pendingText = $pending > 0 ? '#d97706' : '#16a34a'; @endphp
-    <div class="ops-kpi">
+    <div class="ops-kpi ops-glow-card">
+      <div id="spark-kpi-3" class="ops-sparkline"></div>
       <div class="ops-kpi-top">
         <div>
           <div class="ops-kpi-label">Approve Bulan Ini</div>
@@ -1025,7 +1068,8 @@
     </div>
 
     {{-- MRR / Pendapatan --}}
-    <div class="ops-kpi">
+    <div class="ops-kpi ops-glow-card">
+      <div id="spark-kpi-4" class="ops-sparkline"></div>
       <div class="ops-kpi-top">
         <div>
           <div class="ops-kpi-label">Pelanggan Diisolir</div>
@@ -1424,6 +1468,44 @@
       }
     }
 
+    function initSparklines() {
+      if (typeof ApexCharts === 'undefined') return;
+      const palette = chartPalette();
+      const sparkData = @json($sparkline ?? []);
+
+      const commonOptions = {
+        chart: { type: 'area', height: 60, sparkline: { enabled: true }, animations: { enabled: false } },
+        stroke: { curve: 'smooth', width: 2 },
+        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] } },
+        tooltip: { fixed: { enabled: false }, x: { show: false }, y: { title: { formatter: function () { return '' } } }, marker: { show: false } }
+      };
+
+      if (sparkData.customers && document.querySelector('#spark-kpi-1')) {
+        new ApexCharts(document.querySelector('#spark-kpi-1'), { ...commonOptions, series: [{ data: sparkData.customers }], colors: [palette.primary] }).render();
+      }
+      if (sparkData.active && document.querySelector('#spark-kpi-2')) {
+        new ApexCharts(document.querySelector('#spark-kpi-2'), { ...commonOptions, series: [{ data: sparkData.active }], colors: [palette.success] }).render();
+      }
+      if (sparkData.revenue && document.querySelector('#spark-kpi-3')) {
+        new ApexCharts(document.querySelector('#spark-kpi-3'), { ...commonOptions, series: [{ data: sparkData.revenue }], colors: [palette.warning] }).render();
+      }
+      if (sparkData.payments && document.querySelector('#spark-kpi-4')) {
+        new ApexCharts(document.querySelector('#spark-kpi-4'), { ...commonOptions, series: [{ data: sparkData.payments }], colors: [palette.danger] }).render();
+      }
+    }
+
+    function initGlowEffect() {
+      document.querySelectorAll('.ops-glow-card').forEach(function(card) {
+        card.addEventListener('mousemove', function(e) {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty('--mouse-x', x + 'px');
+          card.style.setProperty('--mouse-y', y + 'px');
+        });
+      });
+    }
+
     function fetchLiveStatus() {
       fetch(@json(route('admin.api.dashboard-live')))
         .then(function (response) { return response.json(); })
@@ -1457,6 +1539,8 @@
 
     document.addEventListener('DOMContentLoaded', function () {
       initCharts();
+      initSparklines();
+      initGlowEffect();
       fetchLiveStatus();
       setInterval(fetchLiveStatus, 30000);
     });
@@ -1464,6 +1548,7 @@
     window.addEventListener('storage', function (event) {
       if (event.key === 'nk_theme') {
         initCharts();
+        initSparklines();
       }
     });
   })();
