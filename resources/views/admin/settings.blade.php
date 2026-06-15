@@ -177,6 +177,9 @@
                 @csrf
                 <input type="hidden" name="group" value="telegram_bot">
                 <div class="row g-3">
+                  <div class="col-12">
+                    <h6 class="fw-bold mb-2 pb-2 border-bottom text-primary"><i class='bx bx-server'></i> Bot MikroTik (Config & Isolir)</h6>
+                  </div>
                   <div class="col-md-4">
                     <label class="form-label">Mode Bot</label>
                     <select name="telegram_config_mode" class="form-select">
@@ -191,7 +194,7 @@
                     <div class="form-text">Pisahkan dengan koma. Kosongkan untuk mengizinkan semua chat ID.</div>
                   </div>
                   <div class="col-md-12">
-                    <label class="form-label">Bot Token</label>
+                    <label class="form-label">Bot Token (MikroTik)</label>
                     <input type="password" name="telegram_config_bot_token" class="form-control" placeholder="Isi token baru jika ingin mengganti">
                     <div class="form-text">Token tersimpan: <strong>{{ $telegram['masked_token'] ?? '-' }}</strong></div>
                   </div>
@@ -200,14 +203,28 @@
                     <input type="text" name="telegram_config_bot_secret" class="form-control" value="{{ $settings['telegram_config_bot_secret'] ?? '' }}" placeholder="Secret path webhook">
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label">Admin Chat ID</label>
+                    <label class="form-label">Admin Chat ID (Fallback)</label>
                     <input type="text" name="telegram_config_admin_chat_id" class="form-control" value="{{ $settings['telegram_config_admin_chat_id'] ?? '' }}" placeholder="Contoh: 299890939">
                   </div>
-                  <div class="col-12">
+                  <div class="col-12 mb-3">
                     <div class="p-3 rounded" style="background:var(--nk-bg-subtle);">
                       <div class="fw-semibold mb-1">Webhook URL Aktif</div>
                       <div class="small text-muted" id="telegram-webhook-preview">{{ $telegram['webhook_url'] ?? '-' }}</div>
                     </div>
+                  </div>
+
+                  <div class="col-12 mt-4">
+                    <h6 class="fw-bold mb-2 pb-2 border-bottom text-success"><i class='bx bx-money'></i> Bot Keuangan (Notifikasi Pembayaran)</h6>
+                  </div>
+                  <div class="col-md-12">
+                    <label class="form-label">Bot Token (Keuangan)</label>
+                    <input type="password" name="telegram_finance_bot_token" class="form-control" placeholder="Isi token bot telegram untuk keuangan">
+                    <div class="form-text">Token tersimpan: <strong>{{ empty($settings['telegram_finance_bot_token']) ? '-' : 'Terisi (Disembunyikan untuk keamanan)' }}</strong></div>
+                  </div>
+                  <div class="col-md-12">
+                    <label class="form-label">Chat ID Penerima Notifikasi (Admin Keuangan)</label>
+                    <input type="text" name="telegram_finance_chat_id" class="form-control" value="{{ $settings['telegram_finance_chat_id'] ?? '' }}" placeholder="Contoh: 123456789,987654321">
+                    <div class="form-text">Anda bisa memasukkan banyak Chat ID sekaligus, pisahkan dengan tanda koma (,). Notifikasi upload struk akan dikirim ke semua ID tersebut.</div>
                   </div>
                 </div>
                 <div class="mt-4 d-flex flex-wrap gap-2">

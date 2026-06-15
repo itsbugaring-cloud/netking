@@ -291,47 +291,103 @@
                 </div>
               </div>
 
-              @if(!session('success'))
-              {{-- Upload Form --}}
-              <h4 class="mb-3">Upload Bukti Pembayaran</h4>
-              <form method="POST" action="{{ route('payment.public.submit') }}" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="customer_code" value="{{ $customer->customer_code }}">
-
-                <div class="mb-3">
-                  <input type="hidden" name="rekening_tujuan" id="selectedRekening" value="{{ old('rekening_tujuan', '') }}" required>
-                  <div id="rekening-error" class="text-danger small" style="display:none;">Pilih rekening tujuan di panel sebelah kanan</div>
+              @if(session('success') || ($currentPayment && $currentPayment->status === 'pending'))
+                <div class="alert alert-warning mb-4" id="status-pending">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="ti ti-loader ti-spin me-2 fs-3"></i>
+                    <div class="fw-bold fs-4">Menunggu Konfirmasi Admin</div>
+                  </div>
+                  <div>Terima kasih! Bukti transfer Anda sedang diperiksa oleh admin kami. Halaman ini akan otomatis memuat ulang jika pembayaran Anda telah disetujui.</div>
                 </div>
+              @elseif($currentPayment && $currentPayment->status === 'approved')
+                <div class="alert alert-success mb-4" id="status-lunas">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="ti ti-circle-check-filled me-2 fs-3"></i>
+                    <div class="fw-bold fs-4">Pembayaran Lunas</div>
+                  </div>
+                  <div>Tagihan Anda untuk bulan ini sudah lunas. Terima kasih atas pembayaran Anda!</div>
+                </div>
+              @else
+                {{-- Upload Form --}}
+                <h4 class="mb-3">Upload Bukti Pembayaran</h4>
+                <form method="POST" action="{{ route('payment.public.submit') }}" enctype="multipart/form-data">
+                  @csrf
+                  <input type="hidden" name="customer_code" value="{{ $customer->customer_code }}">
 
-                <div class="mb-3">
-                  <label class="form-label">Foto Bukti Transfer</label>
-                  <div id="dropZone" class="border border-2 border-dashed rounded p-4 text-center position-relative" style="cursor: pointer; transition: all .2s;">
-                    <input type="file" name="payment_proof" id="fileInput" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;" accept=".jpg,.jpeg,.png,.webp,image/*" required>
-                    <div id="dropPlaceholder">
-                      <i class="ti ti-cloud-upload fs-1 text-primary"></i>
-                      <div class="fw-medium mt-2">Seret file ke sini atau klik untuk memilih</div>
-                      <div class="text-secondary small mt-1">JPG, PNG, atau WEBP. Maks 5 MB.</div>
-                    </div>
-                    <div id="filePreview" class="d-none">
-                      <img id="previewImg" class="rounded shadow-sm" style="max-height: 150px; max-width: 100%;" alt="Preview">
-                      <div id="fileName" class="text-secondary small mt-2"></div>
+                  <div class="mb-3">
+                    <input type="hidden" name="rekening_tujuan" id="selectedRekening" value="{{ old('rekening_tujuan', '') }}" required>
+                    <div id="rekening-error" class="text-danger small" style="display:none;">Pilih rekening tujuan di panel sebelah kanan</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Foto Bukti Transfer</label>
+                    <div id="dropZone" class="border border-2 border-dashed rounded p-4 text-center position-relative" style="cursor: pointer; transition: all .2s;">
+                      <input type="file" name="payment_proof" id="fileInput" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;" accept=".jpg,.jpeg,.png,.webp,image/*" required>
+                      <div id="dropPlaceholder">
+                        <i class="ti ti-cloud-upload fs-1 text-primary"></i>
+                        <div class="fw-medium mt-2">Seret file ke sini atau klik untuk memilih</div>
+                        <div class="text-secondary small mt-1">JPG, PNG, atau WEBP. Maks 5 MB.</div>
+                      </div>
+                      <div id="filePreview" class="d-none">
+                        <img id="previewImg" class="rounded shadow-sm" style="max-height: 150px; max-width: 100%;" alt="Preview">
+                        <div id="fileName" class="text-secondary small mt-2"></div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="mb-3">
-                  <label class="form-label">Catatan <span class="text-secondary">(opsional)</span></label>
-                  <textarea name="catatan" class="form-control" rows="3" placeholder="Contoh: transfer dari rekening BRI a.n. Andi">{{ old('catatan') }}</textarea>
-                </div>
+                  <div class="mb-3">
+                    <label class="form-label">Catatan <span class="text-secondary">(opsional)</span></label>
+                    <textarea name="catatan" class="form-control" rows="3" placeholder="Contoh: transfer dari rekening BRI a.n. Andi">{{ old('catatan') }}</textarea>
+                  </div>
 
-                <button class="btn btn-primary w-100" type="submit">
-                  <i class="ti ti-upload me-1"></i> Kirim Bukti Pembayaran
-                </button>
-              </form>
+                  <button class="btn btn-primary w-100" type="submit">
+                    <i class="ti ti-upload me-1"></i> Kirim Bukti Pembayaran
+                  </button>
+                </form>
               @endif
               @endif {{-- end @if($customer->is_free) @else --}}
             </div>
           </div>
+
+          {{-- Payment History --}}
+          @if(isset($paymentHistory) && $paymentHistory->isNotEmpty())
+          <div class="card mt-3">
+            <div class="card-header">
+              <h3 class="card-title">Riwayat Pembayaran (Terbaru)</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-vcenter card-table table-sm">
+                <thead>
+                  <tr>
+                    <th>Bulan</th>
+                    <th>Nominal</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach($paymentHistory as $hist)
+                  <tr>
+                    <td>{{ str_pad($hist->periode_bulan, 2, '0', STR_PAD_LEFT) }}/{{ $hist->periode_tahun }}</td>
+                    <td>Rp {{ number_format($hist->jumlah, 0, ',', '.') }}</td>
+                    <td>
+                      @if($hist->status === 'approved')
+                        <span class="badge bg-success-lt">Lunas</span>
+                      @elseif($hist->status === 'pending')
+                        <span class="badge bg-warning-lt">Pending</span>
+                      @else
+                        <span class="badge bg-danger-lt">Ditolak</span>
+                      @endif
+                    </td>
+                    <td class="text-muted small">{{ $hist->created_at->format('d M Y') }}</td>
+                  </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          </div>
+          @endif
+
           @endif {{-- end @if($customer) --}}
 
         </div>
@@ -551,6 +607,25 @@
         document.body.appendChild(piece);
         setTimeout(() => piece.remove(), 5000);
       }
+    })();
+    @endif
+
+    // Auto-refresh polling for pending payments
+    @if(session('success') || (isset($currentPayment) && $currentPayment->status === 'pending'))
+    (function() {
+      const customerCode = "{{ $customerCode ?? '' }}";
+      if (!customerCode) return;
+      
+      setInterval(function() {
+        fetch('/bayar/' + encodeURIComponent(customerCode) + '/status')
+          .then(res => res.json())
+          .then(data => {
+            if (data.status && data.status !== 'pending') {
+              window.location.reload();
+            }
+          })
+          .catch(e => console.error('Error polling status', e));
+      }, 10000); // Poll every 10 seconds
     })();
     @endif
   </script>

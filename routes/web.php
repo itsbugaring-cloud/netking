@@ -93,6 +93,7 @@ Route::get('/network-status', function () {
 
 Route::get('/bayar', [\App\Http\Controllers\PaymentPageController::class, 'show'])->name('payment.public.root');
 Route::get('/bayar/{customerCode}', [\App\Http\Controllers\PaymentPageController::class, 'show'])->name('payment.public');
+Route::get('/bayar/{customerCode}/status', [\App\Http\Controllers\PaymentPageController::class, 'statusApi'])->name('payment.public.status');
 Route::post('/bayar', [\App\Http\Controllers\PaymentPageController::class, 'submit'])->middleware('throttle:public_payment')->name('payment.public.submit');
 
 // Admin Authentication Routes

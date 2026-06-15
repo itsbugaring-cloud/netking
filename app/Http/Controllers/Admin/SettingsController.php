@@ -63,6 +63,8 @@ class SettingsController extends Controller
                 'telegram_config_admin_chat_id',
                 'telegram_config_allowed_ids',
                 'telegram_config_mode',
+                'telegram_finance_bot_token',
+                'telegram_finance_chat_id',
             ],
         ];
 
@@ -78,7 +80,7 @@ class SettingsController extends Controller
 
         // Do not overwrite sensitive fields when left blank in UI
         if ($group === 'telegram_bot') {
-            foreach (['telegram_config_bot_token', 'telegram_config_bot_secret'] as $sensitiveKey) {
+            foreach (['telegram_config_bot_token', 'telegram_config_bot_secret', 'telegram_finance_bot_token'] as $sensitiveKey) {
                 if (($data[$sensitiveKey] ?? '') === '') {
                     unset($data[$sensitiveKey]);
                 }

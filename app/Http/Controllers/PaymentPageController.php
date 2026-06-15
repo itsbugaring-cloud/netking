@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class PaymentPageController extends Controller
 {
@@ -27,14 +28,37 @@ class PaymentPageController extends Controller
                 return view('payments.public', [
                     'customerCode' => $customerCode,
                     'customer' => null,
+                    'currentPayment' => null,
+                    'paymentHistory' => collect(),
                     'paymentSettings' => $this->paymentSettings(),
                 ])->with('error', 'ID pelanggan tidak ditemukan.');
             }
         }
 
+        $currentPayment = null;
+        $paymentHistory = collect();
+
+        if ($customer) {
+            // Check current month payment (pending or approved)
+            $currentPayment = $customer->payments()
+                ->where('periode_bulan', now()->month)
+                ->where('periode_tahun', now()->year)
+                ->whereIn('status', ['pending', 'approved'])
+                ->orderByDesc('id')
+                ->first();
+
+            // Fetch last 5 payments for history
+            $paymentHistory = $customer->payments()
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get();
+        }
+
         return view('payments.public', [
             'customerCode' => $customerCode,
             'customer' => $customer,
+            'currentPayment' => $currentPayment,
+            'paymentHistory' => $paymentHistory,
             'paymentSettings' => $this->paymentSettings(),
         ]);
     }
@@ -84,7 +108,60 @@ class PaymentPageController extends Controller
             '/admin/payments/review'
         );
 
+        // Notify via Telegram Finance Bot (if configured)
+        $telegramToken = (string) Setting::get('telegram_finance_bot_token', '');
+        $telegramChatIds = (string) Setting::get('telegram_finance_chat_id', '');
+        
+        if ($telegramToken !== '' && $telegramChatIds !== '') {
+            $formattedAmount = "Rp " . number_format($customer->package_price, 0, ',', '.');
+            $message = "💰 *PEMBAYARAN BARU (MENUNGGU KONFIRMASI)*\n\n"
+                . "👤 *Pelanggan:* {$customer->name}\n"
+                . "🆔 *ID:* {$customer->customer_code}\n"
+                . "💵 *Nominal:* {$formattedAmount}\n"
+                . "🏦 *Tujuan:* {$validated['rekening_tujuan']}\n"
+                . "📝 *Catatan:* " . ($validated['catatan'] ?: '-') . "\n\n"
+                . "Segera cek dan konfirmasi di menu *Review Pembayaran* panel Admin.";
+
+            $chatIds = array_filter(array_map('trim', explode(',', $telegramChatIds)));
+            
+            foreach ($chatIds as $chatId) {
+                try {
+                    Http::timeout(5)->post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
+                        'chat_id' => $chatId,
+                        'text' => $message,
+                        'parse_mode' => 'Markdown'
+                    ]);
+                } catch (\Throwable $e) {
+                    // Fail silently so it doesn't break the user's payment submission
+                }
+            }
+        }
+
         return redirect()->back()->with('success', 'Pembayaran sedang diproses');
+    }
+
+    public function statusApi(Request $request, string $customerCode)
+    {
+        $customerCode = strtoupper(trim($customerCode));
+        $customer = Customer::query()->whereRaw('UPPER(TRIM(customer_code)) = ?', [$customerCode])->first();
+        
+        if (!$customer) {
+            return response()->json(['status' => 'not_found']);
+        }
+
+        $currentPayment = $customer->payments()
+            ->where('periode_bulan', now()->month)
+            ->where('periode_tahun', now()->year)
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$currentPayment) {
+            return response()->json(['status' => 'unpaid']);
+        }
+
+        return response()->json([
+            'status' => $currentPayment->status,
+        ]);
     }
 
     private function paymentSettings(): array
