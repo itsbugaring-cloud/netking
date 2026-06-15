@@ -97,8 +97,9 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">PPPoE Username</label>
-                <input type="text" class="form-control" value="{{ $customer->pppoe_user }}" disabled>
-                <div class="form-text">Tidak dapat diubah setelah dibuat.</div>
+                <input type="text" name="pppoe_user" class="form-control @error('pppoe_user') is-invalid @enderror" value="{{ old('pppoe_user', $customer->pppoe_user) }}" required>
+                <div class="form-text text-warning"><i class='bx bx-error'></i> Hati-hati: Pastikan sama persis dengan Secret di router!</div>
+                @error('pppoe_user')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
               <div class="col-md-6">
                 <label class="form-label">Area</label>
