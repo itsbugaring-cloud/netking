@@ -424,6 +424,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::resource('areas', AreaController::class);
         Route::post('areas/test-router', [AreaController::class, 'testRouter'])->name('areas.test-router');
+        Route::post('areas/{area}/install-isolir', [AreaController::class, 'installIsolirRule'])->name('areas.install-isolir');
 
         // Admin User Management
         Route::prefix('users')->name('users.')->group(function () {

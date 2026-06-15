@@ -650,5 +650,35 @@ class AreaController extends Controller
         $value = strtolower(trim((string) $name));
         return $value !== '' && str_contains($value, 'pppoe');
     }
+
+    public function installIsolirRule(Area $area)
+    {
+        try {
+            $mikrotik = MikroTikService::forArea($area);
+            $client = $this->getClient($mikrotik);
+
+            // Fetch current filter rules to find the first rule's ID
+            $rules = $client->query(new Query('/ip/firewall/filter/print'))->read();
+            
+            $params = [
+                'action' => 'drop',
+                'chain' => 'forward',
+                'comment' => 'BLOCK TOTAL KONEKSI ISOLIR',
+                'src-address-list' => 'isolir'
+            ];
+
+            // If there are existing rules, place this new rule before the very first rule
+            if (!empty($rules) && isset($rules[0]['.id'])) {
+                $params['place-before'] = $rules[0]['.id'];
+            }
+
+            $query = new Query('/ip/firewall/filter/add', $params);
+            $client->query($query)->read();
+
+            return back()->with('success', "Berhasil! Script 1 Baris (Block Total) sudah tertanam di urutan paling atas pada router {$area->name}.");
+        } catch (\Throwable $e) {
+            return back()->with('error', "Gagal menginstall rule ke {$area->name}: " . $e->getMessage());
+        }
+    }
 }
 

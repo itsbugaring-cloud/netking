@@ -152,6 +152,13 @@
             <li><a class="dropdown-item" href="{{ route('admin.areas.edit', $area) }}"><i class='bx bx-edit me-2'></i> Edit Area</a></li>
             <li><hr class="dropdown-divider"></li>
             <li>
+              <form action="{{ route('admin.areas.install-isolir', $area) }}" method="POST" class="m-0" data-confirm="Install Rule Isolir Otomatis ke MikroTik ini?">
+                @csrf
+                <button type="submit" class="dropdown-item"><i class='bx bx-shield-quarter me-2' style="color:var(--orange);"></i> Install Rule Isolir</button>
+              </form>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
               <form action="{{ route('admin.areas.destroy', $area) }}" method="POST" class="m-0" data-confirm="Hapus {{ $area->name }}?">
                 @csrf @method('DELETE')
                 <button type="submit" class="dropdown-item text-danger"><i class='bx bx-trash me-2'></i> Hapus</button>
