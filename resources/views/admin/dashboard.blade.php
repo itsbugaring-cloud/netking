@@ -525,13 +525,19 @@
     color: var(--txt-2);
   }
 
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ops-success) 50%, transparent); }
+    70% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--ops-success) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ops-success) 0%, transparent); }
+  }
+
   .ops-dot {
     width: 7px;
     height: 7px;
     border-radius: 999px;
     display: inline-block;
     background: var(--ops-success);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ops-success) 18%, transparent);
+    animation: pulse-ring 2.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
   }
 
   .ops-analytics {
@@ -922,6 +928,45 @@
     opacity: 0.35;
     z-index: 0;
     pointer-events: none;
+  }
+
+  /* Advanced Mesh Gradient & Light Mode Glow */
+  html:not([data-theme="dark"]) .dashboard-page::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: 
+      radial-gradient(800px circle at 15% 30%, rgba(91,99,211,0.04), transparent 100%),
+      radial-gradient(800px circle at 85% 20%, rgba(22,163,74,0.03), transparent 100%),
+      radial-gradient(800px circle at 50% 80%, rgba(249,115,22,0.03), transparent 100%);
+    z-index: -1; pointer-events: none;
+  }
+
+  html:not([data-theme="dark"]) .ops-glow-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.6) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  
+  html:not([data-theme="dark"]) .ops-glow-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(500px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(91,99,211,0.04), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  html:not([data-theme="dark"]) .ops-glow-card:hover::after { opacity: 1; }
+  
+  html:not([data-theme="dark"]) .ops-glow-card:hover {
+    box-shadow: 0 18px 40px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,1);
+    border-color: rgba(91,99,211,0.15);
+    transform: translateY(-2px);
   }
 
   html[data-theme="dark"] .ops-radar-chip {
@@ -1345,7 +1390,7 @@
           dataLabels: { enabled: false },
           stroke: {
             curve: 'smooth',
-            width: 2.2
+            width: palette.dark ? 2.2 : 3.0
           },
           colors: [palette.primary],
           grid: {
@@ -1356,7 +1401,7 @@
             type: 'gradient',
             gradient: {
               shadeIntensity: 1,
-              opacityFrom: 0.22,
+              opacityFrom: palette.dark ? 0.22 : 0.45,
               opacityTo: 0.02,
               stops: [0, 100]
             }
@@ -1378,7 +1423,7 @@
         growthEl.innerHTML = '';
         new ApexCharts(growthEl, {
           chart: {
-            type: 'line',
+            type: 'area',
             height: 280,
             toolbar: { show: false },
             background: 'transparent'
@@ -1398,7 +1443,7 @@
           },
           stroke: {
             curve: 'smooth',
-            width: 2.2
+            width: palette.dark ? 2.2 : 3.0
           },
           markers: {
             size: 3,
@@ -1407,6 +1452,15 @@
           },
           colors: [palette.primary],
           dataLabels: { enabled: false },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shadeIntensity: 1,
+              opacityFrom: palette.dark ? 0.22 : 0.45,
+              opacityTo: 0.02,
+              stops: [0, 100]
+            }
+          },
           grid: {
             borderColor: palette.border,
             strokeDashArray: 4
@@ -1500,6 +1554,9 @@
     }
 
     function initGlowEffect() {
+      document.querySelectorAll('.ops-panel, .ops-network-card').forEach(function(el) {
+        el.classList.add('ops-glow-card');
+      });
       document.querySelectorAll('.ops-glow-card').forEach(function(card) {
         card.addEventListener('mousemove', function(e) {
           const rect = card.getBoundingClientRect();
