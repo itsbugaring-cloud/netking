@@ -24,6 +24,12 @@
   }
   .customers-index-page .ms-table-shell .table-responsive {
     border: 0 !important; background: transparent !important;
+    min-height: 220px; /* space for dropdown on 1 row */
+  }
+  @media (min-width: 768px) {
+    .customers-index-page .ms-table-shell .table-responsive {
+      overflow: visible !important;
+    }
   }
   .customers-index-page .ms-table-shell .dataTables_wrapper { padding: 0 !important; }
 
