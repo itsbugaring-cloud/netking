@@ -70,146 +70,7 @@ foreach ($types as $type => $config) {
 @once
 <style>
     /* Toast container fixed in top-right corner */
-    .nk-toast-container {
-        position: fixed;
-        top: 24px;
-        right: 24px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        width: 380px;
-        max-width: calc(100vw - 48px);
-        pointer-events: none;
-    }
-
-    /* Floating Toast Notification card */
-    .nk-toast {
-        position: relative;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
-        pointer-events: auto;
-        overflow: hidden;
-        animation: nk-toast-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-        transition: all 0.3s ease;
-    }
-
-    .nk-toast::before {
-        content: '';
-        position: absolute;
-        inset: 0 auto 0 0;
-        width: 4px;
-        background: var(--nk-tone, #3b82f6);
-    }
-
-    .nk-toast[data-tone="success"] { --nk-tone: #10b981; border-color: rgba(16, 185, 129, 0.2); }
-    .nk-toast[data-tone="danger"] { --nk-tone: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
-    .nk-toast[data-tone="warning"] { --nk-tone: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
-    .nk-toast[data-tone="info"] { --nk-tone: #3b82f6; border-color: rgba(59, 130, 246, 0.2); }
-
-    @keyframes nk-toast-in {
-        from {
-            opacity: 0;
-            transform: translate3d(120%, 0, 0) scale(0.9);
-            filter: blur(2px);
-        }
-        to {
-            opacity: 1;
-            transform: translate3d(0, 0, 0) scale(1);
-            filter: blur(0);
-        }
-    }
-
-    .nk-toast-body {
-        padding: 16px;
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
-    }
-
-    .nk-toast-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.15rem;
-        flex-shrink: 0;
-        color: var(--nk-tone, #3b82f6);
-        background: color-mix(in srgb, var(--nk-tone, #3b82f6) 10%, white);
-        border: 1px solid color-mix(in srgb, var(--nk-tone, #3b82f6) 18%, #e2e8f0);
-    }
-
-    .nk-toast-content {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .nk-toast-title {
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: #0f172a;
-        margin: 0 0 3px 0;
-    }
-
-    .nk-toast-message {
-        font-size: 0.8rem;
-        line-height: 1.45;
-        color: #475569;
-        margin: 0;
-    }
-
-    .nk-toast-message ul {
-        margin: 0;
-        padding-left: 16px;
-    }
-
-    .nk-toast-close {
-        background: none;
-        border: none;
-        color: #94a3b8;
-        font-size: 1.25rem;
-        cursor: pointer;
-        padding: 0;
-        line-height: 1;
-        margin-top: -2px;
-        transition: color 0.2s ease;
-    }
-
-    .nk-toast-close:hover {
-        color: #475569;
-    }
-
-    /* Countdown progress bar */
-    .nk-toast-progress {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background: rgba(0, 0, 0, 0.04);
-    }
-
-    .nk-toast-progress-bar {
-        height: 100%;
-        width: 100%;
-        transform-origin: left;
-        background: var(--nk-tone, #3b82f6);
-    }
-
-    @keyframes nk-progress-shrink {
-        from { transform: scaleX(1); }
-        to { transform: scaleX(0); }
-    }
-
-    /* Pause animation on hover */
-    .nk-toast:hover .nk-toast-progress-bar {
-        animation-play-state: paused !important;
-    }
-
+    /* Toast styles removed in favor of SweetAlert2 */
     /* Banner styles (remains in-flow) */
     .nk-banner {
         position: relative;
@@ -386,94 +247,55 @@ foreach ($types as $type => $config) {
 @endif
 
 <!-- Floating Toasts Container -->
-<div class="nk-toast-container">
-    <!-- Form Validation Errors (rendered as danger toast) -->
+<!-- SweetAlert2 Toasts -->
+@if($errors->any() || !empty($flashItems))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Swal === 'undefined') return;
+    
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: {{ $dismissAfter ?? 5000 }},
+        timerProgressBar: true,
+        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e293b' : '#ffffff',
+        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#0f172a',
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+
     @if($errors->any())
-        <div class="nk-toast" data-tone="danger">
-            <div class="nk-toast-body">
-                <div class="nk-toast-icon">
-                    <i class="{{ $iconSet === 'boxicons' ? 'bx bx-error-circle' : 'ti ti-alert-circle' }}"></i>
-                </div>
-                <div class="nk-toast-content">
-                    <h5 class="nk-toast-title">Perlu diperbaiki</h5>
-                    <div class="nk-toast-message">
-                        <ul class="mb-0">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-                <button type="button" class="nk-toast-close" aria-label="Close" onclick="var t = this.closest('.nk-toast'); t.style.opacity = '0'; t.style.transform = 'translate3d(120%, 0, 0) scale(.9)'; setTimeout(function() { t.remove(); }, 300);">&times;</button>
-            </div>
-        </div>
+        Toast.fire({
+            icon: 'error',
+            title: 'Perlu diperbaiki',
+            html: `
+                <ul class="text-start mb-0 ps-3" style="font-size: 0.85rem; margin-top: 4px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ addslashes($error) }}</li>
+                    @endforeach
+                </ul>
+            `
+        });
     @endif
 
-    <!-- Flash Messages -->
     @if(!empty($flashItems))
         @foreach ($flashItems as $item)
-            <div class="nk-toast" data-tone="{{ $item['tone'] }}"
-                @if ($item['autoDismiss']) data-autodismiss="{{ $dismissAfter }}" @endif>
-                <div class="nk-toast-body">
-                    <div class="nk-toast-icon"><i class="{{ $item['icon'] }}"></i></div>
-                    <div class="nk-toast-content">
-                        <h5 class="nk-toast-title">{{ $item['title'] }}</h5>
-                        <p class="nk-toast-message">{!! $item['message'] !!}</p>
-                    </div>
-                    <button type="button" class="nk-toast-close" aria-label="Close" onclick="var t = this.closest('.nk-toast'); t.style.opacity = '0'; t.style.transform = 'translate3d(120%, 0, 0) scale(.9)'; setTimeout(function() { t.remove(); }, 300);">&times;</button>
-                </div>
-                @if ($item['autoDismiss'])
-                    <div class="nk-toast-progress">
-                        <div class="nk-toast-progress-bar" style="animation: nk-progress-shrink {{ $dismissAfter }}ms linear forwards;"></div>
-                    </div>
-                @endif
-            </div>
+            @php
+                $icon = 'info';
+                if ($item['tone'] === 'success') $icon = 'success';
+                if ($item['tone'] === 'danger') $icon = 'error';
+                if ($item['tone'] === 'warning') $icon = 'warning';
+            @endphp
+            Toast.fire({
+                icon: '{{ $icon }}',
+                title: '{!! addslashes($item['title']) !!}',
+                html: '<span style="font-size: 0.85rem;">{!! addslashes(strip_tags($item['message'])) !!}</span>'
+            });
         @endforeach
     @endif
-</div>
-
-@if ($errors->any() || !empty($flashItems))
-<script>
-document.querySelectorAll('.nk-toast[data-autodismiss]').forEach(function(el) {
-    if (el.dataset.dismissBound === '1') return;
-    el.dataset.dismissBound = '1';
-
-    var delay = parseInt(el.getAttribute('data-autodismiss'), 10) || 5000;
-    var timer = null;
-    var remaining = delay;
-    var startedAt = null;
-
-    function hideCard() {
-        el.style.opacity = '0';
-        el.style.transform = 'translate3d(120%, 0, 0) scale(.9)';
-        setTimeout(function() { el.remove(); }, 300);
-    }
-
-    function startTimer() {
-        startedAt = Date.now();
-        timer = setTimeout(hideCard, remaining);
-        
-        var pb = el.querySelector('.nk-toast-progress-bar');
-        if (pb) {
-            pb.style.animationPlayState = 'running';
-        }
-    }
-
-    el.addEventListener('mouseenter', function() {
-        clearTimeout(timer);
-        if (startedAt) remaining -= (Date.now() - startedAt);
-        
-        var pb = el.querySelector('.nk-toast-progress-bar');
-        if (pb) {
-            pb.style.animationPlayState = 'paused';
-        }
-    });
-
-    el.addEventListener('mouseleave', function() {
-        startTimer();
-    });
-
-    startTimer();
 });
 </script>
 @endif

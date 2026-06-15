@@ -6404,11 +6404,11 @@
         updateNotifBadge(0);
         fetchNotifications(true);
         if (window.toastr && data.message) {
-          toastr.success(data.message);
+          Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon: 'success', title: data.message });
         }
       })
       .catch(function() {
-        if (window.toastr) toastr.error('Gagal menandai semua notifikasi.');
+        if (typeof Swal !== 'undefined') Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon: 'error', title: 'Gagal menandai semua notifikasi.' });
       });
     }
 
