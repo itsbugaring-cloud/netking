@@ -33,13 +33,27 @@
     }
 
     body {
-      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f5f5f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8fafc;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: 
+        radial-gradient(1000px circle at 15% 30%, rgba(91,99,211,0.06), transparent 100%),
+        radial-gradient(1000px circle at 85% 20%, rgba(22,163,74,0.04), transparent 100%),
+        radial-gradient(1000px circle at 50% 80%, rgba(249,115,22,0.04), transparent 100%);
+      z-index: -1; pointer-events: none;
     }
 
     .login-wrapper {
@@ -80,12 +94,28 @@
     }
 
     .login-card {
-      background: #fff;
-      border-radius: 0.75rem;
-      box-shadow: 0 4px 24px rgba(105, 108, 255, 0.12);
-      border: 1px solid #dbdade;
-      padding: 2rem;
+      background: linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.85) 100%);
+      backdrop-filter: blur(24px);
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255,255,255,1);
+      border: 1px solid rgba(255,255,255,0.7);
+      padding: 2.5rem;
+      position: relative;
     }
+    
+    .login-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(400px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(91,99,211,0.04), transparent 40%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: 1.25rem;
+    }
+
+    .login-card:hover::after { opacity: 1; }
 
     .login-card h4 {
       font-size: 1.375rem;
@@ -128,21 +158,21 @@
     }
 
     .btn-primary {
-      background: var(--sneat-primary);
-      border-color: var(--sneat-primary);
+      background: linear-gradient(135deg, var(--sneat-primary) 0%, var(--sneat-primary-dark) 100%);
+      border: none;
       color: #fff;
       font-weight: 600;
       padding: 0.625rem 1rem;
-      border-radius: 0.375rem;
+      border-radius: 0.5rem;
       font-size: 0.9375rem;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(105, 108, 255, 0.2);
     }
 
     .btn-primary:hover {
-      background: var(--sneat-primary-dark);
-      border-color: var(--sneat-primary-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(105, 108, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(105, 108, 255, 0.35);
+      background: linear-gradient(135deg, #7478ff 0%, #5f61e6 100%);
     }
 
     .alert-danger {
@@ -279,6 +309,19 @@
         icon.className = 'bx bx-hide';
       }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const card = document.querySelector('.login-card');
+      if(card) {
+        card.addEventListener('mousemove', function(e) {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty('--mouse-x', x + 'px');
+          card.style.setProperty('--mouse-y', y + 'px');
+        });
+      }
+    });
   </script>
 </body>
 
