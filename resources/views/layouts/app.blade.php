@@ -2,9 +2,12 @@
 <html lang="en">
 <script>
   (function() {
-    try { localStorage.removeItem('nk_theme'); localStorage.removeItem('nk_sb_collapsed'); } catch (e) {}
-    document.documentElement.setAttribute('data-theme', 'light');
-    document.documentElement.removeAttribute('data-sidebar');
+    try { 
+      // Do not clear nk_theme here, so the user's preference persists
+      // localStorage.removeItem('nk_sb_collapsed');
+      const savedTheme = localStorage.getItem('nk_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } catch (e) {}
   })();
 </script>
 
@@ -5875,6 +5878,11 @@
     <span class="tb-title">@yield('title', 'Dasbor')</span>
     <div class="tb-spacer"></div>
 
+    <!-- Dark Mode Toggle -->
+    <button class="tb-btn dark-toggle" onclick="toggleTheme()" type="button" title="Mode Gelap">
+      <i class='bx bx-moon' id="theme-icon"></i>
+    </button>
+
     <!-- Notifications -->
     <div class="dropdown">
       <button class="tb-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="notif-bell" aria-expanded="false">
@@ -5947,6 +5955,21 @@
 
   <script>
     var _sb = document.getElementById('sb');
+
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      try { localStorage.setItem('nk_theme', newTheme); } catch(e) {}
+      document.getElementById('theme-icon').className = newTheme === 'dark' ? 'bx bx-sun' : 'bx bx-moon';
+    }
+
+    // Set correct icon on load
+    document.addEventListener('DOMContentLoaded', function() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const icon = document.getElementById('theme-icon');
+      if (icon) icon.className = isDark ? 'bx bx-sun' : 'bx bx-moon';
+    });
 
     function sbToggle() {
       _sb && _sb.classList.toggle('open');
