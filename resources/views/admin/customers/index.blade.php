@@ -271,7 +271,7 @@
   @endunless
 
 
-  <div class="ms-panel">
+  <div class="ms-panel" style="overflow: visible !important;">
     {{-- Panel Head --}}
     <div class="ms-panel-head d-flex justify-content-between align-items-center">
       <span class="ms-panel-title">
