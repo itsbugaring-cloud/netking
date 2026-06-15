@@ -16,13 +16,9 @@ class MapController extends Controller
             ->whereNotNull('longitude')
             ->get();
 
-        $odps = \App\Models\Odp::whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->get();
-
         $areas = Area::all();
 
-        return view('admin.maps.index', compact('customers', 'odps', 'areas'));
+        return view('admin.maps.index', compact('customers', 'areas'));
     }
 
     public function status(Request $request)

@@ -169,7 +169,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var customers = @json($customers);
-        var odps = @json($odps ?? []);
         var mapContainer = document.getElementById('map');
         
         // Setup Base Layers
@@ -221,12 +220,6 @@
             iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
         });
 
-        var iconOdp = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-        });
-
         var markersGroup = L.markerClusterGroup({
             chunkedLoading: true,
             spiderfyOnMaxZoom: true,
@@ -234,38 +227,18 @@
             zoomToBoundsOnClick: true,
             maxClusterRadius: 60
         });
-        
-        var linesGroup = L.layerGroup().addTo(map);
-        var odpLayerGroup = L.layerGroup().addTo(map);
 
         var currentChart = null;
         var trafficInterval = null;
 
         function renderMarkers() {
             markersGroup.clearLayers();
-            linesGroup.clearLayers();
-            odpLayerGroup.clearLayers();
             
             var bounds = [];
             var statusFilter = document.getElementById('filter-status').value;
             var areaFilter = document.getElementById('filter-area').value;
             var searchQuery = document.getElementById('map-search').value.toLowerCase();
             var renderedCount = 0;
-
-            var odpMap = {};
-            odps.forEach(function(o) {
-                if (!o.latitude || !o.longitude) return;
-                if (areaFilter && o.area_id != areaFilter) return;
-
-                var lat = parseFloat(o.latitude);
-                var lng = parseFloat(o.longitude);
-                odpMap[o.id] = [lat, lng];
-
-                var marker = L.marker([lat, lng], {icon: iconOdp, title: o.name});
-                marker.bindPopup(`<strong>ODP:</strong> ${o.name}<br><strong>Kode:</strong> ${o.code}`);
-                odpLayerGroup.addLayer(marker);
-                bounds.push([lat, lng]);
-            });
 
             customers.forEach(function(c) {
                 if (!c.latitude || !c.longitude) return;
@@ -286,16 +259,13 @@
                 
                 var markerIcon = iconDefault;
                 var statusBadge = '';
-                var lineColor = '#9ca3af';
                 
                 if (c.is_isolated) {
                     markerIcon = iconIsolated;
                     statusBadge = '<span class="map-popup-badge map-badge-isolated"><i class="bx bx-block"></i> Terisolir</span>';
-                    lineColor = '#ef4444';
                 } else if (c.status === 'active') {
                     markerIcon = iconActive;
                     statusBadge = '<span class="map-popup-badge map-badge-active"><i class="bx bx-check-circle"></i> Aktif</span>';
-                    lineColor = '#22c55e';
                 }
 
                 var detailUrl = '/admin/customers/' + c.id;
@@ -325,16 +295,6 @@
                 markersGroup.addLayer(marker);
                 bounds.push([lat, lng]);
                 renderedCount++;
-
-                if (c.odp_id && odpMap[c.odp_id]) {
-                    var polyline = L.polyline([odpMap[c.odp_id], [lat, lng]], {
-                        color: lineColor,
-                        weight: 2,
-                        opacity: 0.6,
-                        dashArray: '5, 5'
-                    });
-                    linesGroup.addLayer(polyline);
-                }
             });
 
             map.addLayer(markersGroup);
