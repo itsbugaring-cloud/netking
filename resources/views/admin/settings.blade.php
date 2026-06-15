@@ -285,6 +285,30 @@ add action=drop chain=forward comment="DROP KONEKSI ISOLIR" src-address-list=iso
                 </div>
               </div>
 
+              <!-- Script Alternatif: Isolir Simple (Block Total) -->
+              <div class="card mb-4" style="border-radius: 12px; border: 1px solid var(--border); background: var(--surface); overflow: hidden;">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background: color-mix(in srgb, var(--orange) 5%, var(--surface-2)); border-bottom: 1px solid var(--border); padding: 1rem 1.25rem;">
+                  <div class="d-flex align-items-center gap-2">
+                    <div style="width: 32px; height: 32px; background: var(--orange); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">1B</div>
+                    <div>
+                      <h6 class="mb-0" style="font-weight: 700; color: var(--txt);">Script Isolir Alternatif (Block Total Tanpa Redirect)</h6>
+                      <div style="font-size: 0.75rem; color: var(--txt-3);">Hanya 1 baris. Memutus akses internet tanpa halaman peringatan. Gunakan jika tidak butuh web pemberitahuan.</div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-primary" onclick="copyScript('script-isolir-simple', this)">
+                    <i class='bx bx-copy'></i> Copy Script
+                  </button>
+                </div>
+                <div class="card-body p-0">
+                  <pre id="script-isolir-simple" class="m-0 p-3" style="background: #1e1e1e; color: #569cd6; font-size: 0.85rem; border-radius: 0;"><code><span style="color:#6a9955;"># Block Total akses internet untuk pelanggan Isolir</span>
+/ip firewall filter
+add action=drop chain=forward comment="BLOCK TOTAL KONEKSI ISOLIR" src-address-list=isolir</code></pre>
+                </div>
+                <div class="card-footer" style="background: var(--surface-2); padding: 0.75rem 1.25rem; font-size: 0.8rem; color: var(--txt-3);">
+                  <i class='bx bx-bulb' style="color:var(--yellow);"></i> <strong>Catatan:</strong> Pilih salah satu saja (Script 1 atau 1B), jangan gunakan keduanya bersamaan. Posisikan rule ini di urutan paling atas Filter Rules.
+                </div>
+              </div>
+
               <!-- Script 2: WhatsApp Bot -->
               <div class="card mb-4" style="border-radius: 12px; border: 1px solid var(--border); background: var(--surface); overflow: hidden;">
                 <div class="card-header d-flex justify-content-between align-items-center" style="background: color-mix(in srgb, var(--green) 5%, var(--surface-2)); border-bottom: 1px solid var(--border); padding: 1rem 1.25rem;">
