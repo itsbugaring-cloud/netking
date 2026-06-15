@@ -73,6 +73,11 @@
   #customers-table td { padding: .45rem .75rem !important; }
   #customers-table th { padding: .5rem .75rem !important; font-size: .73rem; text-transform: uppercase; letter-spacing: .4px; }
   #customers-table td { font-size: .8125rem; }
+  
+  /* Fix z-index stacking context for dropdowns inside table rows */
+  #customers-table tbody tr { position: relative; z-index: 1; }
+  #customers-table tbody tr:focus-within,
+  #customers-table tbody tr:hover { z-index: 10; }
 
   /* ── Action buttons ─────────────────────────────────────────────────── */
   .cust-action-btn {
