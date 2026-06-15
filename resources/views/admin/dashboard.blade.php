@@ -400,7 +400,14 @@
 
   .ops-kpi:nth-child(2)::before { background: color-mix(in srgb, var(--green) 30%, var(--border)); }
   .ops-kpi:nth-child(3)::before { background: color-mix(in srgb, var(--orange, #f97316) 32%, var(--border)); }
-  .ops-kpi:nth-child(4)::before { background: color-mix(in srgb, #5b63d3 32%, var(--border)); }
+  .ops-kpi:nth-child(4)::before { background: color-mix(in srgb, var(--nk-danger, #e11d48) 32%, var(--border)); }
+
+  .ops-kpi:hover .ops-kpi-icon i {
+    transform: scale(1.15) rotate(-4deg);
+  }
+  .ops-kpi .ops-kpi-icon i {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 
   .ops-kpi-icon i,
   .ops-pill i,
@@ -867,6 +874,11 @@
     box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
   }
 
+  html[data-theme="dark"] .ops-kpi:hover { box-shadow: 0 12px 28px rgba(91, 99, 211, 0.12), 0 0 0 1px rgba(91, 99, 211, 0.2); border-color: transparent; }
+  html[data-theme="dark"] .ops-kpi:nth-child(2):hover { box-shadow: 0 12px 28px rgba(22, 163, 74, 0.12), 0 0 0 1px rgba(22, 163, 74, 0.2); }
+  html[data-theme="dark"] .ops-kpi:nth-child(3):hover { box-shadow: 0 12px 28px rgba(249, 115, 22, 0.12), 0 0 0 1px rgba(249, 115, 22, 0.2); }
+  html[data-theme="dark"] .ops-kpi:nth-child(4):hover { box-shadow: 0 12px 28px rgba(225, 29, 72, 0.12), 0 0 0 1px rgba(225, 29, 72, 0.2); }
+
   html[data-theme="dark"] .ops-radar-chip {
     background: rgba(30, 30, 35, .72);
     border-color: rgba(255, 255, 255, .08);
@@ -1019,7 +1031,7 @@
           <div class="ops-kpi-label">Pelanggan Diisolir</div>
           <div class="ops-kpi-value">{{ number_format($stats['suspended_customers'] ?? 0) }}</div>
         </div>
-        <div class="ops-kpi-icon" style="background:rgba(91,99,211,.1);border-color:rgba(91,99,211,.2);color:#5b63d3;">
+        <div class="ops-kpi-icon" style="background:color-mix(in srgb, var(--nk-danger, #e11d48) 12%, transparent);border-color:color-mix(in srgb, var(--nk-danger, #e11d48) 25%, transparent);color:var(--nk-danger, #e11d48);">
           <i class='bx bx-block'></i>
         </div>
       </div>
