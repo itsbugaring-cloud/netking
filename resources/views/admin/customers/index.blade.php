@@ -344,8 +344,8 @@
 
 
     {{-- Table --}}
-    <div class="ms-table-shell">
-      <div class="table-responsive mt-2">
+    <div class="ms-table-shell" style="overflow: visible !important;">
+      <div class="table-responsive-xl mt-2" style="overflow: visible !important;">
         <table class="table table-flat mb-0" id="customers-table">
           <thead>
             <tr>
