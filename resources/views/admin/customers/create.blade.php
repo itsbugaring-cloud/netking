@@ -63,29 +63,18 @@
                 <select name="area_id" id="area-select" class="form-select @error('area_id') is-invalid @enderror" required>
                   <option value="">Pilih Area</option>
                   @foreach($areas as $area)
+                <input type="text" name="ont_sn" class="form-control @error('ont_sn') is-invalid @enderror" value="{{ old('ont_sn') }}" placeholder="cth. HWTC12345678">
+                @error('ont_sn')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Area <span class="text-danger">*</span></label>
+                <select name="area_id" id="area-select" class="form-select @error('area_id') is-invalid @enderror" required>
+                  <option value="">Pilih Area</option>
+                  @foreach($areas as $area)
                   <option value="{{ $area->id }}" {{ old('area_id', auth()->user()->role === 'partner' ? auth()->user()->area_id : '') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
                   @endforeach
                 </select>
                 @error('area_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">ODP</label>
-                <select name="odp_id" id="odp_id" class="form-select @error('odp_id') is-invalid @enderror">
-                  @if($odps->isEmpty())
-                  <option value="">Pilih area dulu</option>
-                  @else
-                  <option value="">Tanpa ODP</option>
-                  @foreach($odps as $odp)
-                  <option value="{{ $odp->id }}" {{ old('odp_id') == $odp->id ? 'selected' : '' }}>{{ $odp->name }} — {{ $odp->available_slots ?? $odp->port_count }} slot</option>
-                  @endforeach
-                  @endif
-                </select>
-                @error('odp_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Port ODP</label>
-                <input type="number" name="odp_port" class="form-control @error('odp_port') is-invalid @enderror" value="{{ old('odp_port') }}" min="1" max="128" placeholder="Nomor port">
-                @error('odp_port')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
             </div>
           </div>
@@ -314,7 +303,6 @@ $(function() {
     $localSelect.val('');
     var areaId = $(this).val();
     loadPackages(areaId);
-    loadOdps(areaId);
   });
 
   $pkg.on('change', function() {
@@ -329,31 +317,7 @@ $(function() {
   loadPackages($area.val());
   refreshProrationPreview();
 
-  var $odpSelect = $('#odp_id');
-  function loadOdps(areaId) {
-    if (!areaId) {
-      $odpSelect.html('<option value="">Pilih area dulu</option>').prop('disabled', false);
-      return;
-    }
-    $odpSelect.html('<option value="">Memuat ODP...</option>').prop('disabled', true);
-    $.get('{{ route("admin.api.odps-by-area") }}', { area_id: areaId }, function(odps) {
-      var html = '<option value="">Tanpa ODP</option>';
-      $.each(odps, function(i, o) {
-        html += '<option value="' + o.id + '">' + o.name + ' — ' + o.port_count + ' port</option>';
-      });
-      if (odps.length === 0) html = '<option value="">Tidak ada ODP di area ini</option>';
-      $odpSelect.html(html).prop('disabled', false);
-    }).fail(function() {
-      $odpSelect.html('<option value="">Gagal memuat ODP</option>').prop('disabled', false);
-    });
-  }
 
-  @if(auth()->user()->role === 'admin' && old('area_id'))
-  loadOdps('{{ old("area_id") }}');
-  $odpSelect.one('change ajaxComplete', function() {
-    $odpSelect.val('{{ old("odp_id") }}');
-  });
-  @endif
 });
 </script>
 @endsection

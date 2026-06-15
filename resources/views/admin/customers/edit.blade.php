@@ -166,21 +166,7 @@
                   <strong>Preview Prorata:</strong> <span id="proration-preview-text">-</span>
                 </div>
               </div>
-              <div class="col-md-6">
-                <label class="form-label">ODP</label>
-                <select name="odp_id" class="form-select @error('odp_id') is-invalid @enderror">
-                  <option value="">Tanpa ODP</option>
-                  @foreach($odps ?? [] as $odp)
-                  <option value="{{ $odp->id }}" {{ old('odp_id', $customer->odp_id) == $odp->id ? 'selected' : '' }}>{{ $odp->name }} ({{ $odp->code }}) — {{ $odp->available_slots }} slot</option>
-                  @endforeach
-                </select>
-                @error('odp_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Port ODP</label>
-                <input type="number" name="odp_port" class="form-control @error('odp_port') is-invalid @enderror" value="{{ old('odp_port', $customer->odp_port) }}" min="1" max="128" placeholder="Nomor port">
-                @error('odp_port')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              </div>
+
             </div>
           </div>
           <div class="ms-panel-foot d-flex justify-content-between">
