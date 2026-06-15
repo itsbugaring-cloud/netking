@@ -52,6 +52,31 @@
             </div>
         </div>
     </div>
+    
+    <!-- Global Summary -->
+    <div class="ms-stat-grid mb-3" id="global-summary" style="display:none;">
+        <div class="ms-stat-card" style="--stat-accent:var(--green);--stat-bg:color-mix(in srgb,var(--green) 8%,var(--surface));">
+            <div class="ms-stat-icon"><i class='bx bx-check-circle' style="font-size:1.3rem;"></i></div>
+            <div>
+                <div class="ms-stat-label">Router Online</div>
+                <div class="ms-stat-value" style="color:var(--green);" id="sum-online">0</div>
+            </div>
+        </div>
+        <div class="ms-stat-card" style="--stat-accent:var(--red);--stat-bg:color-mix(in srgb,var(--red) 8%,var(--surface));">
+            <div class="ms-stat-icon"><i class='bx bx-x-circle' style="font-size:1.3rem;"></i></div>
+            <div>
+                <div class="ms-stat-label">Router Offline</div>
+                <div class="ms-stat-value" style="color:var(--red);" id="sum-offline">0</div>
+            </div>
+        </div>
+        <div class="ms-stat-card" style="--stat-accent:var(--orange);--stat-bg:color-mix(in srgb,var(--orange) 8%,var(--surface));">
+            <div class="ms-stat-icon"><i class='bx bx-error' style="font-size:1.3rem;"></i></div>
+            <div>
+                <div class="ms-stat-label">Kritis (CPU/RAM > 85%)</div>
+                <div class="ms-stat-value" style="color:var(--orange);" id="sum-critical">0</div>
+            </div>
+        </div>
+    </div>
 
     <div class="ms-panel">
         <div class="ms-panel-head">
@@ -130,8 +155,8 @@
     }
 
     function progressClass(pct) {
-        if (pct >= 80) return 'dash-progress-fill--crit';
-        if (pct >= 60) return 'dash-progress-fill--warn';
+        if (pct >= 85) return 'dash-progress-fill--crit';
+        if (pct >= 70) return 'dash-progress-fill--warn';
         return 'dash-progress-fill--ok';
     }
 
@@ -181,7 +206,11 @@
                 <div class="dash-card-title">${r.identity || r.area_name}</div>
                 ${healthBadge(r.health)}
             </div>
-            <div class="dash-card-subtitle">${r.area_name} — ${r.router_ip} · ${res.version} / ${res.board_name}</div>
+            <div class="dash-card-subtitle" style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.4rem;margin-bottom:.5rem;">
+                <span style="font-family:monospace;background:color-mix(in srgb,var(--blue) 8%,var(--surface));color:var(--blue);padding:.15rem .45rem;border-radius:4px;border:1px solid color-mix(in srgb,var(--blue) 20%,var(--border));"><i class='bx bx-globe'></i> ${r.router_ip}</span>
+                <span style="background:var(--surface-2);color:var(--txt-2);padding:.15rem .45rem;border-radius:4px;border:1px solid var(--border);"><i class='bx bx-chip'></i> ${res.board_name}</span>
+                <span style="background:var(--surface-2);color:var(--txt-2);padding:.15rem .45rem;border-radius:4px;border:1px solid var(--border);"><i class='bx bx-code-alt'></i> v${res.version}</span>
+            </div>
             <div class="dash-uptime"><i class='bx bx-time-five'></i> Uptime: <strong>${res.uptime}</strong></div>
             <div>
                 <div class="dash-metric"><span>CPU (${res.cpu_count} core)</span><span class="dash-metric-value">${res.cpu_load}%</span></div>
@@ -206,6 +235,23 @@
             .then(data => {
                 grid.innerHTML = data.routers.map(renderCard).join('');
                 lastUpdate.textContent = 'Updated: ' + new Date().toLocaleTimeString();
+                
+                // Update Global Summary
+                let online = 0; let offline = 0; let crit = 0;
+                data.routers.forEach(r => {
+                    if (r.status === 'offline') {
+                        offline++;
+                    } else {
+                        online++;
+                        if (r.resource && (r.resource.cpu_load >= 85 || r.resource.mem_used_pct >= 85 || r.resource.disk_used_pct >= 95)) {
+                            crit++;
+                        }
+                    }
+                });
+                document.getElementById('sum-online').textContent = online;
+                document.getElementById('sum-offline').textContent = offline;
+                document.getElementById('sum-critical').textContent = crit;
+                document.getElementById('global-summary').style.display = 'grid';
             })
             .catch(err => {
                 console.error('Dashboard fetch error:', err);
