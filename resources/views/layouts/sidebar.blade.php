@@ -28,7 +28,12 @@
           'icon' => 'bx bx-chip',
           'title' => 'MikroTik',
         ] : null,
-
+        $isAdmin ? [
+          'route' => route('admin.maps.index'),
+          'active' => request()->routeIs('admin.maps*'),
+          'icon' => 'bx bx-map',
+          'title' => 'Peta Pelanggan',
+        ] : null,
         $isAdmin ? [
           'route' => route('admin.address-list.index'),
           'active' => request()->routeIs('admin.address-list*'),

@@ -1,450 +1,71 @@
 @extends('layouts.app')
-@section('title', 'Peta Pelanggan')
-
-@section('styles')
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-<!-- MarkerCluster CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-<style>
-    #map {
-        height: 650px;
-        width: 100%;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        z-index: 1;
-    }
-    .leaflet-popup-content-wrapper {
-        border-radius: 12px;
-        background: var(--surface);
-        color: var(--txt);
-        box-shadow: 0 10px 25px rgba(0,0,0,.15);
-        border: 1px solid var(--border);
-    }
-    .leaflet-popup-tip {
-        background: var(--surface);
-    }
-    .map-popup-header {
-        font-weight: 800;
-        font-size: 1.05rem;
-        margin-bottom: 0.35rem;
-        color: var(--txt);
-    }
-    .map-popup-body {
-        font-size: 0.85rem;
-        color: var(--txt-2);
-        line-height: 1.6;
-    }
-    .map-popup-badge {
-        display: inline-block;
-        padding: 0.25rem 0.5rem;
-        border-radius: 6px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        margin-top: 0.5rem;
-    }
-    .map-badge-active { background: color-mix(in srgb, var(--green) 15%, var(--surface)); color: var(--green); }
-    .map-badge-isolated { background: color-mix(in srgb, var(--red) 15%, var(--surface)); color: var(--red); }
-    
-    /* Overlay Control Panel */
-    .map-overlay {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 16px;
-        padding: 1.25rem;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        width: 340px;
-        max-width: calc(100vw - 40px);
-        transition: all 0.3s ease;
-    }
-    html[data-theme="dark"] .map-overlay {
-        background: rgba(30, 41, 59, 0.85);
-        border-color: rgba(255, 255, 255, 0.05);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-    }
-    
-    /* Customize Leaflet Controls */
-    .leaflet-control-layers {
-        border-radius: 12px !important;
-        border: 1px solid var(--border) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
-        background: var(--surface) !important;
-        color: var(--txt) !important;
-    }
-    .leaflet-control-zoom {
-        border: none !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
-    }
-    .leaflet-control-zoom a {
-        background: var(--surface) !important;
-        color: var(--txt) !important;
-        border-color: var(--border) !important;
-    }
-    .leaflet-control-zoom a:hover {
-        background: var(--surface-2) !important;
-    }
-    
-    /* Custom MarkerCluster Colors */
-    .marker-cluster-small { background-color: rgba(99, 102, 241, 0.6); }
-    .marker-cluster-small div { background-color: rgba(99, 102, 241, 0.9); color: white; }
-    .marker-cluster-medium { background-color: rgba(79, 70, 229, 0.6); }
-    .marker-cluster-medium div { background-color: rgba(79, 70, 229, 0.9); color: white; }
-    .marker-cluster-large { background-color: rgba(67, 56, 202, 0.6); }
-    .marker-cluster-large div { background-color: rgba(67, 56, 202, 0.9); color: white; }
-</style>
-@endsection
+@section('title', 'Peta Pelanggan & Tracing ONT')
 
 @section('content')
 <div class="ms-page">
-    <div class="ms-page-head">
-        <div>
-            <div class="ms-page-kicker"><i class='bx bx-map-alt'></i> Jaringan</div>
-            <h1 class="ms-page-title">Peta Pelanggan</h1>
-        </div>
-        <div class="ms-page-actions">
-            <span class="ms-chip" style="background:var(--surface-2);border-color:var(--border);">
-                <i class='bx bx-user-pin'></i> <span id="map-stats-count">{{ $customers->count() }}</span> Pelanggan
-            </span>
-        </div>
+  <div class="ms-page-head">
+    <div>
+      <div class="ms-page-kicker"><i class='bx bx-map'></i> Jaringan</div>
+      <h1 class="ms-page-title">Peta Pelanggan & Tracing ONT</h1>
     </div>
+  </div>
 
-    <div class="ms-panel" style="position: relative;">
-        <div class="ms-panel-body p-2">
-            <div id="map"></div>
-            
-            {{-- Glassmorphism Overlay --}}
-            <div class="map-overlay">
-                <h6 style="font-weight:800;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
-                    <div style="background:var(--blue);color:white;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;">
-                        <i class='bx bx-filter-alt'></i>
-                    </div>
-                    Pencarian & Filter
-                </h6>
-                <div class="mb-3">
-                    <div class="nk-search-wrap" style="width:100%;">
-                        <i class='bx bx-search'></i>
-                        <input type="text" id="map-search" class="nk-search-input" placeholder="Cari nama atau pppoe..." style="width:100%;background:var(--surface);">
-                    </div>
-                </div>
-                <div class="row g-2">
-                    <div class="col-12">
-                        <label class="form-label" style="font-size:0.75rem;font-weight:700;color:var(--txt-3);margin-bottom:0.25rem;">STATUS</label>
-                        <select id="filter-status" class="form-select form-select-sm" style="border-radius:8px;background:var(--surface);">
-                            <option value="">Semua</option>
-                            <option value="active">Aktif</option>
-                            <option value="isolated">Terisolir</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label" style="font-size:0.75rem;font-weight:700;color:var(--txt-3);margin-bottom:0.25rem;">AREA</label>
-                        <select id="filter-area" class="form-select form-select-sm" style="border-radius:8px;background:var(--surface);">
-                            <option value="">Semua Area</option>
-                            @foreach($areas as $area)
-                                <option value="{{ $area->id }}">{{ $area->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="ms-panel">
+    <div class="ms-panel-body p-0">
+      <div id="map" style="height: 75vh; width: 100%; border-radius: 8px;"></div>
     </div>
+  </div>
 </div>
 @endsection
 
 @section('scripts')
-<!-- Leaflet JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<!-- MarkerCluster JS -->
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<!-- Chart JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var customers = @json($customers);
-        var mapContainer = document.getElementById('map');
+  $(function() {
+    var map = L.map('map').setView([-6.2088, 106.8456], 11);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    var customers = @json($customers);
+    var markers = L.featureGroup();
+
+    customers.forEach(function(cust) {
+      if (cust.latitude && cust.longitude) {
+        var statusColor = cust.status === 'active' ? 'green' : (cust.status === 'isolated' ? 'orange' : 'red');
+        var sn = cust.ont_sn ? cust.ont_sn : '<i class="text-muted">Kosong</i>';
         
-        // Setup Base Layers
-        var streetLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19, attribution: '&copy; CARTO'
-        });
-        
-        var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19, attribution: '&copy; Esri'
-        });
-
-        var darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19, attribution: '&copy; CARTO'
-        });
-
-        var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-        var defaultLayer = currentTheme === 'dark' ? darkLayer : streetLayer;
-
-        var map = L.map('map', {
-            layers: [defaultLayer],
-            zoomControl: false
-        });
-
-        L.control.zoom({ position: 'topleft' }).addTo(map);
-
-        var baseMaps = {
-            "Peta Modern": streetLayer,
-            "Satelit": satelliteLayer,
-            "Mode Gelap": darkLayer
-        };
-        L.control.layers(baseMaps, null, {position: 'topleft'}).addTo(map);
-
-        // Icons
-        var iconActive = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-        });
-
-        var iconIsolated = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-        });
-
-        var iconDefault = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-        });
-
-        var markersGroup = L.markerClusterGroup({
-            chunkedLoading: true,
-            spiderfyOnMaxZoom: true,
-            showCoverageOnHover: false,
-            zoomToBoundsOnClick: true,
-            maxClusterRadius: 60
-        });
-
-        var currentChart = null;
-        var trafficInterval = null;
-
-        function renderMarkers() {
-            markersGroup.clearLayers();
+        var popupContent = `
+          <div style="min-width: 220px; font-family: 'Inter', sans-serif;">
+            <div style="margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+              <h6 style="margin: 0; font-weight: 700; font-size: 15px; color: #1e293b;">${cust.name}</h6>
+              <div style="font-size: 12px; color: #64748b; font-family: monospace;">${cust.customer_code}</div>
+            </div>
             
-            var bounds = [];
-            var statusFilter = document.getElementById('filter-status').value;
-            var areaFilter = document.getElementById('filter-area').value;
-            var searchQuery = document.getElementById('map-search').value.toLowerCase();
-            var renderedCount = 0;
-
-            customers.forEach(function(c) {
-                if (!c.latitude || !c.longitude) return;
-
-                if (statusFilter === 'active' && (c.is_isolated || c.status !== 'active')) return;
-                if (statusFilter === 'isolated' && !c.is_isolated) return;
-                if (areaFilter && c.area_id != areaFilter) return;
-                
-                if (searchQuery) {
-                    var name = (c.name || '').toLowerCase();
-                    var pppoe = (c.pppoe_user || '').toLowerCase();
-                    var phone = (c.phone || '').toLowerCase();
-                    if (!name.includes(searchQuery) && !pppoe.includes(searchQuery) && !phone.includes(searchQuery)) return;
-                }
-
-                var lat = parseFloat(c.latitude);
-                var lng = parseFloat(c.longitude);
-                
-                var markerIcon = iconDefault;
-                var statusBadge = '';
-                
-                if (c.is_isolated) {
-                    markerIcon = iconIsolated;
-                    statusBadge = '<span class="map-popup-badge map-badge-isolated"><i class="bx bx-block"></i> Terisolir</span>';
-                } else if (c.status === 'active') {
-                    markerIcon = iconActive;
-                    statusBadge = '<span class="map-popup-badge map-badge-active"><i class="bx bx-check-circle"></i> Aktif</span>';
-                }
-
-                var detailUrl = '/admin/customers/' + c.id;
-
-                var popupContent = `
-                    <div class="map-popup-header">${c.name}</div>
-                    <div class="map-popup-body">
-                        <div class="mb-1"><i class='bx bx-wifi' style="color:var(--txt-3);width:16px;"></i> <span style="font-family:var(--font-mono);">${c.pppoe_user || '-'}</span></div>
-                        <div class="mb-1"><i class='bx bx-phone' style="color:var(--txt-3);width:16px;"></i> ${c.phone || '-'}</div>
-                        <div class="mb-1"><i class='bx bx-map' style="color:var(--txt-3);width:16px;"></i> ${c.address || '-'}</div>
-                        <div>${statusBadge}</div>
-                        <hr style="margin: 0.5rem 0; border-color: var(--border);">
-                        <div style="font-size:0.75rem;font-weight:600;margin-bottom:0.2rem;display:flex;align-items:center;"><i class='bx bx-pulse' style="color:var(--blue);margin-right:4px;"></i> Live Traffic MRTG</div>
-                        <div style="height: 100px; width: 100%; position: relative;">
-                            <canvas id="traffic-chart-${c.id}"></canvas>
-                        </div>
-                        <div id="traffic-status-${c.id}" style="font-size:0.7rem;text-align:center;color:var(--txt-3);margin-top:0.2rem;">Menghubungkan ke MikroTik...</div>
-                        <div class="mt-2">
-                            <a href="${detailUrl}" class="ms-btn ms-btn-sm w-100" style="padding:0.4rem;font-size:0.75rem;justify-content:center;">Lihat Detail Pelanggan</a>
-                        </div>
-                    </div>
-                `;
-
-                var marker = L.marker([lat, lng], {icon: markerIcon, title: c.name});
-                marker.customerData = c;
-                marker.bindPopup(popupContent, { minWidth: 240 });
-                markersGroup.addLayer(marker);
-                bounds.push([lat, lng]);
-                renderedCount++;
-            });
-
-            map.addLayer(markersGroup);
+            <table style="width: 100%; font-size: 13px; margin-bottom: 10px;">
+              <tr><td style="color: #64748b; padding: 2px 0; width: 65px;">Area:</td><td style="font-weight: 600;">${cust.area ? cust.area.name : '-'}</td></tr>
+              <tr><td style="color: #64748b; padding: 2px 0;">Status:</td><td><span style="color: ${statusColor}; font-weight: 700; text-transform: capitalize;">${cust.status || '-'}</span></td></tr>
+              <tr><td style="color: #64748b; padding: 2px 0;">S/N ONT:</td><td style="font-weight: 700; color: #2563eb; font-family: monospace;">${sn}</td></tr>
+            </table>
             
-            document.getElementById('map-stats-count').textContent = renderedCount;
-            
-            if (bounds.length > 0) {
-                map.fitBounds(bounds, {padding: [50, 50], maxZoom: 16});
-            } else {
-                map.setView([-2.5489, 118.0149], 5);
-            }
-        }
+            <a href="/admin/customers/${cust.id}" class="btn btn-sm btn-primary w-100" style="padding: 6px; font-weight: 600;">Lihat Detail Pelanggan</a>
+          </div>
+        `;
 
-        renderMarkers();
-
-        // Traffic Polling Events
-        map.on('popupopen', function(e) {
-            var marker = e.popup._source;
-            if (!marker || !marker.customerData) return;
-            var c = marker.customerData;
-
-            var ctx = document.getElementById('traffic-chart-' + c.id);
-            if (!ctx) return;
-
-            if (currentChart) { currentChart.destroy(); }
-            clearInterval(trafficInterval);
-
-            var chartData = {
-                labels: [],
-                datasets: [
-                    { label: 'RX (Kbps)', borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', data: [], fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 },
-                    { label: 'TX (Kbps)', borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', data: [], fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }
-                ]
-            };
-
-            currentChart = new Chart(ctx, {
-                type: 'line',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 0 },
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: false },
-                        y: { beginAtZero: true, ticks: { font: { size: 9 } } }
-                    }
-                }
-            });
-
-            function pollTraffic() {
-                fetch('/admin/maps/traffic/' + c.id)
-                    .then(res => res.json())
-                    .then(data => {
-                        var statusEl = document.getElementById('traffic-status-' + c.id);
-                        if (!statusEl) return;
-                        
-                        if (!data.success) {
-                            statusEl.innerHTML = `<span style="color:var(--red)"><i class="bx bx-error"></i> ${data.error || 'Offline'}</span>`;
-                            return;
-                        }
-                        
-                        var rxKbps = Math.round(data.rx / 1024);
-                        var txKbps = Math.round(data.tx / 1024);
-                        
-                        statusEl.innerHTML = `<strong>RX:</strong> <span style="color:#22c55e">${rxKbps} Kbps</span> | <strong>TX:</strong> <span style="color:#3b82f6">${txKbps} Kbps</span>`;
-
-                        var now = new Date();
-                        var timeLabel = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
-                        
-                        if (chartData.labels.length > 15) {
-                            chartData.labels.shift();
-                            chartData.datasets[0].data.shift();
-                            chartData.datasets[1].data.shift();
-                        }
-                        
-                        chartData.labels.push(timeLabel);
-                        chartData.datasets[0].data.push(rxKbps);
-                        chartData.datasets[1].data.push(txKbps);
-                        currentChart.update();
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        var statusEl = document.getElementById('traffic-status-' + c.id);
-                        if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)"><i class="bx bx-error"></i> Gagal menghubungi server</span>`;
-                    });
-            }
-
-            pollTraffic();
-            trafficInterval = setInterval(pollTraffic, 3000); // 3 seconds
-        });
-
-        map.on('popupclose', function(e) {
-            if (currentChart) { currentChart.destroy(); currentChart = null; }
-            clearInterval(trafficInterval);
-        });
-
-        // Auto Refresh Map Polling
-        setInterval(function() {
-            fetch('/admin/maps/status')
-                .then(res => res.json())
-                .then(data => {
-                    var changed = false;
-                    var statusMap = {};
-                    data.forEach(d => { statusMap[d.id] = d; });
-
-                    customers.forEach(c => {
-                        var upd = statusMap[c.id];
-                        if (upd) {
-                            if (c.status !== upd.status || c.is_isolated !== upd.is_isolated) {
-                                c.status = upd.status;
-                                c.is_isolated = upd.is_isolated;
-                                changed = true;
-                            }
-                        }
-                    });
-
-                    if (changed) {
-                        // Only rerender if someone's status changed
-                        renderMarkers();
-                    }
-                })
-                .catch(err => console.error("Auto refresh map error", err));
-        }, 15000); // Poll every 15s
-
-        // Bind Events
-        document.getElementById('filter-status').addEventListener('change', renderMarkers);
-        document.getElementById('filter-area').addEventListener('change', renderMarkers);
-        
-        var searchTimeout;
-        document.getElementById('map-search').addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(renderMarkers, 400); // Debounce
-        });
-        
-        var observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === "data-theme") {
-                    var newTheme = document.documentElement.getAttribute('data-theme');
-                    if (newTheme === 'dark' && map.hasLayer(streetLayer)) {
-                        map.removeLayer(streetLayer);
-                        map.addLayer(darkLayer);
-                    } else if (newTheme === 'light' && map.hasLayer(darkLayer)) {
-                        map.removeLayer(darkLayer);
-                        map.addLayer(streetLayer);
-                    }
-                }
-            });
-        });
-        observer.observe(document.documentElement, { attributes: true });
+        // We can use a custom icon or standard leaflet icon
+        var marker = L.marker([cust.latitude, cust.longitude]).bindPopup(popupContent);
+        markers.addLayer(marker);
+      }
     });
+
+    if (customers.length > 0) {
+      markers.addTo(map);
+      map.fitBounds(markers.getBounds(), { padding: [30, 30] });
+    }
+  });
 </script>
 @endsection
