@@ -7,10 +7,13 @@ if (request()->has('debug_mikrotik')) {
     $filtered = collect($res['data'])->filter(function($s) {
         return in_array($s['name'] ?? '', ['BYB-012', 'BYB-013', 'BYB-014', 'BYB-015']);
     })->values();
-    dd([
+    echo "<pre>";
+    echo json_encode([
         'ip' => $area->router_ip,
-        'secrets' => $filtered
-    ]);
+        'secrets' => $filtered->toArray()
+    ], JSON_PRETTY_PRINT);
+    echo "</pre>";
+    exit;
 }
 @endphp
 @extends('layouts.app')
