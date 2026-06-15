@@ -908,6 +908,11 @@
     z-index: 1;
   }
 
+  .ops-glow-card {
+    position: relative;
+    overflow: hidden;
+  }
+
   .ops-sparkline {
     position: absolute;
     bottom: -5px;
