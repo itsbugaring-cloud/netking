@@ -388,7 +388,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/telegram/requests/{ref}/reject', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'reject'])->name('telegram.requests.reject');
 
         // Areas Management
-        Route::resource('areas', AreaController::class);
+        Route::get('/test-mikrotik', function () {
+        $area = \App\Models\Area::where('name', 'like', '%Bayongbong%')->first();
+        if (!$area) return 'Area not found';
+        $mikrotik = \App\Services\MikroTikService::forArea($area);
+        $res = $mikrotik->getAllSecrets();
+        if (!$res['success']) return $res['error'];
+        $filtered = collect($res['data'])->filter(function ($s) {
+            $n = $s['name'] ?? '';
+            return in_array($n, ['BYB-012', 'BYB-013', 'BYB-014', 'BYB-015']);
+        })->values();
+        return response()->json([
+            'ip' => $area->router_ip,
+            'secrets' => $filtered
+        ]);
+    });
+
+    Route::resource('areas', AreaController::class);
         Route::post('areas/test-router', [AreaController::class, 'testRouter'])->name('areas.test-router');
 
         // Admin User Management
