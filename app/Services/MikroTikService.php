@@ -141,6 +141,15 @@ class MikroTikService
     }
 
     /**
+     * Get raw RouterOS client instance
+     */
+    public function getClient(): ?Client
+    {
+        $this->isConnected();
+        return $this->client;
+    }
+
+    /**
      * Test MikroTik connection and get router identity
      */
     public function testConnection(): array
