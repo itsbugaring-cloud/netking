@@ -467,6 +467,11 @@
             e.preventDefault();
             var err = document.getElementById('rekening-error');
             if (err) err.style.display = 'block';
+            
+            // Pop-up peringatan agar pelanggan langsung sadar
+            alert("⚠️ PERHATIAN!\n\nSilakan pilih salah satu Bank Tujuan atau QRIS di panel sebelah kanan terlebih dahulu sebelum mengirim bukti pembayaran.");
+            
+            // Scroll ke bagian bank
             document.querySelector('.bento-side').scrollIntoView({behavior: 'smooth'});
           }
         });
