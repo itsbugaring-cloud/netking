@@ -38,7 +38,7 @@ class PppoeController extends Controller
 
         // Partners can only see routers for areas they actually own customers in.
         $accessibleAreaIds = $this->accessibleAreaIds($user);
-        $areas = Area::whereNotNull('router_ip')->where('router_ip', '!=', '');
+        $areas = Area::whereNotNull('router_ip')->where('router_ip', '!=', '')->withCount('customers');
         if ($user->role === 'partner') {
             $areas->whereIn('id', $accessibleAreaIds);
         }

@@ -12,7 +12,7 @@ class QueueController extends Controller
 {
     public function index(Request $request)
     {
-        $areas = Area::whereNotNull('router_ip')->where('router_ip', '!=', '')->orderBy('name')->get();
+        $areas = Area::whereNotNull('router_ip')->where('router_ip', '!=', '')->withCount('customers')->orderBy('name')->get();
         $selectedArea = null;
         $queues = [];
         $error = null;

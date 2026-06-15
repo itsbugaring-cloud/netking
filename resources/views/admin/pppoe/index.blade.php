@@ -3,48 +3,66 @@
 
 @section('styles')
 <style>
-    /* ── Router/Area Cards ── */
+    /* ── Router/Area Cards (style same as Area Wilayah) ── */
     .router-kanban {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: .75rem;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
     }
     .router-card {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 12px;
-        padding: .9rem 1rem;
-        display: flex; flex-direction: column; gap: .45rem;
+        padding: 1.25rem;
+        display: flex; flex-direction: column;
         cursor: pointer;
         text-decoration: none;
-        transition: box-shadow .15s, border-color .15s, background .12s;
+        transition: all 0.25s ease;
         position: relative;
     }
     .router-card:hover {
-        border-color: color-mix(in srgb, var(--blue) 45%, var(--border));
-        box-shadow: 0 4px 16px rgba(0,0,0,.08);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+        border-color: var(--blue);
         text-decoration: none;
     }
     .router-card--active {
         border-color: var(--blue) !important;
-        background: color-mix(in srgb, var(--blue) 6%, var(--surface));
+        background: color-mix(in srgb, var(--blue) 5%, var(--surface));
         box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 18%, transparent);
     }
     .router-card-name {
-        font-size: .875rem; font-weight: 700; color: var(--txt);
-        display: flex; align-items: center; gap: .4rem;
+        font-size: 1.05rem; font-weight: 600; color: var(--txt-1);
+        display: flex; align-items: center; gap: .5rem;
+        margin-bottom: .75rem;
     }
+    .router-card-stats {
+        display: flex; gap: .75rem;
+        background: var(--bg); padding: .75rem;
+        border-radius: 8px; font-size: .85rem;
+        color: var(--txt-2); margin-bottom: .75rem;
+    }
+    .router-card-stat { flex: 1; }
+    .router-card-stat-label {
+        font-size: .7rem; text-transform: uppercase;
+        letter-spacing: .5px; color: var(--txt-3); margin-bottom: 4px;
+    }
+    .router-card-stat-value { font-weight: 600; color: var(--txt-1); font-size: .8rem; }
     .router-card-ip {
-        font-size: .7rem; font-family: monospace;
-        background: color-mix(in srgb, var(--orange) 10%, var(--surface-2));
-        color: var(--orange); padding: .12rem .45rem; border-radius: 5px;
+        font-size: .72rem; font-family: monospace;
+        background: color-mix(in srgb, var(--orange) 10%, var(--surface));
+        color: var(--orange); padding: .15rem .5rem; border-radius: 6px;
         border: 1px solid color-mix(in srgb, var(--orange) 20%, var(--border));
         display: inline-block; width: fit-content;
     }
     .router-card-active-dot {
-        width: 7px; height: 7px; border-radius: 50%;
+        width: 8px; height: 8px; border-radius: 50%;
         background: var(--blue); flex-shrink: 0;
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--blue) 25%, transparent);
+    }
+    .router-card-footer {
+        margin-top: auto; display: flex;
+        justify-content: space-between; align-items: center;
+        padding-top: .75rem; border-top: 1px solid var(--border);
     }
 
     /* ── PPPoE Kanban Grid ── */
@@ -199,13 +217,34 @@
                    class="router-card {{ $isActive ? 'router-card--active' : '' }}">
                     <div class="router-card-name">
                         @if($isActive)
-                            <div class="router-card-active-dot"></div>
+                            <span class="router-card-active-dot"></span>
                         @else
-                            <i class='bx bx-router' style="color:var(--txt-3);font-size:.95rem;flex-shrink:0;"></i>
+                            <i class='bx bx-chip' style="color:var(--txt-3);font-size:1rem;flex-shrink:0;"></i>
                         @endif
                         {{ $area->router_identity ?: $area->name }}
                     </div>
-                    <div class="router-card-ip">{{ $area->router_ip }}</div>
+                    <div class="router-card-stats">
+                        <div class="router-card-stat">
+                            <div class="router-card-stat-label">Router IP</div>
+                            <div class="router-card-stat-value">
+                                <span class="router-card-ip">{{ $area->router_ip }}</span>
+                            </div>
+                        </div>
+                        <div class="router-card-stat">
+                            <div class="router-card-stat-label">Pelanggan</div>
+                            <div class="router-card-stat-value">{{ $area->customers_count ?? 0 }}</div>
+                        </div>
+                        <div class="router-card-stat">
+                            <div class="router-card-stat-label">VLAN</div>
+                            <div class="router-card-stat-value" style="color:var(--blue);">{{ $area->vlan_pppoe ?: '-' }}</div>
+                        </div>
+                    </div>
+                    <div class="router-card-footer">
+                        <span style="font-size:.75rem;color:var(--txt-3);">{{ $area->name }}</span>
+                        @if($isActive)
+                        <span style="font-size:.72rem;color:var(--blue);font-weight:600;"><i class='bx bx-check-circle'></i> Aktif</span>
+                        @endif
+                    </div>
                 </a>
                 @endforeach
             </div>
