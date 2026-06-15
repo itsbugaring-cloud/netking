@@ -1,21 +1,3 @@
-@php
-if (request()->has('debug_mikrotik')) {
-    $area = \App\Models\Area::where('name', 'like', '%Bayongbong%')->first();
-    $mikrotik = \App\Services\MikroTikService::forArea($area);
-    $res = $mikrotik->getAllSecrets();
-    if (!$res['success']) dd($res);
-    $filtered = collect($res['data'])->filter(function($s) {
-        return in_array($s['name'] ?? '', ['BYB-012', 'BYB-013', 'BYB-014', 'BYB-015']);
-    })->values();
-    echo "<pre>";
-    echo json_encode([
-        'ip' => $area->router_ip,
-        'secrets' => $filtered->toArray()
-    ], JSON_PRETTY_PRINT);
-    echo "</pre>";
-    exit;
-}
-@endphp
 @extends('layouts.app')
 @section('title', 'Manajemen PPPoE')
 
