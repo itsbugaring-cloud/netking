@@ -247,6 +247,12 @@ class CustomerController extends Controller
 
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
+            'pppoe_user'      => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('customers', 'pppoe_user')->ignore($customer->id)->where(fn($q) => $q->where('area_id', $areaId)),
+            ],
             'username'        => [
                 'nullable',
                 'string',
