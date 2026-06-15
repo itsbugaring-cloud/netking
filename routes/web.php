@@ -343,6 +343,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Customer Map
         Route::get('maps', [\App\Http\Controllers\Admin\MapController::class, 'index'])->name('maps.index');
+        Route::get('maps/status', [\App\Http\Controllers\Admin\MapController::class, 'status'])->name('maps.status');
+        Route::get('maps/traffic/{customer}', [\App\Http\Controllers\Admin\MapController::class, 'traffic'])->name('maps.traffic');
 
         // MikroTik Management (scoped per role in controller)
         Route::prefix('pppoe')->name('pppoe.')->group(function () {

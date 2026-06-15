@@ -64,7 +64,8 @@ class MapController extends Controller
                 'rx' => (int) ($response[0]['rx-bits-per-second'] ?? 0),
                 'tx' => (int) ($response[0]['tx-bits-per-second'] ?? 0),
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("MRTG Traffic Error: " . $e->getMessage());
             return response()->json(['success' => false, 'error' => $e->getMessage()]);
         }
     }
