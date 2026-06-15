@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\IpamController;
+use App\Http\Controllers\Admin\MapController;
 
 /*
 |--------------------------------------------------------------------------
@@ -386,6 +387,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/telegram/requests/{ref}/push-mikrotik', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'pushMikrotik'])->name('telegram.requests.push-mikrotik');
         Route::post('/telegram/requests/{ref}/mark-online', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'markOnline'])->name('telegram.requests.mark-online');
         Route::post('/telegram/requests/{ref}/reject', [\App\Http\Controllers\Admin\TelegramRequestController::class, 'reject'])->name('telegram.requests.reject');
+        // Maps
+        Route::get('/maps', [MapController::class, 'index'])->name('maps.index');
+        Route::get('/maps/status', [MapController::class, 'status'])->name('maps.status');
+        Route::get('/maps/traffic/{customer}', [MapController::class, 'traffic'])->name('maps.traffic');
 
         // Areas Management
         Route::get('/test-mikrotik', function () {
