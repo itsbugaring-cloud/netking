@@ -837,6 +837,46 @@
       height: 260px;
     }
   }
+
+  /* Dark Mode Overrides */
+  html[data-theme="dark"] .ops-hero {
+    background:
+      radial-gradient(circle at top right, rgba(91, 99, 211, .15), transparent 26%),
+      radial-gradient(circle at bottom left, rgba(22, 163, 74, .1), transparent 28%),
+      var(--surface-2);
+  }
+
+  html[data-theme="dark"] .ops-hero::before {
+    display: none;
+  }
+
+  html[data-theme="dark"] .ops-hero-metric {
+    background: var(--surface);
+    border-color: var(--border);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .2);
+  }
+
+  html[data-theme="dark"] .ops-hero-metric:hover {
+    background: var(--surface-2);
+    border-color: color-mix(in srgb, var(--blue) 22%, var(--border));
+    box-shadow: 0 16px 28px rgba(0, 0, 0, .3);
+  }
+
+  html[data-theme="dark"] .ops-radar {
+    background: radial-gradient(circle at center, rgba(91,99,211,.15), transparent 58%), var(--surface-2);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  }
+
+  html[data-theme="dark"] .ops-radar-chip {
+    background: rgba(30, 30, 35, .72);
+    border-color: rgba(255, 255, 255, .08);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, .3);
+  }
+
+  html[data-theme="dark"] .ops-live-chip {
+    background: rgba(30, 30, 35, .58);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+  }
 </style>
 @endsection
 
