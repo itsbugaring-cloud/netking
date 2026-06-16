@@ -88,8 +88,14 @@
         <div class="ms-panel-body">
             <div id="router-grid" class="dash-grid">
                 <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--txt-3);">
-                    <i class='bx bx-loader-alt bx-spin' style="font-size:2rem;display:block;margin-bottom:.5rem;"></i>
-                    Memuat data router...
+                    <div class="uiv-loader-container">
+                      <div class="uiv-heading">MEMUAT...</div>
+                      <div class="uiv-loading">
+                        <div class="uiv-load"></div>
+                        <div class="uiv-load"></div>
+                        <div class="uiv-load"></div>
+                      </div>
+                    </div>
                 </div>
             </div>
         </div>
