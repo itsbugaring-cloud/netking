@@ -905,7 +905,7 @@ class TelegramConfigBotController extends Controller
         }
 
         if (empty($draft['photo_file_id'])) {
-            $this->sendMessage($chatId, "⚠️ Foto SN belum ada. Kirim dulu lewat tombol 📷 ya.");
+            $this->sendMessage($chatId, "⚠️ Hayoh Kirim Foto SN...");
             return;
         }
 

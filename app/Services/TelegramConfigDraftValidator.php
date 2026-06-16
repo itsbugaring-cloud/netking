@@ -68,11 +68,11 @@ class TelegramConfigDraftValidator
             'nama' => mb_strlen($value) >= 3 ? null : 'Nama terlalu pendek.',
             'no_hp' => strlen($value) >= 10 && strlen($value) <= 15
                 ? null
-                : 'Nomor HP belum valid. Pakai 10-15 digit ya.',
+                : 'Siah Ngisi No hp Tong Asal...',
             'address' => mb_strlen($value) >= 5 ? null : 'Alamat terlalu singkat.',
             'coordinates' => preg_match('/^-?\d{1,3}(?:\.\d+)?\s*,\s*-?\d{1,3}(?:\.\d+)?$/', $value) ? null : 'Koordinat wajib format lat,lng.',
-            'sn_ont' => preg_match('/^[A-Z0-9]{8,20}$/', $value) ? null : 'SN ONT tidak valid (8-20, huruf/angka).',
-            'pppoe_user' => preg_match('/^[A-Z0-9._-]{3,32}$/', $value) ? null : 'PPPoE User tidak valid (3-32).',
+            'sn_ont' => preg_match('/^[A-Z0-9]{8,20}$/', $value) ? null : 'Siah Ngisi SN ONT Nu Bener... (8-20, huruf/angka).',
+            'pppoe_user' => preg_match('/^[A-Z0-9._-]{3,32}$/', $value) ? null : 'Siah Ngisi Secretna PPPoE na teu valid.... (3-32).',
             'tanggal_pasang' => $this->isValidDate($value)
                 ? null
                 : 'Format tanggal pakai DD/MM/YYYY ya.',
