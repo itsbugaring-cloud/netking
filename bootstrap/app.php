@@ -13,8 +13,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Security headers applied to all web responses
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
+        ]);
+
         // Redirect unauthenticated users to admin login (fixes Route[login] not defined)
         $middleware->redirectGuestsTo(fn() => route('admin.login'));
+
 
         $middleware->alias([
             'admin'    => \App\Http\Middleware\AdminMiddleware::class,
