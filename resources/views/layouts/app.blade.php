@@ -5878,11 +5878,16 @@
     <div class="tb-spacer"></div>
 
     <!-- Dark Mode Toggle (Uiverse.io) -->
-    <div style="transform: scale(0.44); transform-origin: center right; margin-right: 5px; height: 22px; display: flex; align-items: center;">
-      <label class="uiv-toggle-switch" title="Mode Tema">
-        <input type="checkbox" class="uiv-checkbox" id="uiv-theme-checkbox" onchange="toggleTheme()">
-        <div class="uiv-switch-label"></div>
-        <div class="uiv-slider"></div>
+    <div style="transform: scale(0.65); transform-origin: center right; margin-right: 15px; display: flex; align-items: center;">
+      <label class="uiv2-switch" title="Mode Tema">
+        <input type="checkbox" class="uiv2-input" id="uiv-theme-checkbox" onchange="toggleTheme()">
+        <span class="uiv2-slider"></span>
+        <span class="uiv2-sun">
+          <svg viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="#000000"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></g></svg>
+        </span>
+        <span class="uiv2-moon">
+          <svg viewBox="0 0 384 512"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path></svg>
+        </span>
       </label>
     </div>
 
@@ -5966,8 +5971,8 @@
       try { localStorage.setItem('nk_theme', newTheme); } catch(e) {}
       
       const cb = document.getElementById('uiv-theme-checkbox');
-      if (cb && cb.checked !== (newTheme === 'light')) {
-        cb.checked = (newTheme === 'light');
+      if (cb && cb.checked !== (newTheme === 'dark')) {
+        cb.checked = (newTheme === 'dark');
       }
     }
 
@@ -5975,7 +5980,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const cb = document.getElementById('uiv-theme-checkbox');
-      if (cb) cb.checked = (isDark === false);
+      if (cb) cb.checked = isDark;
     });
 
     function sbToggle() {
@@ -6884,35 +6889,22 @@
 
   <style>
     /* ── Uiverse.io UI Components ──────────────────────────────── */
-    /* 1. Cookie Card */
-    #uiv-cookie-card-wrapper { display:none; position:fixed; bottom:20px; left:20px; z-index:99999; }
-    #uiv-cookie-card-wrapper .card { width: 300px; height: 220px; background-color: rgb(255, 255, 255); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 30px; gap: 13px; position: relative; overflow: hidden; box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.062); border-radius: 12px; }
-    [data-theme="dark"] #uiv-cookie-card-wrapper .card { background-color: var(--surface); box-shadow: 2px 2px 20px rgba(0,0,0,0.5); }
-    #uiv-cookie-card-wrapper #cookieSvg { width: 50px; }
-    #uiv-cookie-card-wrapper #cookieSvg g path { fill: rgb(97, 81, 81); }
-    [data-theme="dark"] #uiv-cookie-card-wrapper #cookieSvg g path { fill: var(--txt); }
-    #uiv-cookie-card-wrapper .cookieHeading { font-size: 1.2em; font-weight: 800; color: rgb(26, 26, 26); margin: 0; }
-    [data-theme="dark"] #uiv-cookie-card-wrapper .cookieHeading { color: var(--txt); }
-    #uiv-cookie-card-wrapper .cookieDescription { text-align: center; font-size: 0.7em; font-weight: 600; color: rgb(99, 99, 99); margin: 0; }
-    [data-theme="dark"] #uiv-cookie-card-wrapper .cookieDescription { color: var(--txt-3); }
-    #uiv-cookie-card-wrapper .buttonContainer { display: flex; gap: 20px; flex-direction: row; margin-top: 5px; }
-    #uiv-cookie-card-wrapper .acceptButton { width: 80px; height: 30px; background-color: #7b57ff; transition-duration: .2s; border: none; color: rgb(241, 241, 241); cursor: pointer; font-weight: 600; border-radius: 20px; }
-    #uiv-cookie-card-wrapper .declineButton { width: 80px; height: 30px; background-color: rgb(218, 218, 218); transition-duration: .2s; color: rgb(46, 46, 46); border: none; cursor: pointer; font-weight: 600; border-radius: 20px; }
-    [data-theme="dark"] #uiv-cookie-card-wrapper .declineButton { background-color: var(--surface-2); color: var(--txt); }
-    #uiv-cookie-card-wrapper .declineButton:hover { background-color: #ebebeb; }
-    [data-theme="dark"] #uiv-cookie-card-wrapper .declineButton:hover { background-color: var(--border); }
-    #uiv-cookie-card-wrapper .acceptButton:hover { background-color: #9173ff; }
+    /* Theme Toggle Switch (andrew-demchenk0) */
+    .uiv2-switch { font-size: 17px; position: relative; display: inline-block; width: 64px; height: 34px; }
+    .uiv2-switch .uiv2-input { opacity: 0; width: 0; height: 0; }
+    .uiv2-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #73C0FC; transition: .4s; border-radius: 30px; }
+    .uiv2-slider:before { position: absolute; content: ""; height: 30px; width: 30px; border-radius: 20px; left: 2px; bottom: 2px; z-index: 2; background-color: #e8e8e8; transition: .4s; }
+    .uiv2-sun svg { position: absolute; top: 6px; left: 36px; z-index: 1; width: 24px; height: 24px; }
+    .uiv2-moon svg { fill: #73C0FC; position: absolute; top: 5px; left: 5px; z-index: 1; width: 24px; height: 24px; }
+    .uiv2-sun svg { animation: rotate 15s linear infinite; }
+    @keyframes rotate { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
+    .uiv2-moon svg { animation: tilt 5s linear infinite; }
+    @keyframes tilt { 0% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
+    .uiv2-input:checked + .uiv2-slider { background-color: #183153; }
+    .uiv2-input:focus + .uiv2-slider { box-shadow: 0 0 1px #183153; }
+    .uiv2-input:checked + .uiv2-slider:before { transform: translateX(30px); }
 
-    /* 2. Theme Toggle Switch (Exact Uiverse Sizes) */
-    .uiv-toggle-switch { position: relative; width: 100px; height: 50px; --light: #d8dbe0; --dark: #28292c; display: inline-block; }
-    .uiv-switch-label { position: absolute; width: 100%; height: 50px; background-color: var(--dark); border-radius: 25px; cursor: pointer; border: 3px solid var(--dark); }
-    .uiv-checkbox { position: absolute; display: none; }
-    .uiv-slider { position: absolute; width: 100%; height: 100%; border-radius: 25px; transition: 0.3s; }
-    .uiv-checkbox:checked ~ .uiv-slider { background-color: var(--light); }
-    .uiv-slider::before { content: ""; position: absolute; top: 10px; left: 10px; width: 25px; height: 25px; border-radius: 50%; box-shadow: inset 12px -4px 0px 0px var(--light); background-color: var(--dark); transition: 0.3s; }
-    .uiv-checkbox:checked ~ .uiv-slider::before { transform: translateX(50px); background-color: var(--dark); box-shadow: none; }
-
-    /* 3. Global Loader (Uiverse) */
+    /* Global Loader (Uiverse) */
     .uiv-loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
     .uiv-heading { color: var(--txt); letter-spacing: 0.2em; margin-bottom: 1em; font-weight: 700; font-size: 1.1rem; }
     .uiv-loading { display: flex; width: 5em; align-items: center; justify-content: center; }
@@ -6922,40 +6914,6 @@
     .uiv-load:nth-child(3) { animation-delay: 0.6s; }
     @keyframes uiv-move_5011 { 0% { width: 0.2em; } 25% { width: 0.7em; } 50% { width: 1.5em; } 100% { width: 0.2em; } }
   </style>
-
-  <!-- Uiverse Cookie Card -->
-  <div id="uiv-cookie-card-wrapper">
-    <div class="card">
-      <svg id="cookieSvg" viewBox="0 0 512 512">
-        <g>
-          <path d="M510.52 255.82c-69.97-.85-126.47-57.69-126.47-127.86-70.17 0-127-56.49-127.86-126.45-27.26-4.14-55.13.3-79.72 12.82l-69.13 35.22a132.221 132.221 0 0 0-57.79 57.81l-35.1 68.88a132.645 132.645 0 0 0-12.82 80.95l12.08 76.27a132.521 132.521 0 0 0 37.16 72.96l54.77 54.76a132.28 132.28 0 0 0 72.71 37.06l76.71 12.15c27.51 4.36 55.7-.11 80.53-12.76l69.13-35.21a132.273 132.273 0 0 0 57.79-57.81l35.1-68.88c12.56-24.64 17.01-52.58 12.91-79.91zM176 368c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32zm32-160c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32zm160 128c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32z"></path>
-        </g>
-      </svg>
-      <p class="cookieHeading">We use cookies.</p>
-      <p class="cookieDescription">Please accept these sweet cookies to continue enjoying our site!</p>
-      <div class="buttonContainer">
-        <button class="acceptButton" onclick="acceptCookies()">Accept</button>
-        <button class="declineButton" onclick="declineCookies()">Decline</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      if (!localStorage.getItem('nk_cookies_accepted')) {
-        document.getElementById('uiv-cookie-card-wrapper').style.display = 'block';
-      }
-    });
-    function acceptCookies() {
-      localStorage.setItem('nk_cookies_accepted', 'true');
-      document.getElementById('uiv-cookie-card-wrapper').style.display = 'none';
-      if(window.nkNotify) nkNotify('success', 'Berhasil', 'Cookie disetujui!');
-    }
-    function declineCookies() {
-      localStorage.setItem('nk_cookies_accepted', 'false');
-      document.getElementById('uiv-cookie-card-wrapper').style.display = 'none';
-    }
-  </script>
 </body>
 </html>
 
