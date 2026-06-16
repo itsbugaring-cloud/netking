@@ -664,21 +664,19 @@ class AreaController extends Controller
 
             // Fetch current filter rules to find the first rule's ID
             $rules = $client->query(new Query('/ip/firewall/filter/print'))->read();
-            
-            $params = [
-                'action' => 'drop',
-                'chain' => 'forward',
-                'comment' => 'BLOCK TOTAL KONEKSI ISOLIR',
-                'src-address-list' => 'isolir'
-            ];
+
+            $addQuery = new Query('/ip/firewall/filter/add');
+            $addQuery->equal('action', 'drop');
+            $addQuery->equal('chain', 'forward');
+            $addQuery->equal('comment', 'BLOCK TOTAL KONEKSI ISOLIR');
+            $addQuery->equal('src-address-list', 'isolir');
 
             // If there are existing rules, place this new rule before the very first rule
             if (!empty($rules) && isset($rules[0]['.id'])) {
-                $params['place-before'] = $rules[0]['.id'];
+                $addQuery->equal('place-before', $rules[0]['.id']);
             }
 
-            $query = new Query('/ip/firewall/filter/add', $params);
-            $client->query($query)->read();
+            $client->query($addQuery)->read();
 
             return back()->with('success', "Berhasil! Rule isolir sudah tertanam di urutan paling atas pada router {$area->name}.");
         } catch (\Throwable $e) {
