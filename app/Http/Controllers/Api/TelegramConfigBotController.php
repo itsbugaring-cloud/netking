@@ -2556,23 +2556,24 @@ class TelegramConfigBotController extends Controller
 
     private function getState(string $chatId): array
     {
-        $path = self::BOT_DIR . '/states/' . $chatId . '.json';
-        if (!Storage::disk('local')->exists($path)) {
-            return [
-                'collecting' => false,
-                'field_index' => 0,
-                'draft' => ['pppoe_pass' => 'netking'],
-            ];
-        }
-
-        $raw = Storage::disk('local')->get($path);
-        $data = json_decode($raw, true);
+        $cacheKey = 'tg_bot_state_' . $chatId;
+        $data = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        
         if (!is_array($data)) {
-            return [
-                'collecting' => false,
-                'field_index' => 0,
-                'draft' => ['pppoe_pass' => 'netking'],
-            ];
+            // Coba ambil dari file lama sebagai fallback migrasi (satu kali saja)
+            $path = self::BOT_DIR . '/states/' . $chatId . '.json';
+            if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+                $raw = \Illuminate\Support\Facades\Storage::disk('local')->get($path);
+                $data = json_decode($raw, true);
+            }
+            
+            if (!is_array($data)) {
+                return [
+                    'collecting' => false,
+                    'field_index' => 0,
+                    'draft' => ['pppoe_pass' => 'netking'],
+                ];
+            }
         }
 
         return $data;
@@ -2580,11 +2581,9 @@ class TelegramConfigBotController extends Controller
 
     private function saveState(string $chatId, array $state): void
     {
-        $path = self::BOT_DIR . '/states/' . $chatId . '.json';
-        Storage::disk('local')->put(
-            $path,
-            json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-        );
+        $cacheKey = 'tg_bot_state_' . $chatId;
+        // Simpan state di Cache selama 7 hari (Database driver aman dari race condition file)
+        \Illuminate\Support\Facades\Cache::put($cacheKey, $state, now()->addDays(7));
     }
 
     private function resetInputState(string $chatId, bool $clearDraft): void
