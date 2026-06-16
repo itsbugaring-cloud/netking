@@ -20,7 +20,10 @@
 
 @section('scripts')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
   $(function() {
@@ -32,10 +35,17 @@
     }).addTo(map);
 
     var customers = @json($customers);
-    var markers = L.featureGroup();
+    
+    // Gunakan MarkerCluster supaya titik yang numpuk bisa diklik dan mekar (spiderfy)
+    var markers = L.markerClusterGroup({
+      maxClusterRadius: 30, // Jarak radius untuk grouping
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true
+    });
 
     customers.forEach(function(cust) {
-      if (cust.latitude && cust.longitude) {
+      if (cust.latitude && cust.longitude && cust.latitude != 0 && cust.longitude != 0) {
         var statusColor = cust.status === 'active' ? 'green' : (cust.status === 'isolated' ? 'orange' : 'red');
         var sn = cust.ont_sn ? cust.ont_sn : '<i class="text-muted">Kosong</i>';
         
@@ -56,14 +66,13 @@
           </div>
         `;
 
-        // We can use a custom icon or standard leaflet icon
         var marker = L.marker([cust.latitude, cust.longitude]).bindPopup(popupContent);
         markers.addLayer(marker);
       }
     });
 
     if (customers.length > 0) {
-      markers.addTo(map);
+      map.addLayer(markers);
       map.fitBounds(markers.getBounds(), { padding: [30, 30] });
     }
   });
