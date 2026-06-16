@@ -503,28 +503,9 @@ class TelegramConfigBotController extends Controller
                     $this->promptCurrentField($chatId, $state);
                     return;
                 }
-
-                // Live MikroTik check to prevent overwriting existing secret
-                $areaId = (int) ($state['draft']['area_id'] ?? 0);
-                $area = Area::query()->find($areaId);
-                if ($area) {
-                    try {
-                        $service = MikroTikService::forArea($area);
-                        if ($service->isConnected()) {
-                            $exists = $service->secretExists($value);
-                            if (($exists['success'] ?? false) === true && ($exists['exists'] ?? false) === true) {
-                                $this->sendMessage(
-                                    $chatId,
-                                    "⚠️ PPPoE ini sudah ada/aktif di router MikroTik area {$area->name}.\nCoba gunakan username lain ya."
-                                );
-                                $this->promptCurrentField($chatId, $state);
-                                return;
-                            }
-                        }
-                    } catch (\Throwable $e) {
-                        // Fallback silently if connection failed
-                    }
-                }
+                // NOTE: Live MikroTik check removed — was causing 3-8s delay per request.
+                // Duplicate PPPoE check is already done above via findDuplicatePppoe (DB).
+                // MikroTik secretExists check will happen at provisioning time.
             }
 
             $state['draft'][$editingField] = $value;
