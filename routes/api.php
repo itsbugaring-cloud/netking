@@ -17,7 +17,8 @@ use App\Http\Controllers\Api\TelegramConfigBotController;
 Route::get('/config', [\App\Http\Controllers\Api\ConfigController::class, 'index']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/customer/login', [\App\Http\Controllers\Api\CustomerAuthController::class, 'login']);
-Route::post('/telegram/config/webhook/{secret}', [TelegramConfigBotController::class, 'handle']);
+// Telegram webhook - bypass throttle (cache dir may have permission issues)
+Route::withoutMiddleware(['throttle:api'])->post('/telegram/config/webhook/{secret}', [TelegramConfigBotController::class, 'handle']);
 
 // Protected routes (require Sanctum authentication)
 Route::middleware('auth:sanctum')->group(function () {
