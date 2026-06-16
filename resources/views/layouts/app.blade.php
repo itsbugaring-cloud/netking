@@ -6251,12 +6251,6 @@
         });
         return;
       }
-
-      if (window.toastr) {
-        toastr[type] ? toastr[type](message, title) : toastr.info(message, title);
-      } else {
-        alert((title ? title + ': ' : '') + message);
-      }
     };
 
     // Toastr config
