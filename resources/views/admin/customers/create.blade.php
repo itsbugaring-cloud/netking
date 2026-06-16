@@ -63,14 +63,6 @@
                 <select name="area_id" id="area-select" class="form-select @error('area_id') is-invalid @enderror" required>
                   <option value="">Pilih Area</option>
                   @foreach($areas as $area)
-                <input type="text" name="ont_sn" class="form-control @error('ont_sn') is-invalid @enderror" value="{{ old('ont_sn') }}" placeholder="cth. HWTC12345678">
-                @error('ont_sn')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Area <span class="text-danger">*</span></label>
-                <select name="area_id" id="area-select" class="form-select @error('area_id') is-invalid @enderror" required>
-                  <option value="">Pilih Area</option>
-                  @foreach($areas as $area)
                   <option value="{{ $area->id }}" {{ old('area_id', auth()->user()->role === 'partner' ? auth()->user()->area_id : '') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
                   @endforeach
                 </select>
