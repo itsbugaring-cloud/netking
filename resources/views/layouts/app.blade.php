@@ -6250,7 +6250,6 @@
           }
         });
         return;
-      }
     };
 
     // Toastr config
