@@ -6110,6 +6110,75 @@
   <script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js"></script>
   <!-- NProgress -->
   <script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+  <!-- SPA Page Transition -->
+  <style>
+    /* ── NProgress custom gradient bar ───────────────────────── */
+    #nprogress .bar {
+      background: linear-gradient(90deg, #5b63d3, #6ee7b7, #5b63d3) !important;
+      background-size: 200% 100% !important;
+      animation: nk-bar-shimmer 1.4s linear infinite !important;
+      height: 3px !important;
+      box-shadow: 0 0 10px #5b63d3, 0 0 5px #6ee7b7 !important;
+    }
+    @keyframes nk-bar-shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    #nprogress .peg {
+      box-shadow: 0 0 10px #5b63d3, 0 0 5px #5b63d3 !important;
+    }
+    #nprogress .spinner { display: none !important; }
+
+    /* ── Page fade-in on load ─────────────────────────────────── */
+    @keyframes nk-page-fadein {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .main { animation: nk-page-fadein .28s ease both; }
+  </style>
+  <script>
+    (function() {
+      // Configure NProgress
+      if (typeof NProgress !== 'undefined') {
+        NProgress.configure({
+          showSpinner: false,
+          trickleSpeed: 80,
+          minimum: 0.15,
+          easing: 'ease',
+          speed: 380,
+        });
+
+        // Start on click – skip anchors that open modal, new tab, or have no real href
+        document.addEventListener('click', function(e) {
+          var a = e.target.closest('a[href]');
+          if (!a) return;
+          var href = a.getAttribute('href');
+          if (!href || href === '#' || href.startsWith('#') || href.startsWith('javascript')) return;
+          if (a.target === '_blank') return;
+          if (a.getAttribute('data-bs-toggle')) return;  // Bootstrap modal/dropdown
+          if (a.getAttribute('data-bs-dismiss')) return;
+          NProgress.start();
+        });
+
+        // Also show on form submit (search, filters, etc.)
+        document.addEventListener('submit', function(e) {
+          // Skip AJAX forms (those handled by JS)
+          if (e.target.getAttribute('data-ajax')) return;
+          NProgress.start();
+        });
+
+        // Finish when page fully loads
+        window.addEventListener('load', function() {
+          NProgress.done();
+        });
+
+        // Safety net: finish on popstate (browser back/forward)
+        window.addEventListener('popstate', function() {
+          NProgress.done();
+        });
+      }
+    })();
+  </script>
 
   @yield('scripts')
   <!-- COMMAND PALETTE MODAL -->
