@@ -99,7 +99,7 @@ class CustomerController extends Controller
         $customers = $query->select([
             'id', 'name', 'pppoe_user', 'phone', 'address', 'status',
             'area_id', 'partner_id', 'package_id', 'package_price',
-            'billing_start_date', 'billing_due_day', 'is_free', 'customer_code', 'created_at',
+            'billing_start_date', 'billing_due_day', 'is_free', 'customer_code', 'created_at', 'remote_ip',
         ])->latest()->paginate($perPage)->withQueryString();
 
         // Pass areas for admin filter dropdown (not needed for partner)

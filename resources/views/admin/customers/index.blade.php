@@ -460,7 +460,7 @@
               <th>ID Pelanggan</th>
               <th>PPPoE User</th>
               <th>Area</th>
-              <th>No. HP</th>
+              <th>IP Address</th>
               <th>Paket</th>
               <th style="width:120px;">Status</th>
               <th style="width:110px;">Mulai</th>
@@ -514,8 +514,16 @@
                 <div style="font-weight:600;font-size:.85rem;color:var(--txt);">{{ $customer->area->name ?? '—' }}</div>
               </td>
 
-              {{-- No HP (hidden on mobile - already in name sub) --}}
-              <td style="font-size:.8rem;color:var(--txt-3);">{{ $customer->phone ?: '—' }}</td>
+              {{-- IP Address --}}
+              <td>
+                @if($customer->remote_ip)
+                <span class="cust-code" style="background:color-mix(in srgb,var(--green) 8%,var(--surface-2));color:color-mix(in srgb,var(--green) 75%,var(--txt));border-color:color-mix(in srgb,var(--green) 18%,var(--border));">
+                  <i class='bx bx-globe' style="font-size:.7rem;"></i>{{ $customer->remote_ip }}
+                </span>
+                @else
+                <span style="font-size:.8rem;color:var(--txt-3);">—</span>
+                @endif
+              </td>
 
               {{-- Paket --}}
               <td>
