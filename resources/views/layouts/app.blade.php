@@ -5877,17 +5877,12 @@
     <span class="tb-title">@yield('title', 'Dasbor')</span>
     <div class="tb-spacer"></div>
 
-    <!-- Dark Mode Toggle (Uiverse.io) -->
-    <div style="transform: scale(0.65); transform-origin: center right; margin-right: 15px; display: flex; align-items: center;">
-      <label class="uiv2-switch" title="Mode Tema">
-        <input type="checkbox" class="uiv2-input" id="uiv-theme-checkbox" onchange="toggleTheme()">
-        <span class="uiv2-slider"></span>
-        <span class="uiv2-sun">
-          <svg viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="#000000"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></g></svg>
-        </span>
-        <span class="uiv2-moon">
-          <svg viewBox="0 0 384 512"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path></svg>
-        </span>
+    <!-- Dark Mode Toggle (Creatlydev) -->
+    <div style="transform: scale(0.4); transform-origin: center right; margin-right: 5px; height: 34px; display: flex; align-items: center;">
+      <label class="uiv3-toggle" title="Mode Tema" for="uiv-theme-checkbox">
+        <input type="checkbox" class="uiv3-input" id="uiv-theme-checkbox" onchange="toggleTheme()">
+        <svg class="uiv3-icon uiv3-icon--moon" viewBox="0 0 384 512" fill="var(--txt)"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path></svg>
+        <svg class="uiv3-icon uiv3-icon--sun" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="var(--txt)" stroke="var(--txt)"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></g></svg>
       </label>
     </div>
 
@@ -6889,20 +6884,14 @@
 
   <style>
     /* ── Uiverse.io UI Components ──────────────────────────────── */
-    /* Theme Toggle Switch (andrew-demchenk0) */
-    .uiv2-switch { font-size: 17px; position: relative; display: inline-block; width: 64px; height: 34px; }
-    .uiv2-switch .uiv2-input { opacity: 0; width: 0; height: 0; }
-    .uiv2-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #73C0FC; transition: .4s; border-radius: 30px; }
-    .uiv2-slider:before { position: absolute; content: ""; height: 30px; width: 30px; border-radius: 20px; left: 2px; bottom: 2px; z-index: 2; background-color: #e8e8e8; transition: .4s; }
-    .uiv2-sun svg { position: absolute; top: 6px; left: 36px; z-index: 1; width: 24px; height: 24px; }
-    .uiv2-moon svg { fill: #73C0FC; position: absolute; top: 5px; left: 5px; z-index: 1; width: 24px; height: 24px; }
-    .uiv2-sun svg { animation: rotate 15s linear infinite; }
-    @keyframes rotate { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
-    .uiv2-moon svg { animation: tilt 5s linear infinite; }
-    @keyframes tilt { 0% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
-    .uiv2-input:checked + .uiv2-slider { background-color: #183153; }
-    .uiv2-input:focus + .uiv2-slider { box-shadow: 0 0 1px #183153; }
-    .uiv2-input:checked + .uiv2-slider:before { transform: translateX(30px); }
+    /* Theme Toggle Switch (Creatlydev) */
+    .uiv3-toggle { background-color: var(--surface-2); width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; box-shadow: 0 0 15px 5px rgba(0, 0, 0, 0.05); line-height: 1; border: 1px solid var(--border); }
+    .uiv3-input { display: none; }
+    .uiv3-icon { grid-column: 1 / 1; grid-row: 1 / 1; transition: transform 500ms; width: 28px; height: 28px; }
+    .uiv3-icon--moon { transition-delay: 200ms; }
+    .uiv3-icon--sun { transform: scale(0); }
+    .uiv3-input:checked + .uiv3-icon--moon { transform: rotate(360deg) scale(0); }
+    .uiv3-input:checked ~ .uiv3-icon--sun { transition-delay: 200ms; transform: scale(1) rotate(360deg); }
 
     /* Global Loader (Uiverse) */
     .uiv-loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
@@ -6913,39 +6902,6 @@
     .uiv-load:nth-child(2) { animation-delay: 0.4s; }
     .uiv-load:nth-child(3) { animation-delay: 0.6s; }
     @keyframes uiv-move_5011 { 0% { width: 0.2em; } 25% { width: 0.7em; } 50% { width: 1.5em; } 100% { width: 0.2em; } }
-    /* 3D Button (cssbuttons-io) Pure CSS implementation for .btn-primary */
-    .btn-primary {
-      position: relative !important;
-      background: hsl(345deg 100% 47%) !important; /* Base color */
-      color: white !important;
-      border: none !important;
-      border-radius: 12px !important;
-      font-weight: 600 !important;
-      cursor: pointer !important;
-      transition: filter 250ms, transform 250ms cubic-bezier(.3, .7, .4, 1.5), box-shadow 250ms cubic-bezier(.3, .7, .4, 1.5) !important;
-      will-change: transform;
-      transform: translateY(0) !important;
-      /* Edge + Drop Shadow */
-      box-shadow: 
-        0px 4px 0px hsl(340deg 100% 32%), 
-        0px 6px 10px rgba(0,0,0,0.25) !important;
-    }
-    
-    .btn-primary:hover {
-      filter: brightness(110%) !important;
-      transform: translateY(-2px) !important;
-      box-shadow: 
-        0px 6px 0px hsl(340deg 100% 32%), 
-        0px 10px 15px rgba(0,0,0,0.3) !important;
-    }
-    
-    .btn-primary:active {
-      transform: translateY(2px) !important;
-      box-shadow: 
-        0px 2px 0px hsl(340deg 100% 32%), 
-        0px 3px 5px rgba(0,0,0,0.25) !important;
-      transition: transform 34ms, box-shadow 34ms !important;
-    }
   </style>
 </body>
 </html>
