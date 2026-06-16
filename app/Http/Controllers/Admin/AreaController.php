@@ -655,7 +655,18 @@ class AreaController extends Controller
     {
         try {
             $mikrotik = MikroTikService::forArea($area);
+
+            // Pastikan koneksi berhasil dulu sebelum pakai client
+            $test = $mikrotik->testConnection();
+            if (!($test['success'] ?? false)) {
+                return back()->with('error', "Gagal konek ke router {$area->name}: " . ($test['error'] ?? 'Router tidak bisa dihubungi. Cek IP & kredensial area.'));
+            }
+
             $client = $this->getClient($mikrotik);
+
+            if ($client === null) {
+                return back()->with('error', "Koneksi ke router {$area->name} berhasil tapi client null. Coba lagi.");
+            }
 
             // Fetch current filter rules to find the first rule's ID
             $rules = $client->query(new Query('/ip/firewall/filter/print'))->read();
