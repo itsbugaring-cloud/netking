@@ -5867,6 +5867,201 @@
   <aside class="sidebar" id="sb">
     <div class="sb-body">
       @include('layouts.sidebar')
+    /* Submenu Global CSS */
+    .dropdown-submenu { position: relative; }
+    .dropdown-submenu > .dropdown-menu {
+        top: 0; left: 100%; margin-top: -6px; margin-left: 0.1rem; display: none; position: absolute;
+    }
+    .dropdown-submenu:hover > .dropdown-menu { display: block; }
+    .dropdown-submenu-caret { margin-left: auto; font-size: 1rem !important; }
+    
+    /* Checkbox inside Dropdown */
+    .dropdown-item input[type="checkbox"] {
+        accent-color: var(--blue, #2563eb);
+        width: 16px; height: 16px; cursor: pointer;
+    }
+    
+    /* Table Dropdown Toggle Styling */
+    .table .dropdown-toggle.btn-light {
+        background: var(--surface) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--txt) !important;
+        font-weight: 600 !important;
+        padding: 0.4rem 0.8rem !important;
+        border-radius: 8px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        transition: all 0.15s !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    }
+    .table .dropdown-toggle.btn-light:hover, 
+    .table .dropdown-toggle.btn-light[aria-expanded="true"] {
+        background: var(--bg) !important;
+        border-color: var(--txt-3) !important;
+    }
+
+    /* ── Global Advanced Pagination Styles ── */
+    .pagination { gap: 0.5rem; margin-bottom: 0; }
+    .page-item .page-link,
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px !important; height: 32px !important;
+        padding: 0 0.5rem !important;
+        border: 1px solid var(--border) !important;
+        background: var(--surface) !important;
+        color: var(--txt) !important;
+        border-radius: 8px !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        transition: all 0.15s !important;
+        box-shadow: none !important;
+        line-height: 1 !important;
+        margin-left: 0.2rem !important;
+    }
+    .page-item.active .page-link,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--blue) !important;
+        color: white !important;
+        border-color: var(--blue) !important;
+    }
+    .page-item.disabled .page-link,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+        opacity: 0.5 !important;
+        background: var(--surface) !important;
+        color: var(--txt-3) !important;
+    }
+    .page-item .page-link:hover:not(:disabled):not(.active),
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+        background: var(--bg) !important;
+        border-color: var(--txt-3) !important;
+        color: var(--txt) !important;
+    }
+    
+    /* Advanced Pagination Container for DataTables Wrapper */
+    .adv-pagination-container {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        padding: 1rem !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
+        background: var(--surface) !important;
+        margin-top: 1.5rem !important;
+    }
+    .adv-pagination-container > .row,
+    .adv-pagination-container > div > .row,
+    .adv-pagination-container .col-sm-12 {
+        display: contents !important;
+    }
+
+    .dataTables_wrapper .d-flex.justify-content-between.align-items-center.mb-3 {
+        padding: 1rem 1.5rem !important;
+        border-bottom: 1px solid var(--border) !important;
+        background: transparent;
+        margin-bottom: 0 !important;
+    }
+    
+    .dataTables_wrapper .row.align-items-center.mt-3 {
+        padding: 1rem 1.5rem !important;
+        border-top: 1px solid var(--border) !important;
+        background: transparent;
+        margin-top: 0 !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .dataTables_wrapper .row.align-items-center.mt-3 > div {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    .dataTables_info {
+        font-size: 0.85rem !important;
+        color: var(--txt-2) !important;
+        font-weight: 500 !important;
+        padding-top: 0 !important;
+        text-align: left;
+    }
+    .dataTables_length { margin-bottom: 0 !important; }
+    .dataTables_length select {
+        display: inline-block !important;
+        width: auto !important;
+        padding: 0.25rem 2rem 0.25rem 0.75rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: var(--txt) !important;
+        background-color: var(--surface) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        -moz-appearance: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 0.75rem center !important;
+        background-size: 16px 12px !important;
+    }
+    .dataTables_length label { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0; font-size: 0.85rem; font-weight: 500; color: var(--txt-2); justify-content: center; width: auto !important; }
+    .dataTables_paginate {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.2rem !important;
+        padding-top: 0 !important;
+        justify-content: flex-end;
+    }
+    .dataTables_wrapper .dataTables_paginate .pagination {
+        align-items: center !important;
+        gap: 0.2rem !important;
+        padding-top: 0 !important;
+        justify-content: flex-end;
+    }
+    /* Remove default Bootstrap override for first/last elements since we use gap */
+    .page-item:first-child .page-link, .page-item:last-child .page-link {
+        border-radius: 8px !important;
+    }
+    
+    /* Hide Laravel's default info text to prevent duplicates with view's custom text */
+    nav .d-none.flex-sm-fill.d-sm-flex > div:first-child {
+        display: none !important;
+    }
+    nav .d-flex.justify-content-between.flex-fill.d-sm-none {
+        display: none !important;
+    }
+    
+    /* DataTables Pagination Specific Fixes */
+    .dataTables_wrapper .dataTables_paginate .pagination {
+        justify-content: flex-end;
+        margin: 0;
+    }
+    .dataTables_wrapper .dataTables_info {
+        font-size: 0.85rem;
+        color: var(--txt-2) !important;
+        font-weight: 500;
+        padding-top: 0.5rem;
+    }
+  </style>
+  @yield('styles')
+</head>
+
+<body>
+  <!-- NETKING UI VERSION 1.6 - STABILIZED SHELL -->
+<script>
+  (function(){
+    try {
+      localStorage.removeItem('nk_sb_collapsed');
+    } catch (e) {}
+  })();
+</script>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sb">
+    <div class="sb-body">
+      @include('layouts.sidebar')
     </div>
   </aside>
 
@@ -5877,10 +6072,12 @@
     <span class="tb-title">@yield('title', 'Dasbor')</span>
     <div class="tb-spacer"></div>
 
-    <!-- Dark Mode Toggle -->
-    <button class="tb-btn dark-toggle" onclick="toggleTheme()" type="button" title="Mode Gelap">
-      <i class='bx bx-moon' id="theme-icon"></i>
-    </button>
+    <!-- Dark Mode Toggle (Uiverse.io) -->
+    <label class="uiv-toggle-switch" title="Mode Tema" onclick="event.preventDefault(); toggleTheme();">
+      <input type="checkbox" class="uiv-checkbox" id="uiv-theme-checkbox">
+      <div class="uiv-switch-label"></div>
+      <div class="uiv-slider"></div>
+    </label>
 
     <!-- Notifications -->
     <div class="dropdown">
@@ -5960,14 +6157,15 @@
       const newTheme = isDark ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', newTheme);
       try { localStorage.setItem('nk_theme', newTheme); } catch(e) {}
-      document.getElementById('theme-icon').className = newTheme === 'dark' ? 'bx bx-sun' : 'bx bx-moon';
+      const cb = document.getElementById('uiv-theme-checkbox');
+      if (cb) cb.checked = (newTheme === 'light');
     }
 
     // Set correct icon on load
     document.addEventListener('DOMContentLoaded', function() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const icon = document.getElementById('theme-icon');
-      if (icon) icon.className = isDark ? 'bx bx-sun' : 'bx bx-moon';
+      const cb = document.getElementById('uiv-theme-checkbox');
+      if (cb) cb.checked = !isDark;
     });
 
     function sbToggle() {
@@ -6096,6 +6294,53 @@
   .nk-confirm-btn { font-size: .8125rem !important; padding: .5rem 1.25rem !important; border-radius: 8px !important; font-weight: 600 !important; }
   .nk-cancel-btn { font-size: .8125rem !important; padding: .5rem 1.25rem !important; border-radius: 8px !important; font-weight: 500 !important; color: #374151 !important; background: #f3f4f6 !important; border: 1px solid #e5e7eb !important; }
   .nk-cancel-btn:hover { background: #e5e7eb !important; }
+
+    /* ── Page fade-in on load ─────────────────────────────────── */
+    @keyframes nk-page-fadein {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .main { animation: nk-page-fadein .28s ease both; }
+
+    /* ── Uiverse.io UI Components ──────────────────────────────── */
+    /* 1. Cookie Card */
+    .uiv-cookie-card { width: 300px; background-color: rgb(255, 255, 255); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 30px; gap: 13px; position: fixed; bottom: 20px; left: 20px; z-index: 9999; overflow: hidden; box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.062); border-radius: 12px; }
+    [data-theme="dark"] .uiv-cookie-card { background-color: var(--surface); box-shadow: 2px 2px 20px rgba(0,0,0,0.5); }
+    .uiv-cookieSvg { width: 50px; }
+    .uiv-cookieSvg g path { fill: rgb(97, 81, 81); }
+    [data-theme="dark"] .uiv-cookieSvg g path { fill: var(--txt); }
+    .uiv-cookieHeading { font-size: 1.2em; font-weight: 800; color: rgb(26, 26, 26); margin: 0; }
+    [data-theme="dark"] .uiv-cookieHeading { color: var(--txt); }
+    .uiv-cookieDescription { text-align: center; font-size: 0.7em; font-weight: 600; color: rgb(99, 99, 99); margin: 0; }
+    [data-theme="dark"] .uiv-cookieDescription { color: var(--txt-3); }
+    .uiv-buttonContainer { display: flex; gap: 20px; flex-direction: row; margin-top: 5px; }
+    .uiv-acceptButton { width: 80px; height: 30px; background-color: #7b57ff; transition-duration: .2s; border: none; color: rgb(241, 241, 241); cursor: pointer; font-weight: 600; border-radius: 20px; }
+    .uiv-declineButton { width: 80px; height: 30px; background-color: rgb(218, 218, 218); transition-duration: .2s; color: rgb(46, 46, 46); border: none; cursor: pointer; font-weight: 600; border-radius: 20px; }
+    [data-theme="dark"] .uiv-declineButton { background-color: var(--surface-2); color: var(--txt); }
+    .uiv-declineButton:hover { background-color: #ebebeb; }
+    [data-theme="dark"] .uiv-declineButton:hover { background-color: var(--border); }
+    .uiv-acceptButton:hover { background-color: #9173ff; }
+
+    /* 2. Theme Toggle Switch */
+    .uiv-toggle-switch { position: relative; width: 44px; height: 22px; --light: #d8dbe0; --dark: #28292c; display: inline-block; vertical-align: middle; margin-right: 15px; }
+    .uiv-switch-label { position: absolute; width: 100%; height: 22px; background-color: var(--dark); border-radius: 11px; cursor: pointer; border: 2px solid var(--dark); }
+    .uiv-checkbox { position: absolute; display: none; }
+    .uiv-slider { position: absolute; width: 100%; height: 100%; border-radius: 11px; transition: 0.3s; pointer-events: none; }
+    .uiv-checkbox:checked ~ .uiv-slider { background-color: var(--light); }
+    .uiv-slider::before { content: ""; position: absolute; top: 3px; left: 4px; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 5px -2px 0px 0px var(--light); background-color: var(--dark); transition: 0.3s; }
+    .uiv-checkbox:checked ~ .uiv-slider::before { transform: translateX(20px); background-color: var(--dark); box-shadow: none; }
+
+    /* 3. Global Loader */
+    .uiv-loader-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.7); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    [data-theme="dark"] .uiv-loader-overlay { background: rgba(0,0,0,0.7); }
+    .uiv-heading { color: black; letter-spacing: 0.2em; margin-bottom: 1em; font-weight: 700; font-size: 1.1rem; }
+    [data-theme="dark"] .uiv-heading { color: white; }
+    .uiv-loading { display: flex; width: 5em; align-items: center; justify-content: center; }
+    .uiv-load { width: 23px; height: 3px; background-color: limegreen; animation: 1s uiv-move_5011 infinite; border-radius: 5px; margin: 0.1em; }
+    .uiv-load:nth-child(1) { animation-delay: 0.2s; }
+    .uiv-load:nth-child(2) { animation-delay: 0.4s; }
+    .uiv-load:nth-child(3) { animation-delay: 0.6s; }
+    @keyframes uiv-move_5011 { 0% { width: 0.2em; } 25% { width: 0.7em; } 50% { width: 1.5em; } 100% { width: 0.2em; } }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Flatpickr -->
@@ -6128,13 +6373,6 @@
       box-shadow: 0 0 10px #5b63d3, 0 0 5px #5b63d3 !important;
     }
     #nprogress .spinner { display: none !important; }
-
-    /* ── Page fade-in on load ─────────────────────────────────── */
-    @keyframes nk-page-fadein {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .main { animation: nk-page-fadein .28s ease both; }
   </style>
   <script>
     (function() {
@@ -6158,6 +6396,7 @@
           if (a.getAttribute('data-bs-toggle')) return;  // Bootstrap modal/dropdown
           if (a.getAttribute('data-bs-dismiss')) return;
           NProgress.start();
+          document.getElementById('uiv-global-loader').style.display = 'flex';
         });
 
         // Also show on form submit (search, filters, etc.)
@@ -6165,16 +6404,19 @@
           // Skip AJAX forms (those handled by JS)
           if (e.target.getAttribute('data-ajax')) return;
           NProgress.start();
+          document.getElementById('uiv-global-loader').style.display = 'flex';
         });
 
         // Finish when page fully loads
         window.addEventListener('load', function() {
           NProgress.done();
+          document.getElementById('uiv-global-loader').style.display = 'none';
         });
 
         // Safety net: finish on popstate (browser back/forward)
         window.addEventListener('popstate', function() {
           NProgress.done();
+          document.getElementById('uiv-global-loader').style.display = 'none';
         });
       }
     })();
@@ -6476,398 +6718,6 @@
       })
       .catch(function() {
         if (typeof Swal !== 'undefined') Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon: 'error', title: 'Gagal menandai semua notifikasi.' });
-      });
-    }
-
-    function markNotifRead(event, notificationId, link) {
-      if (event) event.preventDefault();
-
-      fetch('/admin/notifications/' + notificationId + '/read', {
-        method: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': _csrfToken,
-          'Accept': 'application/json'
-        }
-      })
-      .then(function() {
-        fetchNotifications(true);
-      })
-      .finally(function() {
-        if (link && link !== '#') {
-          window.location.href = link;
-        }
-      });
-
-      return false;
-    }
-
-    function timeAgo(dt) {
-      var diff = Math.floor((Date.now() - new Date(dt).getTime()) / 1000);
-      if (diff < 60) return 'Baru saja';
-      if (diff < 3600) return Math.floor(diff/60) + ' mnt lalu';
-      if (diff < 86400) return Math.floor(diff/3600) + ' jam lalu';
-      return Math.floor(diff/86400) + ' hari lalu';
-    }
-
-    // Near real-time poll while page is visible
-    setTimeout(function() {
-      fetchNotifications(true);
-      _notifLoaded = true;
-    }, 1200);
-
-    setInterval(function() {
-      if (!document.hidden) {
-        fetchNotifications(true);
-      }
-    }, 15000);
-
-    window.addEventListener('focus', function() {
-      fetchNotifications(true);
-    });
-
-    document.addEventListener('visibilitychange', function() {
-      if (!document.hidden) {
-        fetchNotifications(true);
-      }
-    });
-  </script>
-
-  <!-- Quill Rich Text Editor JS -->
-  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-  <!-- jQuery Sparkline -->
-  <script src="https://cdn.jsdelivr.net/npm/jquery-sparkline@2.4.0/jquery.sparkline.min.js"></script>
-  <!-- FullCalendar -->
-  <script src="https://unpkg.com/fullcalendar@6.1.15/index.global.min.js"></script>
-  <!-- Clipboard.js -->
-  <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script>
-  <!-- QRCode.js -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <!-- Shepherd.js -->
-  <link href="https://unpkg.com/shepherd.js@13.0.3/dist/css/shepherd.css" rel="stylesheet">
-  <script src="https://unpkg.com/shepherd.js@13.0.3/dist/js/shepherd.min.js"></script>
-
-  <script>
-    // Global Clipboard.js init — auto-init for all .btn-clipboard
-    if (typeof ClipboardJS !== 'undefined') {
-      var clipboard = new ClipboardJS('.btn-clipboard');
-      clipboard.on('success', function(e) {
-        var btn = e.trigger;
-        var origHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="bx bx-check"></i>';
-        btn.classList.add('text-success');
-        setTimeout(function() {
-          btn.innerHTML = origHTML;
-          btn.classList.remove('text-success');
-        }, 1500);
-        e.clearSelection();
-      });
-    }
-
-    function nkSetTheme(theme) {
-      var html = document.documentElement;
-      html.setAttribute('data-theme', theme);
-      try {
-        localStorage.setItem('nk_theme', theme);
-      } catch (e) {}
-      nkRefreshThemeToggle();
-    }
-
-    function nkRefreshThemeToggle() {
-      var btn = document.getElementById('theme-toggle');
-      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      if (btn) {
-        var icon = btn.querySelector('i');
-        if (icon) {
-          icon.className = isDark ? 'bx bx-sun' : 'bx bx-moon';
-        }
-        btn.setAttribute('aria-label', isDark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap');
-      }
-      var menuBtn = document.getElementById('theme-toggle-menu');
-      if (menuBtn) {
-        var menuIcon = menuBtn.querySelector('i');
-        var menuText = menuBtn.querySelector('span');
-        if (menuIcon) {
-          menuIcon.className = isDark ? 'bx bx-sun me-2' : 'bx bx-moon me-2';
-        }
-        if (menuText) {
-          menuText.textContent = isDark ? 'Mode terang' : 'Mode gelap';
-        }
-        menuBtn.setAttribute('aria-label', isDark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap');
-      }
-    }
-
-    function nkToggleDark() {
-      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      nkSetTheme(isDark ? 'light' : 'dark');
-      return false;
-    }
-
-    var nkTableSearchInput = null;
-    var nkGlobalSearchDefaultPlaceholder = '';
-    function nkApplyTableSearchValue(input, value) {
-      if (!input) return;
-      input.value = value || '';
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      input.dispatchEvent(new Event('keyup', { bubbles: true }));
-    }
-
-    function nkOpenGlobalSearch() {
-      var backdrop = document.getElementById('cmd-backdrop');
-      var palette  = document.getElementById('cmd-palette');
-      var input    = document.getElementById('global-search');
-      var body     = document.getElementById('cmd-body');
-      if (!palette) return false;
-      nkTableSearchInput = null;
-      if (input && !nkGlobalSearchDefaultPlaceholder) {
-        nkGlobalSearchDefaultPlaceholder = input.getAttribute('placeholder') || '';
-      }
-      if (input && nkGlobalSearchDefaultPlaceholder) {
-        input.setAttribute('placeholder', nkGlobalSearchDefaultPlaceholder);
-      }
-      if (body) {
-        body.innerHTML = '<div class="cmd-empty" id="cmd-hint"><i class="bx bx-search-alt"></i>Ketik minimal 2 karakter untuk mencari...</div>';
-      }
-      if (palette.style.display !== 'none') { nkCloseGlobalSearch(); return false; }
-      backdrop.style.display = 'block';
-      palette.style.display  = 'block';
-      setTimeout(function() { if (input) { input.focus(); input.select(); } }, 30);
-      return false;
-    }
-
-    function nkOpenTableSearch(tableInput) {
-      var backdrop = document.getElementById('cmd-backdrop');
-      var palette  = document.getElementById('cmd-palette');
-      var input    = document.getElementById('global-search');
-      var body     = document.getElementById('cmd-body');
-      if (!palette || !input || !tableInput) return false;
-
-      if (!nkGlobalSearchDefaultPlaceholder) {
-        nkGlobalSearchDefaultPlaceholder = input.getAttribute('placeholder') || '';
-      }
-
-      nkTableSearchInput = tableInput;
-      input.setAttribute('placeholder', 'Cari di tabel ini...');
-      input.value = tableInput.value || '';
-
-      if (body) {
-        body.innerHTML = '<div class="cmd-empty" id="cmd-hint"><i class="bx bx-search-alt"></i>Ketik untuk memfilter tabel ini, lalu tekan Enter.</div>';
-      }
-
-      backdrop.style.display = 'block';
-      palette.style.display  = 'block';
-      setTimeout(function() { input.focus(); input.select(); }, 30);
-      return false;
-    }
-
-    function nkCloseGlobalSearch() {
-      var backdrop = document.getElementById('cmd-backdrop');
-      var palette  = document.getElementById('cmd-palette');
-      var input    = document.getElementById('global-search');
-      var body     = document.getElementById('cmd-body');
-      nkTableSearchInput = null;
-      if (backdrop) backdrop.style.display = 'none';
-      if (palette)  palette.style.display  = 'none';
-      if (input)    {
-        input.value = '';
-        if (nkGlobalSearchDefaultPlaceholder) {
-          input.setAttribute('placeholder', nkGlobalSearchDefaultPlaceholder);
-        }
-        input.blur();
-      }
-      if (body)     body.innerHTML = '<div class="cmd-empty" id="cmd-hint"><i class="bx bx-search-alt"></i>Ketik minimal 2 karakter untuk mencari...</div>';
-      nkCmdIdx = -1;
-      return false;
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof nkRefreshThemeToggle === 'function') {
-        nkRefreshThemeToggle();
-      }
-
-      document.addEventListener('click', function(event) {
-        var targetWrap = event.target.closest('.nk-search-wrap');
-        if (!targetWrap) return;
-        var icon = event.target.closest('.nk-search-wrap i');
-
-        var input = targetWrap.querySelector('input, textarea');
-        if (!input) return;
-
-        // Allow normal interaction with the search input
-        if (icon && document.activeElement !== input) {
-          input.focus();
-        }
-      });
-    });
-    document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape') {
-        nkCloseGlobalSearch();
-      }
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault();
-        nkOpenGlobalSearch();
-      }
-    });
-
-    // Sidebar stays fixed on desktop. Mobile still uses sbToggle().
-    function nkToggleSidebar() {
-      return false;
-    }
-
-    // ======= COMMAND PALETTE SEARCH =======
-    var nkCmdIdx = -1;
-    (function() {
-      var input   = document.getElementById('global-search');
-      var body    = document.getElementById('cmd-body');
-      if (!input || !body) return;
-      var timer = null;
-
-      function renderResults(data, q) {
-        if (!data.results || !data.results.length) {
-          body.innerHTML = '<div class="cmd-empty"><i class="bx bx-search-alt"></i>Tidak ada hasil untuk "<strong>' + q + '</strong>"</div>';
-          return;
-        }
-        var html = '';
-        var lastType = '';
-        data.results.forEach(function(r, i) {
-          if (r.type !== lastType) {
-            html += '<div class="cmd-group-label">' + r.type + '</div>';
-            lastType = r.type;
-          }
-          html += '<a href="' + r.url + '" class="cmd-item" data-idx="' + i + '">';
-          html += '<div class="cmd-item-icon"><i class="bx ' + (r.icon || 'bx-link') + '"></i></div>';
-          html += '<div style="flex:1;min-width:0;">';
-          html += '<div class="cmd-item-title">' + r.title + '</div>';
-          if (r.subtitle) html += '<div class="cmd-item-sub">' + r.subtitle + '</div>';
-          html += '</div>';
-          if (r.badge) html += '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:4px;background:var(--bg);color:var(--txt-3);border:1px solid var(--border);">' + r.badge + '</span>';
-          html += '</a>';
-        });
-        body.innerHTML = html;
-        nkCmdIdx = -1;
-      }
-
-      input.addEventListener('input', function() {
-        clearTimeout(timer);
-        var q = input.value.trim();
-
-        if (nkTableSearchInput) {
-          nkApplyTableSearchValue(nkTableSearchInput, input.value);
-          if (!q.length) {
-            body.innerHTML = '<div class="cmd-empty" id="cmd-hint"><i class="bx bx-search-alt"></i>Ketik untuk memfilter tabel ini, lalu tekan Enter.</div>';
-          } else {
-            body.innerHTML = '<div class="cmd-empty"><i class="bx bx-filter-alt"></i>Filter tabel aktif.</div>';
-          }
-          nkCmdIdx = -1;
-          return;
-        }
-
-        if (q.length < 2) {
-          body.innerHTML = '<div class="cmd-empty" id="cmd-hint"><i class="bx bx-search-alt"></i>Ketik minimal 2 karakter untuk mencari...</div>';
-          nkCmdIdx = -1;
-          return;
-        }
-        body.innerHTML = '<div class="cmd-loading"><i class="bx bx-loader-alt bx-spin"></i> Mencari...</div>';
-        timer = setTimeout(function() {
-          fetch('/admin/search?q=' + encodeURIComponent(q), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(function(r) { return r.json(); })
-            .then(function(data) { renderResults(data, q); })
-            .catch(function() {
-              body.innerHTML = '<div class="cmd-empty"><i class="bx bx-error-circle"></i>Gagal mencari, coba lagi.</div>';
-            });
-        }, 250);
-      });
-
-      // Keyboard navigation
-      input.addEventListener('keydown', function(e) {
-        if (nkTableSearchInput) {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            nkCloseGlobalSearch();
-          }
-          return;
-        }
-        var items = body.querySelectorAll('.cmd-item');
-        if (!items.length) return;
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          nkCmdIdx = Math.min(nkCmdIdx + 1, items.length - 1);
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          nkCmdIdx = Math.max(nkCmdIdx - 1, 0);
-        } else if (e.key === 'Enter' && nkCmdIdx >= 0) {
-          e.preventDefault();
-          items[nkCmdIdx].click();
-          return;
-        } else { return; }
-        items.forEach(function(el, i) { el.classList.toggle('is-active', i === nkCmdIdx); });
-        if (items[nkCmdIdx]) items[nkCmdIdx].scrollIntoView({ block: 'nearest' });
-      });
-    })();
-    // Global DataTables Extraction Script
-    // Moves pagination and info outside of the horizontally scrolling table shell
-    $(document).on('init.dt', function(e, settings) {
-        var api = new $.fn.dataTable.Api(settings);
-        var wrapper = $(api.table().container());
-        
-        var panel = wrapper.closest('.ms-panel');
-        if (!panel.length) return; // Only process tables inside ms-panel
-        
-        // Ensure we don't build twice
-        if (panel.find('.dt-custom-footer').length > 0) return;
-        
-        var info = wrapper.find('.dataTables_info');
-        var length = wrapper.find('.dataTables_length');
-        var paginate = wrapper.find('.dataTables_paginate');
-        
-        if (!info.length) return;
-        
-        // Build the structure matching Laravel's native pagination layout
-        var footer = $('<div class="ms-panel-body pt-2 pb-3 dt-custom-footer"></div>');
-        var flex = $('<div class="d-flex justify-content-between align-items-center flex-wrap gap-2"></div>');
-        var leftSide = $('<div class="d-flex align-items-center gap-4"></div>');
-        
-        // 1. Info Text
-        info.removeClass('d-none');
-        info.css({'padding': '0', 'font-size': '0.85rem', 'color': 'var(--txt-2)'});
-        leftSide.append(info);
-        
-        // 2. Length Menu
-        if (length.length) {
-            length.removeClass('d-none');
-            var select = length.find('select');
-            var newLength = $('<div class="d-flex align-items-center" style="gap: 8px;"></div>');
-            select.css({
-                'display': 'inline-block', 'width': 'auto',
-                'padding': '0.3rem 2rem 0.3rem 0.75rem',
-                'border': '1px solid var(--border)', 'border-radius': '8px',
-                'background-color': 'var(--surface)', 'font-size': '0.85rem',
-                'font-weight': '600', 'color': 'var(--txt)',
-                'appearance': 'none',
-                'background-image': 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 16 16\'%3e%3cpath fill=\'none\' stroke=\'%23343a40\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'m2 5 6 6 6-6\'/%3e%3c/svg%3e")',
-                'background-repeat': 'no-repeat',
-                'background-position': 'right 0.75rem center',
-                'background-size': '16px 12px'
-            });
-            newLength.append(select);
-            newLength.append($('<span style="font-size: 0.8rem; color: var(--txt-3);">per hal</span>'));
-            length.empty().append(newLength);
-            leftSide.append(length);
-        }
-        
-        flex.append(leftSide);
-        
-        // 3. Pagination
-        paginate.removeClass('d-none');
-        paginate.css({'margin': '0'});
-        flex.append(paginate);
-        
-        footer.append(flex);
-        
-        // Append OUTSIDE the table shell! This prevents horizontal scrolling issues.
-        panel.append(footer);
-        
-        // Clean up empty wrappers
-        wrapper.find('.row:empty').remove();
         wrapper.children('.row').each(function() {
             if ($(this).text().trim() === '') $(this).hide();
         });
