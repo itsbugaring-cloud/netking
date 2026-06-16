@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SecurityHeaders
 {
@@ -12,50 +14,64 @@ class SecurityHeaders
     {
         $response = $next($request);
 
-        // Prevent clickjacking
-        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        // Skip for streamed/binary responses (downloads, etc.)
+        if ($response instanceof StreamedResponse || $response instanceof BinaryFileResponse) {
+            return $response;
+        }
 
-        // Prevent MIME type sniffing
-        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        try {
+            // Prevent clickjacking
+            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
 
-        // Referrer Policy
-        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+            // Prevent MIME type sniffing
+            $response->headers->set('X-Content-Type-Options', 'nosniff');
 
-        // HTTP Strict Transport Security (1 year, include subdomains)
-        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            // Referrer Policy
+            $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // Permissions Policy - disable unused browser features
-        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+            // HTTP Strict Transport Security (1 year, include subdomains)
+            // Only set on HTTPS requests
+            if ($request->isSecure()) {
+                $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            }
 
-        // Content Security Policy — allow Cloudflare, CDNs, fonts used by the app
-        $response->headers->set('Content-Security-Policy',
-            "default-src 'self'; " .
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' " .
-                "https://cdn.jsdelivr.net " .
-                "https://unpkg.com " .
-                "https://cdn.datatables.net " .
-                "https://static.cloudflareinsights.com; " .
-            "style-src 'self' 'unsafe-inline' " .
-                "https://cdn.jsdelivr.net " .
-                "https://unpkg.com " .
-                "https://cdn.datatables.net " .
-                "https://fonts.googleapis.com; " .
-            "font-src 'self' " .
-                "https://cdn.jsdelivr.net " .
-                "https://fonts.gstatic.com " .
-                "data:; " .
-            "img-src 'self' data: blob: https:; " .
-            "connect-src 'self' " .
-                "https://a.nel.cloudflare.com " .
-                "wss:; " .
-            "frame-ancestors 'self'; " .
-            "base-uri 'self'; " .
-            "form-action 'self';"
-        );
+            // Permissions Policy - disable unused browser features
+            $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
 
-        // Remove fingerprinting headers
-        $response->headers->remove('X-Powered-By');
-        $response->headers->remove('Server');
+            // Content Security Policy — allow Cloudflare, CDNs, fonts used by the app
+            $response->headers->set('Content-Security-Policy',
+                "default-src 'self'; " .
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' " .
+                    "https://cdn.jsdelivr.net " .
+                    "https://unpkg.com " .
+                    "https://cdn.datatables.net " .
+                    "https://static.cloudflareinsights.com; " .
+                "style-src 'self' 'unsafe-inline' " .
+                    "https://cdn.jsdelivr.net " .
+                    "https://unpkg.com " .
+                    "https://cdn.datatables.net " .
+                    "https://fonts.googleapis.com; " .
+                "font-src 'self' " .
+                    "https://cdn.jsdelivr.net " .
+                    "https://fonts.gstatic.com " .
+                    "data:; " .
+                "img-src 'self' data: blob: https:; " .
+                "connect-src 'self' " .
+                    "https://a.nel.cloudflare.com " .
+                    "wss:; " .
+                "frame-ancestors 'self'; " .
+                "base-uri 'self'; " .
+                "form-action 'self';"
+            );
+
+            // Remove fingerprinting headers
+            $response->headers->remove('X-Powered-By');
+            $response->headers->remove('Server');
+
+        } catch (\Throwable $e) {
+            // Never let security headers crash the app
+            report($e);
+        }
 
         return $response;
     }
