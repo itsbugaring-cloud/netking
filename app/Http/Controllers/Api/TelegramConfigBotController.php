@@ -699,11 +699,27 @@ class TelegramConfigBotController extends Controller
                 $buttons[] = $row;
             }
 
+            if (empty($buttons)) {
+                $this->sendMessage($chatId, "⚠️ Tidak ada area/router yang tersedia. Hubungi admin.");
+                return;
+            }
+
             $msgId = $this->sendMessage(
                 $chatId,
                 "⚡ PILIH MIKROTIK\n{$progress}\nPilih router tujuan dulu, habis itu lanjut isi data.",
                 ['reply_markup' => ['inline_keyboard' => $buttons]]
             );
+
+            // Retry sekali jika sendMessage gagal (timeout dll)
+            if (!$msgId) {
+                sleep(1);
+                $msgId = $this->sendMessage(
+                    $chatId,
+                    "⚡ PILIH MIKROTIK\n{$progress}\nPilih router tujuan dulu, habis itu lanjut isi data.",
+                    ['reply_markup' => ['inline_keyboard' => $buttons]]
+                );
+            }
+
             $this->rememberPromptMessage($chatId, $msgId);
             return;
         }
@@ -2900,8 +2916,8 @@ class TelegramConfigBotController extends Controller
 
         try {
             $res = Http::asJson()
-                ->connectTimeout(1)
-                ->timeout(2)
+                ->connectTimeout(5)
+                ->timeout(10)
                 ->post($url, $payload);
 
             if (!$res->successful()) {
