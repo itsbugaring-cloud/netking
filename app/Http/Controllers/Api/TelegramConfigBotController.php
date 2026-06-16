@@ -1200,8 +1200,18 @@ class TelegramConfigBotController extends Controller
             $pppoePass = trim((string) ($draft['pppoe_pass'] ?? 'netking'));
             $phone = trim((string) ($draft['no_hp'] ?? ''));
             $address = trim((string) ($draft['address'] ?? $draft['lokasi'] ?? ''));
-            $latitude = isset($draft['latitude']) ? (float) $draft['latitude'] : null;
-            $longitude = isset($draft['longitude']) ? (float) $draft['longitude'] : null;
+            $latitude = null;
+            $longitude = null;
+            if (isset($draft['coordinates'])) {
+                $coords = $this->parseCoordinates((string) $draft['coordinates']);
+                if ($coords) {
+                    $latitude = $coords['latitude'];
+                    $longitude = $coords['longitude'];
+                }
+            } else {
+                $latitude = isset($draft['latitude']) ? (float) $draft['latitude'] : null;
+                $longitude = isset($draft['longitude']) ? (float) $draft['longitude'] : null;
+            }
             $sn = strtoupper(str_replace('-', '', trim((string) ($draft['sn_ont'] ?? ''))));
             $packageId = (int) ($draft['paket_id'] ?? 0);
             $packagePrice = (float) ($draft['harga'] ?? 0);
