@@ -900,7 +900,7 @@ class TelegramConfigBotController extends Controller
         }
 
         if (!empty($missing)) {
-            $this->sendMessage($chatId, '⚠️ Datanya belum lengkap nih: ' . implode(', ', $missing));
+            $this->sendMessage($chatId, "<tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji> Sing Baleg Siahhh...Can Lengkap <tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji>\n(Kurang: " . implode(', ', $missing) . ")", ['parse_mode' => 'HTML']);
             return;
         }
 
@@ -912,10 +912,11 @@ class TelegramConfigBotController extends Controller
         $typedSn = strtoupper(trim((string) ($draft['sn_ont'] ?? '')));
         $ocrSn = strtoupper(trim((string) ($draft['photo_sn_ocr'] ?? $draft['photo_sn_ont'] ?? '')));
         if (($draft['photo_sn_verified'] ?? false) !== true || $typedSn === '' || $ocrSn === '' || $typedSn !== $ocrSn) {
-            $this->sendMessage(
-                $chatId,
-                "⚠️ Validasi SN foto belum lolos.\nSN teks: {$typedSn}\nHasil baca foto: " . ($ocrSn !== '' ? $ocrSn : 'tidak terbaca') . "\nKirim ulang foto SN yang lebih jelas."
-            );
+            $text = "<tg-emoji emoji-id=\"5368324170671202286\">❌</tg-emoji> Validasi SN foto belum lolos. <tg-emoji emoji-id=\"5368324170671202286\">❌</tg-emoji>\n" .
+                "SN teks: {$typedSn}\n" .
+                "Hasil baca foto: " . ($ocrSn !== '' ? $ocrSn : 'tidak terbaca') . "\n" .
+                "<tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji> Sing Baleg Siahhh Kirim Fotona... <tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji>";
+            $this->sendMessage($chatId, $text, ['parse_mode' => 'HTML']);
             return;
         }
 
@@ -1054,14 +1055,14 @@ class TelegramConfigBotController extends Controller
         $this->cleanupTransientMessages($chatId);
 
         $submitMsg = (($push['success'] ?? false) === true)
-            ? "✅ Konfig PPPoE berhasil masuk ke MikroTik.\nPassword default PPPoE: `" . ($draft['pppoe_pass'] ?? self::DEFAULT_PPPOE_PASSWORD) . "`\nTinggal lanjut konfigurasi di ONT.\n\nStatus active connection MikroTik ditampilkan di bawah ini."
-            : "⚠️ Data sudah tersimpan, tapi push ke router gagal.\n\nKlik *Status* buat lihat detailnya.";
+            ? "<tg-emoji emoji-id=\"5368324170671202286\">🔥</tg-emoji> LEKUY BOSS <tg-emoji emoji-id=\"5368324170671202286\">🔥</tg-emoji>\n<tg-emoji emoji-id=\"5368324170671202286\">👇</tg-emoji> Cek Status dicinih <tg-emoji emoji-id=\"5368324170671202286\">👇</tg-emoji>\n(Password default PPPoE: <code>" . ($draft['pppoe_pass'] ?? self::DEFAULT_PPPOE_PASSWORD) . "</code>)"
+            : "⚠️ Data sudah tersimpan, tapi push ke router gagal.\n\nKlik <b>Status</b> buat lihat detailnya.";
 
         $this->sendMessage(
             $chatId,
             $submitMsg,
             [
-                'parse_mode' => 'Markdown',
+                'parse_mode' => 'HTML',
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
@@ -1454,14 +1455,15 @@ class TelegramConfigBotController extends Controller
     {
         $name = (string) ($from['first_name'] ?? 'Partner');
 
-        $text = "NETKING-SENUT siap bantu\n\n" .
-            "Halo {$name} 👋\n" .
-            "Langsung pilih menu di bawah buat mulai.";
+        $text = "<tg-emoji emoji-id=\"5368324170671202286\">🚀</tg-emoji> NETKING-SENUT <tg-emoji emoji-id=\"5368324170671202286\">🚀</tg-emoji>\n\n" .
+            "Halo {$name} <tg-emoji emoji-id=\"5368324170671202286\">👋</tg-emoji>\n" .
+            "Gaskeun konfig <tg-emoji emoji-id=\"5368324170671202286\">🔥</tg-emoji>";
 
         $this->sendMessage(
             $chatId,
             $text,
             [
+                'parse_mode' => 'HTML',
                 'reply_markup' => [
                     'keyboard' => $this->mainKeyboardRows(),
                     'resize_keyboard' => true,
