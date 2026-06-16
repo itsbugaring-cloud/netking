@@ -66,7 +66,15 @@
           </div>
         `;
 
-        var marker = L.marker([cust.latitude, cust.longitude]).bindPopup(popupContent);
+        var bgColor = cust.status === 'active' ? '#10B981' : (cust.status === 'isolated' ? '#F59E0B' : '#EF4444');
+        var customIcon = L.divIcon({
+          className: 'custom-div-icon',
+          html: `<div style="background-color: ${bgColor}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);"></div>`,
+          iconSize: [16, 16],
+          iconAnchor: [8, 8]
+        });
+
+        var marker = L.marker([cust.latitude, cust.longitude], {icon: customIcon}).bindPopup(popupContent);
         markers.addLayer(marker);
       }
     });
