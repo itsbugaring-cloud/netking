@@ -766,7 +766,7 @@ class TelegramConfigBotController extends Controller
             "{$progress}\n\n" . ($labels[$field] ?? "Masukkan {$field}:"),
             [
                 'reply_markup' => [
-                    'keyboard' => [['❌ Batal Input']],
+                    'keyboard' => [[['text' => '❌ Batal Input']]],
                     'resize_keyboard' => true,
                     'one_time_keyboard' => false,
                 ],
@@ -1482,9 +1482,20 @@ class TelegramConfigBotController extends Controller
     private function mainKeyboardRows(): array
     {
         return [
-            ['📝 Input', '📷 Foto SN', '📋 Draft'],
-            ['🗂 History', '📡 Status', '✅ Submit'],
-            ['🧾 Template', '♻️ Reset'],
+            [
+                ['text' => '📝 Input'],
+                ['text' => '📷 Foto SN'],
+                ['text' => '📋 Draft']
+            ],
+            [
+                ['text' => '🗂 History'],
+                ['text' => '📡 Status'],
+                ['text' => '✅ Submit']
+            ],
+            [
+                ['text' => '🧾 Template'],
+                ['text' => '♻️ Reset']
+            ],
         ];
     }
 
