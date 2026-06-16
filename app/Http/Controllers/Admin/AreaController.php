@@ -656,16 +656,10 @@ class AreaController extends Controller
         try {
             $mikrotik = MikroTikService::forArea($area);
 
-            // Pastikan koneksi berhasil dulu sebelum pakai client
-            $test = $mikrotik->testConnection();
-            if (!($test['success'] ?? false)) {
-                return back()->with('error', "Gagal konek ke router {$area->name}: " . ($test['error'] ?? 'Router tidak bisa dihubungi. Cek IP & kredensial area.'));
-            }
-
-            $client = $this->getClient($mikrotik);
+            $client = $mikrotik->getClient();
 
             if ($client === null) {
-                return back()->with('error', "Koneksi ke router {$area->name} berhasil tapi client null. Coba lagi.");
+                return back()->with('error', "Gagal konek ke router {$area->name}. Cek IP & kredensial area.");
             }
 
             // Fetch current filter rules to find the first rule's ID
@@ -686,7 +680,7 @@ class AreaController extends Controller
             $query = new Query('/ip/firewall/filter/add', $params);
             $client->query($query)->read();
 
-            return back()->with('success', "Berhasil! Script 1 Baris (Block Total) sudah tertanam di urutan paling atas pada router {$area->name}.");
+            return back()->with('success', "Berhasil! Rule isolir sudah tertanam di urutan paling atas pada router {$area->name}.");
         } catch (\Throwable $e) {
             return back()->with('error', "Gagal menginstall rule ke {$area->name}: " . $e->getMessage());
         }
