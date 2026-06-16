@@ -6913,7 +6913,34 @@
     .uiv-load:nth-child(2) { animation-delay: 0.4s; }
     .uiv-load:nth-child(3) { animation-delay: 0.6s; }
     @keyframes uiv-move_5011 { 0% { width: 0.2em; } 25% { width: 0.7em; } 50% { width: 1.5em; } 100% { width: 0.2em; } }
+    /* 3D Button (cssbuttons-io) applied to .btn-primary */
+    .uiv-3d-btn { position: relative; border: none !important; background: transparent !important; padding: 0 !important; cursor: pointer; outline-offset: 4px; transition: filter 250ms; user-select: none; touch-action: manipulation; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; overflow: visible; }
+    .uiv-3d-btn .uiv-shadow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; background: hsl(0deg 0% 0% / 0.25); will-change: transform; transform: translateY(2px); transition: transform 600ms cubic-bezier(.3, .7, .4, 1); }
+    .uiv-3d-btn .uiv-edge { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; background: linear-gradient(to left, hsl(340deg 100% 16%) 0%, hsl(340deg 100% 32%) 8%, hsl(340deg 100% 32%) 92%, hsl(340deg 100% 16%) 100%); }
+    .uiv-3d-btn .uiv-front { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 100%; position: relative; padding: 10px 24px; border-radius: 12px; font-size: .9rem; color: white; background: hsl(345deg 100% 47%); will-change: transform; transform: translateY(-4px); transition: transform 600ms cubic-bezier(.3, .7, .4, 1); }
+    .uiv-3d-btn:hover { filter: brightness(110%); color: white; text-decoration: none; }
+    .uiv-3d-btn:hover .uiv-front { transform: translateY(-6px); transition: transform 250ms cubic-bezier(.3, .7, .4, 1.5); }
+    .uiv-3d-btn:active .uiv-front { transform: translateY(-2px); transition: transform 34ms; }
+    .uiv-3d-btn:hover .uiv-shadow { transform: translateY(4px); transition: transform 250ms cubic-bezier(.3, .7, .4, 1.5); }
+    .uiv-3d-btn:active .uiv-shadow { transform: translateY(1px); transition: transform 34ms; }
+    .uiv-3d-btn:focus:not(:focus-visible) { outline: none; }
   </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Jadikan efek tombol 3D sebagai default untuk semua .btn-primary
+      document.querySelectorAll('.btn-primary').forEach(function(btn) {
+        if (btn.querySelector('.uiv-front')) return;
+        const originalHtml = btn.innerHTML;
+        btn.classList.add('uiv-3d-btn');
+        btn.innerHTML = `
+          <span class="uiv-shadow"></span>
+          <span class="uiv-edge"></span>
+          <span class="uiv-front">${originalHtml}</span>
+        `;
+      });
+    });
+  </script>
 </body>
 </html>
 
