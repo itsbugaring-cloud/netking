@@ -6073,8 +6073,8 @@
     <div class="tb-spacer"></div>
 
     <!-- Dark Mode Toggle (Uiverse.io) -->
-    <label class="uiv-toggle-switch" title="Mode Tema" onclick="event.preventDefault(); toggleTheme();">
-      <input type="checkbox" class="uiv-checkbox" id="uiv-theme-checkbox">
+    <label class="uiv-toggle-switch" title="Mode Tema">
+      <input type="checkbox" class="uiv-checkbox" id="uiv-theme-checkbox" onchange="toggleTheme()">
       <div class="uiv-switch-label"></div>
       <div class="uiv-slider"></div>
     </label>
@@ -6158,7 +6158,9 @@
       document.documentElement.setAttribute('data-theme', newTheme);
       try { localStorage.setItem('nk_theme', newTheme); } catch(e) {}
       const cb = document.getElementById('uiv-theme-checkbox');
-      if (cb) cb.checked = (newTheme === 'light');
+      if (cb && cb.checked !== (newTheme === 'light')) {
+        cb.checked = (newTheme === 'light');
+      }
     }
 
     // Set correct icon on load
