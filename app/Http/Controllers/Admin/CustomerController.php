@@ -175,6 +175,7 @@ class CustomerController extends Controller
 
         $customer = Customer::create([
             ...$validated,
+            'is_free'         => $request->boolean('is_free'),
             'portal_password' => Hash::make(Str::random(12)),
             'status'          => 'provisioning',
         ]);

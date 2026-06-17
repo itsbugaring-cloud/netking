@@ -130,6 +130,13 @@
               </div>
             </div>
 
+            <div class="form-check mt-3 mb-2">
+              <input class="form-check-input" type="checkbox" name="is_free" value="1" id="is-free-check" {{ old('is_free') ? 'checked' : '' }}>
+              <label class="form-check-label" for="is-free-check" style="font-size:.85rem;color:var(--txt);">
+                <strong>Pelanggan Gratis</strong> — tidak ditagih, tidak kena auto-isolir
+              </label>
+            </div>
+
             <div class="alert alert-info py-2 mb-0 mt-3" style="font-size:.85rem;background:var(--blue-lt);border-color:var(--blue-md);color:var(--txt);">
               Pelanggan akan dibuat dengan status <strong>Provisioning</strong>. Secret PPPoE akan dikirim secara otomatis melalui antrian worker.
             </div>
