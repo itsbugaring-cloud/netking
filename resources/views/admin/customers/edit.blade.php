@@ -17,7 +17,7 @@
 
   <div class="row g-3">
     <div class="col-lg-8">
-      <form action="{{ route('admin.customers.update', $customer) }}" method="POST">
+      <form id="form-customer" action="{{ route('admin.customers.update', $customer) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -197,7 +197,7 @@
               @endif
             </div>
             <div class="form-check mt-2">
-              <input class="form-check-input" type="checkbox" name="is_free" value="1" id="is-free-check" {{ old('is_free', $customer->is_free) ? 'checked' : '' }}>
+              <input class="form-check-input" type="checkbox" name="is_free" value="1" id="is-free-check" form="form-customer" {{ old('is_free', $customer->is_free) ? 'checked' : '' }}>
               <label class="form-check-label" for="is-free-check" style="font-size:.82rem;">
                 <strong>Pelanggan Gratis</strong> — tidak ditagih, tidak kena auto-isolir
               </label>
