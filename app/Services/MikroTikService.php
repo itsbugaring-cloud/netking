@@ -366,8 +366,8 @@ class MikroTikService
     }
 
     /**
-     * Get all PPPoE Secrets
-     * Uses .proplist to limit fields — dramatically faster on slow routers.
+     * Get all PPPoE Secrets — with retry logic to handle partial reads from pear2/net_routeros.
+     * Fetches the total count first (lightweight), then retries full data until count matches.
      */
     public function getAllSecrets(): array
     {
@@ -376,11 +376,42 @@ class MikroTikService
         }
 
         try {
-            $query = new Query('/ppp/secret/print');
-            $query->equal('.proplist', '.id,name,password,service,profile,remote-address,local-address,disabled,comment');
-            $secrets = $this->client->query($query)->read();
+            // Step 1: Get total secret count (cheap — only fetch .id)
+            $countQuery = new Query('/ppp/secret/print');
+            $countQuery->equal('.proplist', '.id');
+            $idRows        = $this->client->query($countQuery)->read();
+            $expectedCount = count($idRows);
 
-            return ['success' => true, 'data' => $secrets];
+            // Step 2: Fetch full data with retry until we get all records
+            $bestResult  = [];
+            $maxAttempts = 5;
+
+            for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+                $query = new Query('/ppp/secret/print');
+                $query->equal('.proplist', '.id,name,password,service,profile,remote-address,local-address,disabled,comment');
+                $secrets = $this->client->query($query)->read();
+
+                if (count($secrets) > count($bestResult)) {
+                    $bestResult = $secrets;
+                }
+
+                // Stop once we have all records
+                if (count($bestResult) >= $expectedCount) {
+                    break;
+                }
+
+                // Brief pause before retry to let the router flush its buffer
+                usleep(200000); // 200ms
+            }
+
+            Log::info('MikroTik getAllSecrets', [
+                'host'     => $this->host,
+                'expected' => $expectedCount,
+                'got'      => count($bestResult),
+            ]);
+
+            return ['success' => true, 'data' => $bestResult];
+
         } catch (Exception $e) {
             Log::error('MikroTik Get All Secrets Failed', ['error' => $e->getMessage(), 'host' => $this->host]);
             return ['success' => false, 'error' => $e->getMessage()];
