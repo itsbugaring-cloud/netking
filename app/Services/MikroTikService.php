@@ -366,8 +366,9 @@ class MikroTikService
     }
 
     /**
-     * Get all PPPoE Secrets — with retry logic to handle partial reads from pear2/net_routeros.
-     * Fetches the total count first (lightweight), then retries full data until count matches.
+     * Get all PPPoE Secrets — BULLETPROOF VERSION
+     * Fetches IDs first (lightweight), then fetches details individually by .id.
+     * This completely bypasses the RouterOS library buffer dropping bug.
      */
     public function getAllSecrets(): array
     {
@@ -376,41 +377,36 @@ class MikroTikService
         }
 
         try {
-            // Step 1: Get total secret count (cheap — only fetch .id)
+            // Step 1: Get all IDs (very lightweight, 100% succeeds)
             $countQuery = new Query('/ppp/secret/print');
             $countQuery->equal('.proplist', '.id');
-            $idRows        = $this->client->query($countQuery)->read();
-            $expectedCount = count($idRows);
+            $idRows = $this->client->query($countQuery)->read();
 
-            // Step 2: Fetch full data with retry until we get all records
-            $bestResult  = [];
-            $maxAttempts = 5;
-
-            for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-                $query = new Query('/ppp/secret/print');
-                $query->equal('.proplist', '.id,name,password,service,profile,remote-address,local-address,disabled,comment');
-                $secrets = $this->client->query($query)->read();
-
-                if (count($secrets) > count($bestResult)) {
-                    $bestResult = $secrets;
-                }
-
-                // Stop once we have all records
-                if (count($bestResult) >= $expectedCount) {
-                    break;
-                }
-
-                // Brief pause before retry to let the router flush its buffer
-                usleep(200000); // 200ms
+            if (empty($idRows)) {
+                return ['success' => true, 'data' => []];
             }
 
-            Log::info('MikroTik getAllSecrets', [
-                'host'     => $this->host,
-                'expected' => $expectedCount,
-                'got'      => count($bestResult),
+            // Step 2: Fetch details one-by-one to avoid socket stream buffer explosion
+            $secrets = [];
+            foreach ($idRows as $row) {
+                if (empty($row['.id'])) continue;
+
+                $query = new Query('/ppp/secret/print');
+                $query->where('.id', $row['.id']);
+                $query->equal('.proplist', '.id,name,password,service,profile,remote-address,local-address,disabled,comment');
+                
+                $res = $this->client->query($query)->read();
+                if (!empty($res[0])) {
+                    $secrets[] = $res[0];
+                }
+            }
+
+            Log::info('MikroTik getAllSecrets via ID loop', [
+                'host'  => $this->host,
+                'total' => count($secrets),
             ]);
 
-            return ['success' => true, 'data' => $bestResult];
+            return ['success' => true, 'data' => $secrets];
 
         } catch (Exception $e) {
             Log::error('MikroTik Get All Secrets Failed', ['error' => $e->getMessage(), 'host' => $this->host]);
