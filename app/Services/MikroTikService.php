@@ -103,8 +103,8 @@ class MikroTikService
                     'user'           => $this->user,
                     'pass'           => $this->pass,
                     'port'           => $this->port,
-                    'timeout'        => 8,   // connection timeout (TCP handshake)
-                    'socket_timeout' => 60,  // read/write timeout — harus besar untuk router dengan banyak secrets
+                    'timeout'        => 60,  // connection timeout
+                    'socket_timeout' => 60,  // read/write timeout
                 ]);
 
                 $this->client = new Client($config);
