@@ -436,7 +436,7 @@
             <i class='bx bx-search'></i>
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, PPPoE, HP..." autocomplete="off">
           </div>
-          <select name="per_page" onchange="this.form.submit()" style="height:34px;width:68px;padding:0 6px;font-size:.8rem;font-weight:600;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--txt);outline:none;cursor:pointer;">
+          <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()" style="height:34px;width:auto;min-width:75px;font-size:.8rem;font-weight:600;border-radius:9px;cursor:pointer;">
             <option value="25" @selected(($perPage ?? 50) == 25)>25</option>
             <option value="50" @selected(($perPage ?? 50) == 50)>50</option>
             <option value="100" @selected(($perPage ?? 50) == 100)>100</option>

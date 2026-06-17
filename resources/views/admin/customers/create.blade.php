@@ -119,7 +119,7 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label">Tanggal Mulai Tagihan <span class="text-danger">*</span></label>
-                <input type="date" name="billing_start_date" id="billing-start-date" class="form-control @error('billing_start_date') is-invalid @enderror" value="{{ old('billing_start_date', now()->toDateString()) }}" required>
+                <input type="text" name="billing_start_date" id="billing-start-date" class="form-control js-flatpickr @error('billing_start_date') is-invalid @enderror" style="background:var(--surface);cursor:pointer;" value="{{ old('billing_start_date', now()->toDateString()) }}" placeholder="YYYY-MM-DD" required>
                 <div class="form-text">Dipakai untuk hitung prorata invoice bulan pertama.</div>
                 @error('billing_start_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
@@ -305,6 +305,13 @@ $(function() {
 
   $price.on('input change', refreshProrationPreview);
   $billingStart.on('change input', refreshProrationPreview);
+
+  if (typeof flatpickr !== 'undefined' && $billingStart.length > 0) {
+    flatpickr($billingStart[0], {
+      dateFormat: 'Y-m-d',
+      onChange: refreshProrationPreview
+    });
+  }
 
   loadPackages($area.val());
   refreshProrationPreview();
