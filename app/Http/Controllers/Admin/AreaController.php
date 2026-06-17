@@ -702,23 +702,87 @@ class AreaController extends Controller
                 return back()->with('error', "Gagal konek ke router {$area->name}. Cek IP & kredensial area.");
             }
 
-            // Fetch current filter rules to find the first rule's ID
-            $rules = $client->query(new Query('/ip/firewall/filter/print'))->read();
-
-            $addQuery = new Query('/ip/firewall/filter/add');
-            $addQuery->equal('action', 'drop');
-            $addQuery->equal('chain', 'forward');
-            $addQuery->equal('comment', 'BLOCK TOTAL KONEKSI ISOLIR');
-            $addQuery->equal('src-address-list', 'isolir');
-
-            // If there are existing rules, place this new rule before the very first rule
-            if (!empty($rules) && isset($rules[0]['.id'])) {
-                $addQuery->equal('place-before', $rules[0]['.id']);
+            // 1. Setup Whitelist Address-List
+            $oldWhitelist = $client->query((new Query('/ip/firewall/address-list/print'))->where('comment', 'Whitelist for Isolir Redirect'))->read();
+            foreach ($oldWhitelist as $rule) {
+                $client->query((new Query('/ip/firewall/address-list/remove'))->equal('.id', $rule['.id']))->read();
             }
+            $client->query(
+                (new Query('/ip/firewall/address-list/add'))->equal('list', 'isolir_whitelist')->equal('address', 'netking.id')->equal('comment', 'Whitelist for Isolir Redirect')
+            )->read();
 
-            $client->query($addQuery)->read();
+            // 2. Enable Web Proxy
+            $client->query(
+                (new Query('/ip/proxy/set'))->equal('enabled', 'yes')->equal('port', '8080')
+            )->read();
 
-            return back()->with('success', "Berhasil! Rule isolir sudah tertanam di urutan paling atas pada router {$area->name}.");
+            // 3. Set Proxy Access Rule
+            $oldProxy = $client->query((new Query('/ip/proxy/access/print'))->where('comment', 'REDIRECT ISOLIR'))->read();
+            foreach ($oldProxy as $rule) {
+                $client->query((new Query('/ip/proxy/access/remove'))->equal('.id', $rule['.id']))->read();
+            }
+            $client->query(
+                (new Query('/ip/proxy/access/add'))->equal('action', 'deny')->equal('redirect-to', 'https://netking.id/isolir')->equal('comment', 'REDIRECT ISOLIR')
+            )->read();
+
+            // 4. NAT Rule for HTTP Redirect
+            $oldNat = $client->query((new Query('/ip/firewall/nat/print'))->where('comment', 'REDIRECT HTTP ISOLIR'))->read();
+            foreach ($oldNat as $rule) {
+                $client->query((new Query('/ip/firewall/nat/remove'))->equal('.id', $rule['.id']))->read();
+            }
+            $natRules = $client->query(new Query('/ip/firewall/nat/print'))->read();
+            $addNat = (new Query('/ip/firewall/nat/add'))
+                ->equal('chain', 'dstnat')
+                ->equal('protocol', 'tcp')
+                ->equal('dst-port', '80')
+                ->equal('src-address-list', 'isolir')
+                ->equal('action', 'redirect')
+                ->equal('to-ports', '8080')
+                ->equal('comment', 'REDIRECT HTTP ISOLIR');
+            if (!empty($natRules) && isset($natRules[0]['.id'])) {
+                $addNat->equal('place-before', $natRules[0]['.id']);
+            }
+            $client->query($addNat)->read();
+
+            // 5. Filter Rules (DNS Allow + Drop rest)
+            $oldFilterDNS = $client->query((new Query('/ip/firewall/filter/print'))->where('comment', 'ALLOW DNS ISOLIR'))->read();
+            foreach ($oldFilterDNS as $rule) {
+                $client->query((new Query('/ip/firewall/filter/remove'))->equal('.id', $rule['.id']))->read();
+            }
+            $oldFilterDrop = $client->query((new Query('/ip/firewall/filter/print'))->where('comment', 'BLOCK TOTAL KONEKSI ISOLIR'))->read();
+            foreach ($oldFilterDrop as $rule) {
+                $client->query((new Query('/ip/firewall/filter/remove'))->equal('.id', $rule['.id']))->read();
+            }
+            
+            $filterRules = $client->query(new Query('/ip/firewall/filter/print'))->read();
+            $placeBeforeId = !empty($filterRules) && isset($filterRules[0]['.id']) ? $filterRules[0]['.id'] : null;
+            
+            // DNS Allow Rule
+            $addDns = (new Query('/ip/firewall/filter/add'))
+                ->equal('chain', 'forward')
+                ->equal('protocol', 'udp')
+                ->equal('dst-port', '53')
+                ->equal('src-address-list', 'isolir')
+                ->equal('action', 'accept')
+                ->equal('comment', 'ALLOW DNS ISOLIR');
+            if ($placeBeforeId) {
+                $addDns->equal('place-before', $placeBeforeId);
+            }
+            $client->query($addDns)->read();
+            
+            // Drop Rule
+            $addDrop = (new Query('/ip/firewall/filter/add'))
+                ->equal('chain', 'forward')
+                ->equal('src-address-list', 'isolir')
+                ->equal('dst-address-list', '!isolir_whitelist')
+                ->equal('action', 'drop')
+                ->equal('comment', 'BLOCK TOTAL KONEKSI ISOLIR');
+            if ($placeBeforeId) {
+                $addDrop->equal('place-before', $placeBeforeId);
+            }
+            $client->query($addDrop)->read();
+
+            return back()->with('success', "Berhasil! Rule Redirect Isolir lengkap (Web Proxy, NAT, Filter) sudah tertanam di router {$area->name}.");
         } catch (\Throwable $e) {
             return back()->with('error', "Gagal menginstall rule ke {$area->name}: " . $e->getMessage());
         }
