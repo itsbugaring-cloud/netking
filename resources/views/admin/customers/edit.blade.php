@@ -15,11 +15,11 @@
     </div>
   </div>
 
-  <div class="row g-3">
-    <div class="col-lg-8">
-      <form id="form-customer" action="{{ route('admin.customers.update', $customer) }}" method="POST">
-        @csrf
-        @method('PUT')
+  <form id="form-customer" action="{{ route('admin.customers.update', $customer) }}" method="POST">
+    @csrf
+    @method('PUT')
+    <div class="row g-3">
+      <div class="col-lg-8">
 
         <div class="ms-panel mb-3">
           <div class="ms-panel-head">
@@ -174,8 +174,7 @@
             <button type="submit" class="ms-btn"><i class='bx bx-save'></i> Simpan Perubahan</button>
           </div>
         </div>
-      </form>
-    </div>
+      </div>
 
     <div class="col-lg-4">
       <div class="ms-panel">
@@ -214,7 +213,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </form>
 </div>
 @endsection
 
