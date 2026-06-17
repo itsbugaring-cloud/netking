@@ -59,13 +59,15 @@ class AreaController extends Controller
                 try {
                     $routerPools = $mikrotik->getIpPools();
                     foreach ($routerPools as $rp) {
-                        if (!empty($rp['ranges']) && str_contains($rp['ranges'], '-')) {
-                            [$start, $end] = explode('-', $rp['ranges'], 2);
-                            $pools[] = [
-                                'pool_name' => $rp['name'] ?? null,
-                                'ip_pool_start' => trim($start),
-                                'ip_pool_end' => trim($end),
-                            ];
+                        if (!empty($rp['ranges'])) {
+                            [$start, $end] = $this->parsePoolRange($rp['ranges']);
+                            if ($start && $end) {
+                                $pools[] = [
+                                    'pool_name' => $rp['name'] ?? null,
+                                    'ip_pool_start' => $start,
+                                    'ip_pool_end'   => $end,
+                                ];
+                            }
                         }
                     }
                 } catch (\Exception $e) {
@@ -261,13 +263,12 @@ class AreaController extends Controller
             $poolsData = $mikrotik->getIpPools();
             foreach ($poolsData as $pool) {
                 if (!empty($pool['ranges'])) {
-                    $ranges = $pool['ranges'];
-                    if (str_contains($ranges, '-')) {
-                        [$start, $end] = explode('-', $ranges, 2);
+                    [$start, $end] = $this->parsePoolRange($pool['ranges']);
+                    if ($start && $end) {
                         $pools[] = [
-                            'pool_name' => $pool['name'] ?? '',
-                            'ip_pool_start' => trim($start),
-                            'ip_pool_end' => trim($end),
+                            'pool_name'     => $pool['name'] ?? '',
+                            'ip_pool_start' => $start,
+                            'ip_pool_end'   => $end,
                         ];
                     }
                 }
@@ -421,6 +422,45 @@ class AreaController extends Controller
         } catch (\Throwable $e) {
             return [];
         }
+    }
+
+    /**
+     * Parse MikroTik pool ranges string into [start, end] IP pair.
+     * Handles multi-range format: "10.0.0.1-10.0.0.10,10.0.0.12-10.0.0.254"
+     * Returns the first IP of the first segment and last IP of the last segment.
+     */
+    private function parsePoolRange(string $ranges): array
+    {
+        // Split by comma to get individual range segments
+        $segments = array_filter(array_map('trim', explode(',', $ranges)));
+        if (empty($segments)) return [null, null];
+
+        // First segment: get start IP (before first '-' that follows a digit)
+        $firstSeg = reset($segments);
+        $startIp = null;
+        if (str_contains($firstSeg, '-')) {
+            $dashPos = strpos($firstSeg, '-');
+            $startIp = trim(substr($firstSeg, 0, $dashPos));
+        } else {
+            $startIp = $firstSeg; // single IP
+        }
+
+        // Last segment: get end IP (after last '-')
+        $lastSeg = end($segments);
+        $endIp = null;
+        if (str_contains($lastSeg, '-')) {
+            $dashPos = strrpos($lastSeg, '-');
+            $endIp = trim(substr($lastSeg, $dashPos + 1));
+        } else {
+            $endIp = $lastSeg; // single IP
+        }
+
+        // Validate both are valid IPs
+        if (!filter_var($startIp, FILTER_VALIDATE_IP) || !filter_var($endIp, FILTER_VALIDATE_IP)) {
+            return [null, null];
+        }
+
+        return [$startIp, $endIp];
     }
 
     private function queryRouter(MikroTikService $mikrotik, string $path, string $proplist): array
