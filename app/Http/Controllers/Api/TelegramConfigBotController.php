@@ -1455,22 +1455,7 @@ class TelegramConfigBotController extends Controller
     {
         $name = (string) ($from['first_name'] ?? 'Partner');
 
-        $headerEmojis = 
-            "<tg-emoji emoji-id=\"5429377452906398156\">N</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5386800802151025866\">E</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5433670878309139413\">T</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5429364683968627434\">K</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5431452012304685092\">I</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5429377452906398156\">N</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5422797979620755642\">G</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5228889792573360456\">➕</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5434018732005412781\">S</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5386800802151025866\">E</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5429377452906398156\">N</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5436174182817744875\">U</tg-emoji>" .
-            "<tg-emoji emoji-id=\"5433670878309139413\">T</tg-emoji>";
-
-        $text = $headerEmojis . "\n\n" .
+        $text = "<tg-emoji emoji-id=\"5368324170671202286\">🚀</tg-emoji> NETKING-SENUT <tg-emoji emoji-id=\"5368324170671202286\">🚀</tg-emoji>\n\n" .
             "Halo {$name} <tg-emoji emoji-id=\"5368324170671202286\">👋</tg-emoji>\n" .
             "Gaskeun konfig <tg-emoji emoji-id=\"5368324170671202286\">🔥</tg-emoji>";
 
