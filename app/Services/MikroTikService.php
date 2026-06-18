@@ -377,31 +377,14 @@ class MikroTikService
         }
 
         try {
-            // Step 1: Get all IDs (very lightweight, 100% succeeds)
-            $countQuery = new Query('/ppp/secret/print');
-            $countQuery->equal('.proplist', '.id');
-            $idRows = $this->client->query($countQuery)->read();
+            // Fetching all secrets using a single query with .proplist to keep the payload size small
+            // and avoid timeout/buffer explosion.
+            $query = new Query('/ppp/secret/print');
+            $query->equal('.proplist', '.id,name,password,service,profile,remote-address,local-address,disabled,comment');
+            
+            $secrets = $this->client->query($query)->read();
 
-            if (empty($idRows)) {
-                return ['success' => true, 'data' => []];
-            }
-
-            // Step 2: Fetch details one-by-one to avoid socket stream buffer explosion
-            $secrets = [];
-            foreach ($idRows as $row) {
-                if (empty($row['.id'])) continue;
-
-                $query = new Query('/ppp/secret/print');
-                $query->where('.id', $row['.id']);
-                $query->equal('.proplist', '.id,name,password,service,profile,remote-address,local-address,disabled,comment');
-                
-                $res = $this->client->query($query)->read();
-                if (!empty($res[0])) {
-                    $secrets[] = $res[0];
-                }
-            }
-
-            Log::info('MikroTik getAllSecrets via ID loop', [
+            Log::info('MikroTik getAllSecrets optimized', [
                 'host'  => $this->host,
                 'total' => count($secrets),
             ]);
