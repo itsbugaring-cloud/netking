@@ -103,8 +103,8 @@ class MikroTikService
                     'user'           => $this->user,
                     'pass'           => $this->pass,
                     'port'           => $this->port,
-                    'timeout'        => 60,  // connection timeout
-                    'socket_timeout' => 60,  // read/write timeout
+                    'timeout'        => 3,   // connection timeout (reduced to prevent 524 error)
+                    'socket_timeout' => 15,  // read/write timeout
                 ]);
 
                 $this->client = new Client($config);
