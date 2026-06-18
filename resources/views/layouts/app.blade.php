@@ -746,24 +746,24 @@
 
     /* ======= DARK MODE — Complete ======= */
     [data-theme="dark"] {
-      --blue: #334155;
-      --blue-dk: #1e293b;
-      --blue-lt: rgba(51, 65, 85, 0.16);
-      --blue-md: rgba(51, 65, 85, 0.22);
-      --blue-glow: rgba(51, 65, 85, 0.32);
-      --hover-bg: rgba(255, 255, 255, 0.05);
+      --blue: #3b82f6;
+      --blue-dk: #2563eb;
+      --blue-lt: rgba(59, 130, 246, 0.16);
+      --blue-md: rgba(59, 130, 246, 0.22);
+      --blue-glow: rgba(59, 130, 246, 0.32);
+      --hover-bg: rgba(255, 255, 255, 0.08);
       --bg: #09090b;
       --surface: #09090b;
-      --surface-2: #111113;
-      --border: rgba(255, 255, 255, .08);
-      --bd-dk: rgba(255, 255, 255, .1);
+      --surface-2: #18181b;
+      --border: rgba(255, 255, 255, .15);
+      --bd-dk: rgba(255, 255, 255, .2);
       --txt: #f4f4f5;
-      --txt-2: #a1a1aa;
-      --txt-3: #71717a;
+      --txt-2: #d4d4d8;
+      --txt-3: #a1a1aa;
       --shadow-xs: none;
-      --shadow-sm: 0 0 0 1px rgba(255,255,255,0.03);
-      --shadow-md: 0 0 0 1px rgba(255,255,255,0.04), 0 18px 40px rgba(0,0,0,0.32);
-      --shadow-lg: 0 0 0 1px rgba(255,255,255,0.05), 0 24px 60px rgba(0,0,0,0.4);
+      --shadow-sm: 0 0 0 1px rgba(255,255,255,0.05);
+      --shadow-md: 0 0 0 1px rgba(255,255,255,0.08), 0 18px 40px rgba(0,0,0,0.32);
+      --shadow-lg: 0 0 0 1px rgba(255,255,255,0.1), 0 24px 60px rgba(0,0,0,0.4);
       color-scheme: dark;
 
       /* Force Bootstrap 5 CSS variables to dark */
