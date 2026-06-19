@@ -382,7 +382,7 @@ class PaymentController extends Controller
     public function importExcel(Request $request)
     {
         $request->validate([
-            'file'          => 'required|file|mimes:csv,txt,xls,xlsx|max:10240',
+            'file'          => 'required|file|max:10240',
             'periode_bulan' => 'required|integer|min:1|max:12',
             'periode_tahun' => 'required|integer|min:2020|max:2030',
         ]);

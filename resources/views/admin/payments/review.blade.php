@@ -262,6 +262,17 @@
   </div>
 
   {{-- Flash messages --}}
+  @if($errors->any())
+    <div style="background:#fee2e2;color:#991b1b;border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.85rem;font-weight:500;">
+      <i class='bx bx-error-circle me-1'></i> <strong>Gagal:</strong>
+      <ul style="margin-top:.5rem; margin-bottom:0; padding-left:1.5rem;">
+        @foreach($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
+
   @foreach(['success','warning','error','info'] as $type)
     @if(session($type))
       @php
