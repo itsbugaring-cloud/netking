@@ -148,6 +148,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::prefix('payments')->name('payments.')->group(function () {
             Route::get('/quick', [PaymentController::class, 'quickPayment'])->name('quick');
             Route::get('/review', [PaymentController::class, 'reviewIndex'])->name('review');
+            Route::post('/import', [PaymentController::class, 'importExcel'])->name('import');
             Route::post('/{payment}/approve', [PaymentController::class, 'approve'])->name('approve');
             Route::post('/bulk-approve', [PaymentController::class, 'bulkApprove'])->name('bulk-approve');
             Route::post('/{payment}/reject', [PaymentController::class, 'reject'])->name('reject');

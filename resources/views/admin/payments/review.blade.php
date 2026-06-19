@@ -245,7 +245,7 @@
 @endphp
 
 <div class="ms-page review-page">
-  <div class="ms-page-head">
+  <div class="ms-page-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
     <div>
       <div class="ms-page-kicker"><i class='bx bx-check-shield'></i> Review Pembayaran</div>
       <h1 class="ms-page-title">Antrian Review
@@ -253,6 +253,11 @@
           <span class="ms-kpi-chip ms-2"><strong>{{ $payments->count() }}</strong> menunggu</span>
         @endif
       </h1>
+    </div>
+    <div>
+      <button onclick="document.getElementById('importModal').style.display='flex'" class="ms-btn-primary" style="display:flex; align-items:center; gap:0.5rem; border-radius:8px;">
+        <i class='bx bx-import'></i> Import Excel
+      </button>
     </div>
   </div>
 
@@ -418,6 +423,47 @@
       <i class='bx bx-check-circle'></i> Setujui Semua Pilihan
     </button>
     <button type="button" class="btn-bulk-cancel" onclick="clearAll()">Batalkan</button>
+  </div>
+</div>
+
+{{-- Import Modal --}}
+<div id="importModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+  <div style="background:var(--surface); width:100%; max-width:480px; border-radius:16px; padding:1.5rem; box-shadow:0 10px 40px rgba(0,0,0,0.1);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3 style="margin:0; font-size:1.1rem; color:var(--txt);"><i class='bx bx-import' style="color:var(--blue); margin-right:5px;"></i> Import Pembayaran Excel</h3>
+      <button type="button" onclick="document.getElementById('importModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--txt-3);">&times;</button>
+    </div>
+    <form action="{{ route('admin.payments.import') }}" method="POST" enctype="multipart/form-data">
+      @csrf
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:.85rem; color:var(--txt-2); margin-bottom:.3rem;">Periode Bulan Tagihan</label>
+        <select name="periode_bulan" class="ms-input" required style="width:100%; padding:.6rem; border-radius:8px; border:1px solid var(--border);">
+          @foreach($months as $k => $v)
+            @if($k > 0)
+              <option value="{{ $k }}" {{ now()->month == $k ? 'selected' : '' }}>{{ $v }}</option>
+            @endif
+          @endforeach
+        </select>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:.85rem; color:var(--txt-2); margin-bottom:.3rem;">Tahun Tagihan</label>
+        <input type="number" name="periode_tahun" class="ms-input" required value="{{ now()->year }}" min="2020" max="2030" style="width:100%; padding:.6rem; border-radius:8px; border:1px solid var(--border);">
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:.85rem; color:var(--txt-2); margin-bottom:.3rem;">File Excel (Dari Laporan/Daftar Pelanggan)</label>
+        <input type="file" name="file" accept=".xlsx, .xls, .csv" required class="ms-input" style="width:100%; padding:.5rem; border-radius:8px; border:1px solid var(--border);">
+      </div>
+      <div style="background:#f8fafc; border:1px dashed #cbd5e1; padding:1rem; border-radius:8px; font-size:.8rem; color:#475569; margin-bottom:1.5rem; line-height:1.5;">
+        <strong>Cara Pakai:</strong><br>
+        1. Download Excel dari halaman Pelanggan.<br>
+        2. Buka Excel, isi tanggal di kolom <strong>"Tgl Bayar"</strong> atau ketik "Lunas" di kolom <strong>"Pembayaran"</strong>.<br>
+        3. Simpan dan Upload ke sini. Sistem otomatis merekam pembayaran & buka isolir.
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:.5rem;">
+        <button type="button" onclick="document.getElementById('importModal').style.display='none'" class="ms-btn-secondary" style="padding:.6rem 1.2rem; border-radius:8px;">Batal</button>
+        <button type="submit" class="ms-btn-primary" style="padding:.6rem 1.2rem; border-radius:8px;" onclick="this.innerHTML='<i class=\'bx bx-loader-alt bx-spin\'></i> Memproses...'; this.style.pointerEvents='none'; this.form.submit();">Import Data</button>
+      </div>
+    </form>
   </div>
 </div>
 
