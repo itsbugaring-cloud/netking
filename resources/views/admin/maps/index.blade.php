@@ -175,12 +175,12 @@
     var serverLatLng = [-6.9502503, 107.6614869];
     var serverIcon = L.divIcon({
       className: 'custom-div-icon',
-      html: '<div style="background-color: #DC2626; width: 22px; height: 22px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(220,38,38,0.7); display:flex; align-items:center; justify-content:center;"><span style="color:white; font-size:12px; font-weight:bold;">S</span></div>',
-      iconSize: [22, 22],
-      iconAnchor: [11, 11]
+      html: '<div style="background:#DC2626; width:36px; height:36px; border-radius:8px; border:3px solid white; box-shadow:0 2px 12px rgba(220,38,38,0.6); display:flex; align-items:center; justify-content:center;"><svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M4 2h16a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm0 8h16a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4a2 2 0 012-2zm2 3a1 1 0 100 2 1 1 0 000-2zm0-8a1 1 0 100 2 1 1 0 000-2zM9 22l3-4 3 4"/></svg></div>',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18]
     });
-    L.marker(serverLatLng, {icon: serverIcon})
-      .bindPopup('<div style="min-width:180px;"><h6 style="margin:0 0 4px;font-weight:700;">🖥️ Server Utama Netking</h6><div style="font-size:12px;color:#64748b;">Koordinat: -6.9502503, 107.6614869</div></div>')
+    L.marker(serverLatLng, {icon: serverIcon, zIndexOffset: 1000})
+      .bindPopup('<div style="min-width:200px;"><h6 style="margin:0 0 6px;font-weight:700;font-size:14px;">🖥️ Server Utama Netking</h6><div style="font-size:12px;color:#64748b;">Bandung<br>Koordinat: -6.9502503, 107.6614869</div></div>')
       .addTo(map);
 
     // === Area Router Markers + Backbone Lines ===
@@ -190,31 +190,32 @@
 
       var areaLatLng = [area.latitude, area.longitude];
 
-      // Blue marker for router
+      // Router icon - bigger, square with router emoji
       var routerIcon = L.divIcon({
         className: 'custom-div-icon',
-        html: '<div style="background-color: #2563EB; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(37,99,235,0.6); display:flex; align-items:center; justify-content:center;"><span style="color:white; font-size:10px; font-weight:bold;">R</span></div>',
-        iconSize: [18, 18],
-        iconAnchor: [9, 9]
+        html: '<div style="background:#2563EB; width:32px; height:32px; border-radius:6px; border:2px solid white; box-shadow:0 2px 10px rgba(37,99,235,0.5); display:flex; align-items:center; justify-content:center;"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
       });
 
-      var popupHtml = '<div style="min-width:180px;">' +
-        '<h6 style="margin:0 0 4px;font-weight:700;">📡 ' + area.name + '</h6>' +
-        '<table style="font-size:12px;width:100%;">' +
-        '<tr><td style="color:#64748b;">Router IP:</td><td style="font-weight:600;font-family:monospace;">' + (area.router_ip || '-') + '</td></tr>' +
+      var popupHtml = '<div style="min-width:200px;">' +
+        '<h6 style="margin:0 0 6px;font-weight:700;font-size:14px;">📡 ' + area.name + '</h6>' +
+        '<table style="font-size:12px;width:100%;line-height:1.8;">' +
+        '<tr><td style="color:#64748b;width:85px;">Router IP:</td><td style="font-weight:600;font-family:monospace;">' + (area.router_ip || '-') + '</td></tr>' +
         '<tr><td style="color:#64748b;">VLAN PPPoE:</td><td style="font-weight:600;">' + (area.vlan_pppoe || '-') + '</td></tr>' +
+        '<tr><td style="color:#64748b;">VLAN MGMT:</td><td style="font-weight:600;">' + (area.vlan_mgmt || '-') + '</td></tr>' +
         '</table></div>';
 
-      L.marker(areaLatLng, {icon: routerIcon})
+      L.marker(areaLatLng, {icon: routerIcon, zIndexOffset: 500})
         .bindPopup(popupHtml)
         .addTo(map);
 
-      // Dashed blue backbone line from server to router
+      // Backbone line from server to router (solid blue, thicker)
       L.polyline([serverLatLng, areaLatLng], {
         color: '#2563EB',
-        weight: 2,
-        opacity: 0.6,
-        dashArray: '8, 6'
+        weight: 3,
+        opacity: 0.5,
+        dashArray: '10, 8'
       }).addTo(map);
     });
   });
