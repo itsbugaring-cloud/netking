@@ -532,6 +532,12 @@ class PaymentController extends Controller
                     }
                 }
 
+                // Update nama pelanggan jika kolom diisi dan berbeda
+                $namaRaw = trim($row[4] ?? '');
+                if (!empty($namaRaw) && $namaRaw !== $customer->name) {
+                    $customer->update(['name' => $namaRaw]);
+                }
+
                 $successCount++;
             }
 
