@@ -57,13 +57,20 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
+<style>
+@keyframes pulse-server {
+  0%, 100% { box-shadow: 0 0 20px rgba(239,68,68,0.6), 0 0 40px rgba(239,68,68,0.3); }
+  50% { box-shadow: 0 0 30px rgba(239,68,68,0.8), 0 0 60px rgba(239,68,68,0.4); }
+}
+</style>
+
 <script>
   $(function() {
     var map = L.map('map').setView([-6.2088, 106.8456], 11);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
-      attribution: '© OpenStreetMap'
+      attribution: '&copy; CartoDB'
     }).addTo(map);
 
     var allCustomers = @json($customers);
@@ -105,12 +112,15 @@
             </div>
           `;
 
-          var bgColor = cust.status === 'active' ? '#10B981' : (cust.status === 'isolated' ? '#F59E0B' : '#EF4444');
+          var bgColor = cust.status === 'active' ? '#10b981' : (cust.status === 'suspended' ? '#f59e0b' : '#ef4444');
+          var glowColor = cust.status === 'active' ? 'rgba(16,185,129,0.4)' : (cust.status === 'suspended' ? 'rgba(245,158,11,0.4)' : 'rgba(239,68,68,0.4)');
           var customIcon = L.divIcon({
-            className: 'custom-div-icon',
-            html: `<div style="background-color: ${bgColor}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);"></div>`,
-            iconSize: [16, 16],
-            iconAnchor: [8, 8]
+            className: '',
+            html: `<div style="width:20px;height:20px;background:${bgColor};border-radius:50% 50% 50% 0;border:2px solid white;box-shadow:0 0 8px ${glowColor};transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;">
+              <svg width="10" height="10" fill="white" viewBox="0 0 24 24" style="transform:rotate(45deg);"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            </div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 20]
           });
 
           var marker = L.marker([cust.latitude, cust.longitude], {icon: customIcon}).bindPopup(popupContent);
@@ -174,10 +184,15 @@
     // === Server Marker (Netking Server Utama) ===
     var serverLatLng = [-6.9502503, 107.6614869];
     var serverIcon = L.divIcon({
-      className: 'custom-div-icon',
-      html: '<div style="background:#DC2626; width:36px; height:36px; border-radius:8px; border:3px solid white; box-shadow:0 2px 12px rgba(220,38,38,0.6); display:flex; align-items:center; justify-content:center;"><svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M4 2h16a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm0 8h16a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4a2 2 0 012-2zm2 3a1 1 0 100 2 1 1 0 000-2zm0-8a1 1 0 100 2 1 1 0 000-2zM9 22l3-4 3 4"/></svg></div>',
-      iconSize: [36, 36],
-      iconAnchor: [18, 18]
+      className: '',
+      html: `<div style="position:relative;text-align:center;">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,#ef4444,#dc2626);border-radius:10px;border:2px solid #fca5a5;box-shadow:0 0 20px rgba(239,68,68,0.6),0 0 40px rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:center;animation:pulse-server 2s infinite;">
+          <svg width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M4 1h16v6H4zM4 9h16v6H4zM4 17h16v6H4zM7 4h2v1H7zM7 12h2v1H7zM7 20h2v1H7z"/></svg>
+        </div>
+        <div style="font-size:9px;font-weight:700;color:#fca5a5;margin-top:2px;text-shadow:0 1px 3px rgba(0,0,0,0.8);letter-spacing:1px;">SERVER</div>
+      </div>`,
+      iconSize: [40, 55],
+      iconAnchor: [20, 20]
     });
     L.marker(serverLatLng, {icon: serverIcon, zIndexOffset: 1000})
       .bindPopup('<div style="min-width:200px;"><h6 style="margin:0 0 6px;font-weight:700;font-size:14px;">🖥️ Server Utama Netking</h6><div style="font-size:12px;color:#64748b;">Bandung<br>Koordinat: -6.9502503, 107.6614869</div></div>')
@@ -190,11 +205,16 @@
 
       var areaLatLng = [area.latitude, area.longitude];
 
-      // Router icon - bigger, square with router emoji
+      // Router icon - NOC style with blue glow
       var routerIcon = L.divIcon({
-        className: 'custom-div-icon',
-        html: '<div style="background:#2563EB; width:32px; height:32px; border-radius:6px; border:2px solid white; box-shadow:0 2px 10px rgba(37,99,235,0.5); display:flex; align-items:center; justify-content:center;"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>',
-        iconSize: [32, 32],
+        className: '',
+        html: `<div style="position:relative;text-align:center;">
+          <div style="width:32px;height:32px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:8px;border:2px solid #93c5fd;box-shadow:0 0 14px rgba(59,130,246,0.5);display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div style="font-size:8px;font-weight:600;color:#93c5fd;margin-top:1px;text-shadow:0 1px 2px rgba(0,0,0,0.9);white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;">${area.name}</div>
+        </div>`,
+        iconSize: [32, 48],
         iconAnchor: [16, 16]
       });
 
@@ -210,12 +230,12 @@
         .bindPopup(popupHtml)
         .addTo(map);
 
-      // Backbone line from server to router (solid blue, thicker)
+      // Backbone line from server to router (dashed blue glow)
       L.polyline([serverLatLng, areaLatLng], {
-        color: '#2563EB',
-        weight: 3,
-        opacity: 0.5,
-        dashArray: '10, 8'
+        color: '#60a5fa',
+        weight: 2,
+        opacity: 0.4,
+        dashArray: '6, 8'
       }).addTo(map);
     });
   });
