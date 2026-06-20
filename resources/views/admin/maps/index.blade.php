@@ -170,6 +170,53 @@
 
     // Initial Render
     renderMarkers(allCustomers);
+
+    // === Server Marker (Netking Server Utama) ===
+    var serverLatLng = [-6.9502503, 107.6614869];
+    var serverIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: '<div style="background-color: #DC2626; width: 22px; height: 22px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(220,38,38,0.7); display:flex; align-items:center; justify-content:center;"><span style="color:white; font-size:12px; font-weight:bold;">S</span></div>',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+    L.marker(serverLatLng, {icon: serverIcon})
+      .bindPopup('<div style="min-width:180px;"><h6 style="margin:0 0 4px;font-weight:700;">🖥️ Server Utama Netking</h6><div style="font-size:12px;color:#64748b;">Koordinat: -6.9502503, 107.6614869</div></div>')
+      .addTo(map);
+
+    // === Area Router Markers + Backbone Lines ===
+    var areasWithCoords = @json($areasWithCoords ?? []);
+    areasWithCoords.forEach(function(area) {
+      if (!area.latitude || !area.longitude) return;
+
+      var areaLatLng = [area.latitude, area.longitude];
+
+      // Blue marker for router
+      var routerIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: '<div style="background-color: #2563EB; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(37,99,235,0.6); display:flex; align-items:center; justify-content:center;"><span style="color:white; font-size:10px; font-weight:bold;">R</span></div>',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
+      });
+
+      var popupHtml = '<div style="min-width:180px;">' +
+        '<h6 style="margin:0 0 4px;font-weight:700;">📡 ' + area.name + '</h6>' +
+        '<table style="font-size:12px;width:100%;">' +
+        '<tr><td style="color:#64748b;">Router IP:</td><td style="font-weight:600;font-family:monospace;">' + (area.router_ip || '-') + '</td></tr>' +
+        '<tr><td style="color:#64748b;">VLAN PPPoE:</td><td style="font-weight:600;">' + (area.vlan_pppoe || '-') + '</td></tr>' +
+        '</table></div>';
+
+      L.marker(areaLatLng, {icon: routerIcon})
+        .bindPopup(popupHtml)
+        .addTo(map);
+
+      // Dashed blue backbone line from server to router
+      L.polyline([serverLatLng, areaLatLng], {
+        color: '#2563EB',
+        weight: 2,
+        opacity: 0.6,
+        dashArray: '8, 6'
+      }).addTo(map);
+    });
   });
 </script>
 @endsection

@@ -35,10 +35,13 @@ class AreaController extends Controller
             'router_ip'              => 'required|string|max:255',
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'required|string|max:255',
+            'latitude'               => 'nullable|numeric|between:-90,90',
+            'longitude'              => 'nullable|numeric|between:-180,180',
             'pools'                  => 'nullable|array',
             'pools.*.ip_pool_start'  => 'nullable|ip',
             'pools.*.ip_pool_end'    => 'nullable|ip',
             'pools.*.pool_name'      => 'nullable|string|max:100',
+            'google_maps_link'       => 'nullable|string',
         ]);
 
         // Parse host:port for router connection
@@ -82,6 +85,13 @@ class AreaController extends Controller
 
         $firstPool = $pools[0];
 
+        // Extract coordinates from Google Maps link or direct input
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
+        if (empty($latitude) && empty($longitude) && $request->filled('google_maps_link')) {
+            [$latitude, $longitude] = $this->extractCoordsFromGoogleMaps($request->google_maps_link);
+        }
+
         $area = Area::create([
             'name'          => $request->name,
             'router_ip'     => $request->router_ip,
@@ -89,6 +99,8 @@ class AreaController extends Controller
             'router_pass'   => $request->router_pass,
             'ip_pool_start' => $firstPool['ip_pool_start'],
             'ip_pool_end'   => $firstPool['ip_pool_end'],
+            'latitude'      => $latitude ?: null,
+            'longitude'     => $longitude ?: null,
         ]);
 
         foreach ($pools as $i => $pool) {
@@ -133,11 +145,21 @@ class AreaController extends Controller
             'router_ip'              => "required|string|max:255",
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'nullable|string|max:255',
+            'latitude'               => 'nullable|numeric|between:-90,90',
+            'longitude'              => 'nullable|numeric|between:-180,180',
             'pools'                  => 'required|array|min:1',
             'pools.*.ip_pool_start'  => 'required|ip',
             'pools.*.ip_pool_end'    => 'required|ip',
             'pools.*.pool_name'      => 'nullable|string|max:100',
+            'google_maps_link'       => 'nullable|string',
         ]);
+
+        // Extract coordinates from Google Maps link if lat/long not directly provided
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
+        if (empty($latitude) && empty($longitude) && $request->filled('google_maps_link')) {
+            [$latitude, $longitude] = $this->extractCoordsFromGoogleMaps($request->google_maps_link);
+        }
 
         $firstPool = $request->pools[0];
 
@@ -145,6 +167,8 @@ class AreaController extends Controller
             'name'          => $request->name,
             'router_ip'     => $request->router_ip,
             'router_user'   => $request->router_user,
+            'latitude'      => $latitude ?: null,
+            'longitude'     => $longitude ?: null,
             'ip_pool_start' => $firstPool['ip_pool_start'],
             'ip_pool_end'   => $firstPool['ip_pool_end'],
         ];
@@ -461,6 +485,46 @@ class AreaController extends Controller
         }
 
         return [$startIp, $endIp];
+    }
+
+    /**
+     * Extract latitude/longitude from a Google Maps URL or direct lat,long input.
+     * Supports patterns: @lat,lng / ?q=lat,lng / /place/lat,lng / !3dlat!4dlng / direct "lat,lng"
+     */
+    private function extractCoordsFromGoogleMaps(?string $url): array
+    {
+        if (empty($url)) {
+            return [null, null];
+        }
+
+        $url = trim($url);
+
+        // Direct format: -7.194529,107.573512 (no URL, just coordinates)
+        if (preg_match('/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        // Pattern: @-6.9502,107.6614
+        if (preg_match('/@(-?\d+\.\d+),(-?\d+\.\d+)/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        // Pattern: ?q=-6.9502,107.6614 or &q=
+        if (preg_match('/[\?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        // Pattern: /place/-6.9502,107.6614
+        if (preg_match('/\/place\/(-?\d+\.\d+),(-?\d+\.\d+)/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        // Pattern: !3d-6.9502!4d107.6614
+        if (preg_match('/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        return [null, null];
     }
 
     private function queryRouter(MikroTikService $mikrotik, string $path, string $proplist): array
