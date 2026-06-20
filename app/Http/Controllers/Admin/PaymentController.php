@@ -496,6 +496,27 @@ class PaymentController extends Controller
                     $customer->update(['status' => 'active']);
                 }
 
+                // Update billing_start_date jika kolom Tgl Berlangganan diisi
+                $tglBerlanggananRaw = trim($row[9] ?? '');
+                if (!empty($tglBerlanggananRaw)) {
+                    try {
+                        $parsedDate = \Carbon\Carbon::createFromFormat('d/m/Y', $tglBerlanggananRaw);
+                        if ($parsedDate && $parsedDate->toDateString() !== optional($customer->billing_start_date)->toDateString()) {
+                            $customer->update(['billing_start_date' => $parsedDate->toDateString()]);
+                        }
+                    } catch (\Throwable $e) {
+                        // Try other date formats
+                        try {
+                            $parsedDate = \Carbon\Carbon::parse($tglBerlanggananRaw);
+                            if ($parsedDate && $parsedDate->toDateString() !== optional($customer->billing_start_date)->toDateString()) {
+                                $customer->update(['billing_start_date' => $parsedDate->toDateString()]);
+                            }
+                        } catch (\Throwable $e2) {
+                            // Invalid date format — skip
+                        }
+                    }
+                }
+
                 $successCount++;
             }
 
