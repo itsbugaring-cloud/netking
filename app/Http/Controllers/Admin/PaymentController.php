@@ -517,6 +517,21 @@ class PaymentController extends Controller
                     }
                 }
 
+                // Update package (Layanan) jika kolom diisi dan berbeda
+                $layananRaw = trim($row[6] ?? '');
+                if (!empty($layananRaw)) {
+                    $package = \App\Models\Package::where('name', $layananRaw)
+                        ->where('area_id', $customer->area_id)
+                        ->where('is_active', true)
+                        ->first();
+                    if ($package && $package->id !== $customer->package_id) {
+                        $customer->update([
+                            'package_id' => $package->id,
+                            'package_price' => $package->price,
+                        ]);
+                    }
+                }
+
                 $successCount++;
             }
 
