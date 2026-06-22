@@ -236,7 +236,7 @@ class TelegramConfigBotController extends Controller
         if (str_starts_with($textLc, '/restart') || str_starts_with($textLc, 'restart ')) {
             $username = trim(preg_replace('/^\/?(restart)\s+/i', '', $text));
             if ($username) {
-                $this->handleRestartSession($chatId, $username);
+                $this->handleRestartSession($chatId, $username, $from);
                 return;
             } else {
                 $this->sendMessage($chatId, "🔄 Ketik: restart [pppoe_user]\nContoh: restart NPL-210");
@@ -1051,6 +1051,18 @@ class TelegramConfigBotController extends Controller
                     'by' => 'bot',
                     'note' => "Customer auto-created (ID {$customer->id})",
                 ];
+
+                // Bell notification for admin
+                try {
+                    \App\Models\AdminNotification::notify(
+                        'new_customer',
+                        '🆕 Pelanggan Baru (Bot)',
+                        ($draft['nama'] ?? '-') . ' — ' . ($draft['area_label'] ?? $draft['area_name'] ?? '-') . ' — ' . ($draft['pppoe_user'] ?? '-'),
+                        'bx-user-plus',
+                        'green',
+                        '/admin/customers/' . $customer->id
+                    );
+                } catch (\Throwable $e) {}
             }
         } else {
             $payload['status'] = self::STATUS_FAILED_MIKROTIK;
@@ -2642,17 +2654,19 @@ class TelegramConfigBotController extends Controller
 
         /** @var Customer|null $customer */
         $customer = Customer::query()
-            ->with(['area'])
+            ->with(['area', 'package'])
             ->whereRaw('LOWER(TRIM(pppoe_user)) = ?', [mb_strtolower($username)])
             ->first();
 
         if ($customer === null) {
-            $this->sendMessage($chatId, "⚠️ PPPoE `{$username}` tidak ditemukan di database.", ['parse_mode' => 'Markdown']);
+            $this->sendMessage($chatId, "⚠️ PPPoE {$username} tidak ditemukan.", ['parse_mode' => 'Markdown']);
             return;
         }
 
-        $area = $customer->area;
-        $pppoeUser = (string) $customer->pppoe_user;
+        $area       = $customer->area;
+        $package    = $customer->package;
+        $pppoeUser  = (string) $customer->pppoe_user;
+        $areaLabel  = $area ? $this->areaDisplayName($area) : '-';
 
         if (!$area) {
             $this->sendMessage($chatId, "⚠️ Area tidak ditemukan untuk pelanggan ini.");
@@ -2660,15 +2674,15 @@ class TelegramConfigBotController extends Controller
         }
 
         $formatBytes = function (int $bytes): string {
-            if ($bytes >= 1073741824) return number_format($bytes / 1073741824, 2) . ' GB';
-            if ($bytes >= 1048576)    return number_format($bytes / 1048576, 1)    . ' MB';
-            if ($bytes >= 1024)       return number_format($bytes / 1024, 1)        . ' KB';
+            if ($bytes >= 1073741824) return round($bytes / 1073741824, 2) . ' GB';
+            if ($bytes >= 1048576)    return round($bytes / 1048576, 2)    . ' MB';
+            if ($bytes >= 1024)       return round($bytes / 1024, 2)       . ' KB';
             return $bytes . ' B';
         };
 
-        $formatRate = function (int $bps): string {
-            if ($bps >= 1000000) return number_format($bps / 1000000, 1) . ' Mbps';
-            if ($bps >= 1000)    return number_format($bps / 1000, 0)    . ' Kbps';
+        $formatBps = function (int $bps): string {
+            if ($bps >= 1000000) return round($bps / 1000000, 1) . ' Mbps';
+            if ($bps >= 1000)    return round($bps / 1000, 1)    . ' Kbps';
             return $bps . ' bps';
         };
 
@@ -2679,35 +2693,75 @@ class TelegramConfigBotController extends Controller
                 return;
             }
 
+            // Get secret info for profile
+            $profileName = '-';
+            if ($package) {
+                $profileName = (string) ($package->mikrotik_profile ?: $package->code ?: $package->name);
+            } else {
+                $allSecrets = $service->getAllSecrets();
+                if (($allSecrets['success'] ?? false) === true) {
+                    foreach ((array) ($allSecrets['data'] ?? []) as $row) {
+                        if (mb_strtolower(trim((string) ($row['name'] ?? ''))) === mb_strtolower($pppoeUser)) {
+                            $profileName = (string) ($row['profile'] ?? '-');
+                            break;
+                        }
+                    }
+                }
+            }
+
             $sessions = $service->getActiveSessions($pppoeUser);
             if (($sessions['success'] ?? false) !== true) {
                 $this->sendMessage($chatId, "⚠️ Gagal ambil data sesi: " . ($sessions['error'] ?? 'unknown'));
                 return;
             }
 
+            $customerName = (string) ($customer->name ?? '-');
+            $paketLabel   = $package
+                ? ($package->name ?? '-') . ' (' . $profileName . ')'
+                : $profileName;
+
             $rows = (array) ($sessions['data'] ?? []);
+
             if (empty($rows)) {
-                $this->sendMessage($chatId, "🔴 {$pppoeUser} sedang OFFLINE");
+                // Offline — show basic info without bandwidth data
+                $lines = [
+                    "📶 Bandwidth: {$pppoeUser}",
+                    "━━━━━━━━━━━━━━━",
+                    "👤 {$customerName}",
+                    "📍 {$areaLabel}",
+                    "📦 Paket: {$paketLabel}",
+                    "",
+                    "📡 Status: 🔴 OFFLINE",
+                ];
+                $this->sendMessage($chatId, implode("\n", $lines));
                 return;
             }
 
-            $s = (array) $rows[0];
+            $s        = (array) $rows[0];
             $bytesIn  = (int) ($s['bytes-in']  ?? 0);
             $bytesOut = (int) ($s['bytes-out'] ?? 0);
             $rateIn   = (int) ($s['rate-in']   ?? 0);
             $rateOut  = (int) ($s['rate-out']  ?? 0);
             $uptime   = trim((string) ($s['uptime'] ?? '-'));
-
-            $statusLabel = '🟢 Aktif';
-            $customerName = (string) ($customer->name ?? '-');
+            $ip       = trim((string) ($s['address'] ?? '-'));
 
             $lines = [
                 "📶 Bandwidth: {$pppoeUser}",
                 "━━━━━━━━━━━━━━━",
-                "👤 {$customerName} — {$statusLabel}",
+                "👤 {$customerName}",
+                "📍 {$areaLabel}",
+                "📦 Paket: {$paketLabel}",
+                "",
+                "📡 Status: 🟢 ONLINE",
                 "⏱ Uptime: {$uptime}",
-                "📥 Download: " . $formatBytes($bytesIn) . " | " . $formatRate($rateIn),
-                "📤 Upload: "   . $formatBytes($bytesOut) . " | " . $formatRate($rateOut),
+                "🌐 IP: {$ip}",
+                "",
+                "📥 Download: " . $formatBytes($bytesIn),
+                "📤 Upload: "   . $formatBytes($bytesOut),
+                "",
+                "⚡ Rate Saat Ini:",
+                "  ↓ " . $formatBps($rateIn),
+                "  ↑ " . $formatBps($rateOut),
             ];
 
             $this->sendMessage($chatId, implode("\n", $lines));
@@ -2716,7 +2770,7 @@ class TelegramConfigBotController extends Controller
         }
     }
 
-    private function handleRestartSession(string $chatId, string $username): void
+    private function handleRestartSession(string $chatId, string $username, array $from = []): void
     {
         $username = trim($username);
         if ($username === '') {
@@ -2733,7 +2787,7 @@ class TelegramConfigBotController extends Controller
             ->first();
 
         if ($customer === null) {
-            $this->sendMessage($chatId, "⚠️ PPPoE `{$username}` tidak ditemukan di database.", ['parse_mode' => 'Markdown']);
+            $this->sendMessage($chatId, "⚠️ PPPoE {$username} tidak ditemukan di database.");
             return;
         }
 
@@ -2764,9 +2818,18 @@ class TelegramConfigBotController extends Controller
                 return;
             }
 
+            $operatorName     = trim((string) ($from['first_name'] ?? ''));
+            $operatorUsername = trim((string) ($from['username'] ?? ''));
+            $operatorLabel    = $operatorName !== '' ? $operatorName : 'Unknown';
+            if ($operatorUsername !== '') {
+                $operatorLabel .= " (@{$operatorUsername})";
+            }
+
             $this->sendMessage(
                 $chatId,
-                "🔄 Session {$pppoeUser} berhasil di-restart.\nPelanggan akan reconnect otomatis dalam beberapa detik."
+                "🔄 Restart Session: {$pppoeUser}\n"
+                . "✅ Session berhasil di-kick. Pelanggan akan reconnect otomatis.\n"
+                . "Dilakukan oleh: {$operatorLabel}"
             );
         } catch (\Throwable $e) {
             $this->sendMessage($chatId, "⚠️ Gagal restart sesi: " . $e->getMessage());
