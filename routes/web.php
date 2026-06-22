@@ -148,6 +148,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::prefix('payments')->name('payments.')->group(function () {
             Route::get('/quick', [PaymentController::class, 'quickPayment'])->name('quick');
             Route::get('/review', [PaymentController::class, 'reviewIndex'])->name('review');
+            Route::post('/import', [PaymentController::class, 'importExcel'])->name('import');
             Route::post('/{payment}/approve', [PaymentController::class, 'approve'])->name('approve');
             Route::post('/bulk-approve', [PaymentController::class, 'bulkApprove'])->name('bulk-approve');
             Route::post('/{payment}/reject', [PaymentController::class, 'reject'])->name('reject');
@@ -170,6 +171,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::match(['put', 'patch'], 'customers/{customer}', [CustomerController::class, 'update'])->whereNumber('customer')->name('customers.update');
         Route::post('customers/bulk-delete', [CustomerController::class, 'bulkDelete'])->name('customers.bulkDelete');
         Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->whereNumber('customer')->name('customers.toggle-status');
+        Route::post('customers/{customer}/isolir', [CustomerController::class, 'isolir'])->whereNumber('customer')->name('customers.isolir');
+        Route::post('customers/{customer}/lepas-isolir', [CustomerController::class, 'lepasIsolir'])->whereNumber('customer')->name('customers.lepas-isolir');
         Route::post('customers/{customer}/retry-provision', [CustomerController::class, 'retryProvision'])->whereNumber('customer')->name('customers.retry-provision');
         Route::post('customers/{customer}/enable-pppoe', [CustomerController::class, 'enablePppoe'])->whereNumber('customer')->name('customers.enable-pppoe');
         Route::post('customers/{customer}/reset-portal-password', [CustomerController::class, 'resetPortalPassword'])->whereNumber('customer')->name('customers.reset-portal-password');

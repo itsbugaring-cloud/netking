@@ -34,6 +34,7 @@ class PppoeController extends Controller
 
     public function index(Request $request)
     {
+        set_time_limit(300); // router besar butuh waktu lebih lama
         $user = auth()->user();
 
         // Partners can only see routers for areas they actually own customers in.
@@ -91,6 +92,7 @@ class PppoeController extends Controller
      */
     public function syncCustomers(Request $request)
     {
+        set_time_limit(300);
         $request->validate(['area_id' => 'required|exists:areas,id']);
 
         $user = auth()->user();

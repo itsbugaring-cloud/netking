@@ -35,10 +35,13 @@ class AreaController extends Controller
             'router_ip'              => 'required|string|max:255',
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'required|string|max:255',
+            'latitude'               => 'nullable|numeric|between:-90,90',
+            'longitude'              => 'nullable|numeric|between:-180,180',
             'pools'                  => 'nullable|array',
             'pools.*.ip_pool_start'  => 'nullable|ip',
             'pools.*.ip_pool_end'    => 'nullable|ip',
             'pools.*.pool_name'      => 'nullable|string|max:100',
+            'google_maps_link'       => 'nullable|string',
         ]);
 
         // Parse host:port for router connection
@@ -59,13 +62,15 @@ class AreaController extends Controller
                 try {
                     $routerPools = $mikrotik->getIpPools();
                     foreach ($routerPools as $rp) {
-                        if (!empty($rp['ranges']) && str_contains($rp['ranges'], '-')) {
-                            [$start, $end] = explode('-', $rp['ranges'], 2);
-                            $pools[] = [
-                                'pool_name' => $rp['name'] ?? null,
-                                'ip_pool_start' => trim($start),
-                                'ip_pool_end' => trim($end),
-                            ];
+                        if (!empty($rp['ranges'])) {
+                            [$start, $end] = $this->parsePoolRange($rp['ranges']);
+                            if ($start && $end) {
+                                $pools[] = [
+                                    'pool_name' => $rp['name'] ?? null,
+                                    'ip_pool_start' => $start,
+                                    'ip_pool_end'   => $end,
+                                ];
+                            }
                         }
                     }
                 } catch (\Exception $e) {
@@ -80,6 +85,13 @@ class AreaController extends Controller
 
         $firstPool = $pools[0];
 
+        // Extract coordinates from Google Maps link or direct input
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
+        if (empty($latitude) && empty($longitude) && $request->filled('google_maps_link')) {
+            [$latitude, $longitude] = $this->extractCoordsFromGoogleMaps($request->google_maps_link);
+        }
+
         $area = Area::create([
             'name'          => $request->name,
             'router_ip'     => $request->router_ip,
@@ -87,6 +99,8 @@ class AreaController extends Controller
             'router_pass'   => $request->router_pass,
             'ip_pool_start' => $firstPool['ip_pool_start'],
             'ip_pool_end'   => $firstPool['ip_pool_end'],
+            'latitude'      => $latitude ?: null,
+            'longitude'     => $longitude ?: null,
         ]);
 
         foreach ($pools as $i => $pool) {
@@ -131,11 +145,21 @@ class AreaController extends Controller
             'router_ip'              => "required|string|max:255",
             'router_user'            => 'required|string|max:255',
             'router_pass'            => 'nullable|string|max:255',
+            'latitude'               => 'nullable|numeric|between:-90,90',
+            'longitude'              => 'nullable|numeric|between:-180,180',
             'pools'                  => 'required|array|min:1',
             'pools.*.ip_pool_start'  => 'required|ip',
             'pools.*.ip_pool_end'    => 'required|ip',
             'pools.*.pool_name'      => 'nullable|string|max:100',
+            'google_maps_link'       => 'nullable|string',
         ]);
+
+        // Extract coordinates from Google Maps link if lat/long not directly provided
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
+        if (empty($latitude) && empty($longitude) && $request->filled('google_maps_link')) {
+            [$latitude, $longitude] = $this->extractCoordsFromGoogleMaps($request->google_maps_link);
+        }
 
         $firstPool = $request->pools[0];
 
@@ -143,6 +167,8 @@ class AreaController extends Controller
             'name'          => $request->name,
             'router_ip'     => $request->router_ip,
             'router_user'   => $request->router_user,
+            'latitude'      => $latitude ?: null,
+            'longitude'     => $longitude ?: null,
             'ip_pool_start' => $firstPool['ip_pool_start'],
             'ip_pool_end'   => $firstPool['ip_pool_end'],
         ];
@@ -261,13 +287,12 @@ class AreaController extends Controller
             $poolsData = $mikrotik->getIpPools();
             foreach ($poolsData as $pool) {
                 if (!empty($pool['ranges'])) {
-                    $ranges = $pool['ranges'];
-                    if (str_contains($ranges, '-')) {
-                        [$start, $end] = explode('-', $ranges, 2);
+                    [$start, $end] = $this->parsePoolRange($pool['ranges']);
+                    if ($start && $end) {
                         $pools[] = [
-                            'pool_name' => $pool['name'] ?? '',
-                            'ip_pool_start' => trim($start),
-                            'ip_pool_end' => trim($end),
+                            'pool_name'     => $pool['name'] ?? '',
+                            'ip_pool_start' => $start,
+                            'ip_pool_end'   => $end,
                         ];
                     }
                 }
@@ -421,6 +446,85 @@ class AreaController extends Controller
         } catch (\Throwable $e) {
             return [];
         }
+    }
+
+    /**
+     * Parse MikroTik pool ranges string into [start, end] IP pair.
+     * Handles multi-range format: "10.0.0.1-10.0.0.10,10.0.0.12-10.0.0.254"
+     * Returns the first IP of the first segment and last IP of the last segment.
+     */
+    private function parsePoolRange(string $ranges): array
+    {
+        // Split by comma to get individual range segments
+        $segments = array_filter(array_map('trim', explode(',', $ranges)));
+        if (empty($segments)) return [null, null];
+
+        // First segment: get start IP (before first '-' that follows a digit)
+        $firstSeg = reset($segments);
+        $startIp = null;
+        if (str_contains($firstSeg, '-')) {
+            $dashPos = strpos($firstSeg, '-');
+            $startIp = trim(substr($firstSeg, 0, $dashPos));
+        } else {
+            $startIp = $firstSeg; // single IP
+        }
+
+        // Last segment: get end IP (after last '-')
+        $lastSeg = end($segments);
+        $endIp = null;
+        if (str_contains($lastSeg, '-')) {
+            $dashPos = strrpos($lastSeg, '-');
+            $endIp = trim(substr($lastSeg, $dashPos + 1));
+        } else {
+            $endIp = $lastSeg; // single IP
+        }
+
+        // Validate both are valid IPs
+        if (!filter_var($startIp, FILTER_VALIDATE_IP) || !filter_var($endIp, FILTER_VALIDATE_IP)) {
+            return [null, null];
+        }
+
+        return [$startIp, $endIp];
+    }
+
+    /**
+     * Extract latitude/longitude from a Google Maps URL or direct lat,long input.
+     * Supports patterns: @lat,lng / ?q=lat,lng / /place/lat,lng / !3dlat!4dlng / direct "lat,lng"
+     */
+    private function extractCoordsFromGoogleMaps(?string $url): array
+    {
+        if (empty($url)) {
+            return [null, null];
+        }
+
+        $url = trim($url);
+
+        // Direct format: -7.194529,107.573512 (no URL, just coordinates)
+        if (preg_match('/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        // Pattern: @-6.9502,107.6614
+        if (preg_match('/@(-?\d+\.\d+),(-?\d+\.\d+)/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        // Pattern: ?q=-6.9502,107.6614 or &q=
+        if (preg_match('/[\?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        // Pattern: /place/-6.9502,107.6614
+        if (preg_match('/\/place\/(-?\d+\.\d+),(-?\d+\.\d+)/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        // Pattern: !3d-6.9502!4d107.6614
+        if (preg_match('/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/', $url, $m)) {
+            return [(float) $m[1], (float) $m[2]];
+        }
+
+        return [null, null];
     }
 
     private function queryRouter(MikroTikService $mikrotik, string $path, string $proplist): array
@@ -655,27 +759,94 @@ class AreaController extends Controller
     {
         try {
             $mikrotik = MikroTikService::forArea($area);
-            $client = $this->getClient($mikrotik);
 
-            // Fetch current filter rules to find the first rule's ID
-            $rules = $client->query(new Query('/ip/firewall/filter/print'))->read();
-            
-            $params = [
-                'action' => 'drop',
-                'chain' => 'forward',
-                'comment' => 'BLOCK TOTAL KONEKSI ISOLIR',
-                'src-address-list' => 'isolir'
-            ];
+            $client = $mikrotik->getClient();
 
-            // If there are existing rules, place this new rule before the very first rule
-            if (!empty($rules) && isset($rules[0]['.id'])) {
-                $params['place-before'] = $rules[0]['.id'];
+            if ($client === null) {
+                return back()->with('error', "Gagal konek ke router {$area->name}. Cek IP & kredensial area.");
             }
 
-            $query = new Query('/ip/firewall/filter/add', $params);
-            $client->query($query)->read();
+            // 1. Setup Whitelist Address-List
+            $oldWhitelist = $client->query((new Query('/ip/firewall/address-list/print'))->where('comment', 'Whitelist for Isolir Redirect'))->read();
+            foreach ($oldWhitelist as $rule) {
+                $client->query((new Query('/ip/firewall/address-list/remove'))->equal('.id', $rule['.id']))->read();
+            }
+            $client->query(
+                (new Query('/ip/firewall/address-list/add'))->equal('list', 'isolir_whitelist')->equal('address', 'netking.id')->equal('comment', 'Whitelist for Isolir Redirect')
+            )->read();
 
-            return back()->with('success', "Berhasil! Script 1 Baris (Block Total) sudah tertanam di urutan paling atas pada router {$area->name}.");
+            // 2. Enable Web Proxy
+            $client->query(
+                (new Query('/ip/proxy/set'))->equal('enabled', 'yes')->equal('port', '8080')
+            )->read();
+
+            // 3. Set Proxy Access Rule
+            $oldProxy = $client->query((new Query('/ip/proxy/access/print'))->where('comment', 'REDIRECT ISOLIR'))->read();
+            foreach ($oldProxy as $rule) {
+                $client->query((new Query('/ip/proxy/access/remove'))->equal('.id', $rule['.id']))->read();
+            }
+            $client->query(
+                (new Query('/ip/proxy/access/add'))->equal('action', 'deny')->equal('redirect-to', 'https://netking.id/isolir')->equal('comment', 'REDIRECT ISOLIR')
+            )->read();
+
+            // 4. NAT Rule for HTTP Redirect
+            $oldNat = $client->query((new Query('/ip/firewall/nat/print'))->where('comment', 'REDIRECT HTTP ISOLIR'))->read();
+            foreach ($oldNat as $rule) {
+                $client->query((new Query('/ip/firewall/nat/remove'))->equal('.id', $rule['.id']))->read();
+            }
+            $natRules = $client->query(new Query('/ip/firewall/nat/print'))->read();
+            $addNat = (new Query('/ip/firewall/nat/add'))
+                ->equal('chain', 'dstnat')
+                ->equal('protocol', 'tcp')
+                ->equal('dst-port', '80')
+                ->equal('src-address-list', 'isolir')
+                ->equal('action', 'redirect')
+                ->equal('to-ports', '8080')
+                ->equal('comment', 'REDIRECT HTTP ISOLIR');
+            if (!empty($natRules) && isset($natRules[0]['.id'])) {
+                $addNat->equal('place-before', $natRules[0]['.id']);
+            }
+            $client->query($addNat)->read();
+
+            // 5. Filter Rules (DNS Allow + Drop rest)
+            $oldFilterDNS = $client->query((new Query('/ip/firewall/filter/print'))->where('comment', 'ALLOW DNS ISOLIR'))->read();
+            foreach ($oldFilterDNS as $rule) {
+                $client->query((new Query('/ip/firewall/filter/remove'))->equal('.id', $rule['.id']))->read();
+            }
+            $oldFilterDrop = $client->query((new Query('/ip/firewall/filter/print'))->where('comment', 'BLOCK TOTAL KONEKSI ISOLIR'))->read();
+            foreach ($oldFilterDrop as $rule) {
+                $client->query((new Query('/ip/firewall/filter/remove'))->equal('.id', $rule['.id']))->read();
+            }
+            
+            $filterRules = $client->query(new Query('/ip/firewall/filter/print'))->read();
+            $placeBeforeId = !empty($filterRules) && isset($filterRules[0]['.id']) ? $filterRules[0]['.id'] : null;
+            
+            // DNS Allow Rule
+            $addDns = (new Query('/ip/firewall/filter/add'))
+                ->equal('chain', 'forward')
+                ->equal('protocol', 'udp')
+                ->equal('dst-port', '53')
+                ->equal('src-address-list', 'isolir')
+                ->equal('action', 'accept')
+                ->equal('comment', 'ALLOW DNS ISOLIR');
+            if ($placeBeforeId) {
+                $addDns->equal('place-before', $placeBeforeId);
+            }
+            $client->query($addDns)->read();
+            
+            // Drop Rule
+            $addDrop = (new Query('/ip/firewall/filter/add'))
+                ->equal('chain', 'forward')
+                ->equal('src-address-list', 'isolir')
+                ->equal('dst-address-list', '!isolir_whitelist')
+                ->equal('action', 'drop')
+                ->equal('comment', 'BLOCK TOTAL KONEKSI ISOLIR');
+            if ($placeBeforeId) {
+                $addDrop->equal('place-before', $placeBeforeId);
+            }
+            $client->query($addDrop)->read();
+
+            return back()->with('success', "Berhasil! Rule Redirect Isolir lengkap (Web Proxy, NAT, Filter) sudah tertanam di router {$area->name}.");
         } catch (\Throwable $e) {
             return back()->with('error', "Gagal menginstall rule ke {$area->name}: " . $e->getMessage());
         }

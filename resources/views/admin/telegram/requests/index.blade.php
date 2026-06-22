@@ -254,14 +254,9 @@
       </div>
 
       <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-        <div class="text-muted small">Halaman {{ $page }} dari {{ $lastPage }}</div>
-        <div class="d-flex gap-1">
-          @if($page > 1)
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.telegram.requests.index', ['q' => $q, 'status' => $status, 'page' => $page - 1]) }}">Prev</a>
-          @endif
-          @if($page < $lastPage)
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.telegram.requests.index', ['q' => $q, 'status' => $status, 'page' => $page + 1]) }}">Next</a>
-          @endif
+        <div class="text-muted small">Menampilkan {{ $items->firstItem() ?? 0 }} sampai {{ $items->lastItem() ?? 0 }} dari {{ $items->total() }} data</div>
+        <div>
+          {{ $items->links('pagination::bootstrap-5') }}
         </div>
       </div>
     </div>

@@ -15,11 +15,11 @@
     </div>
   </div>
 
-  <div class="row g-3">
-    <div class="col-lg-8">
-      <form action="{{ route('admin.customers.update', $customer) }}" method="POST">
-        @csrf
-        @method('PUT')
+  <form id="form-customer" action="{{ route('admin.customers.update', $customer) }}" method="POST">
+    @csrf
+    @method('PUT')
+    <div class="row g-3">
+      <div class="col-lg-8">
 
         <div class="ms-panel mb-3">
           <div class="ms-panel-head">
@@ -137,7 +137,7 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label">Tanggal Mulai Tagihan <span class="text-danger">*</span></label>
-                <input type="date" id="billing-start-date" name="billing_start_date" class="form-control @error('billing_start_date') is-invalid @enderror" value="{{ old('billing_start_date', optional($customer->billing_start_date)->toDateString() ?? optional($customer->created_at)->toDateString()) }}" required>
+                <input type="text" id="billing-start-date" name="billing_start_date" class="form-control js-flatpickr @error('billing_start_date') is-invalid @enderror" style="background:var(--surface);cursor:pointer;" value="{{ old('billing_start_date', optional($customer->billing_start_date)->toDateString() ?? optional($customer->created_at)->toDateString()) }}" placeholder="YYYY-MM-DD" required>
                 <div class="form-text">Dipakai untuk hitung prorata invoice bulan pertama.</div>
                 @error('billing_start_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
@@ -174,8 +174,7 @@
             <button type="submit" class="ms-btn"><i class='bx bx-save'></i> Simpan Perubahan</button>
           </div>
         </div>
-      </form>
-    </div>
+      </div>
 
     <div class="col-lg-4">
       <div class="ms-panel">
@@ -197,7 +196,7 @@
               @endif
             </div>
             <div class="form-check mt-2">
-              <input class="form-check-input" type="checkbox" name="is_free" value="1" id="is-free-check" {{ old('is_free', $customer->is_free) ? 'checked' : '' }}>
+              <input class="form-check-input" type="checkbox" name="is_free" value="1" id="is-free-check" form="form-customer" {{ old('is_free', $customer->is_free) ? 'checked' : '' }}>
               <label class="form-check-label" for="is-free-check" style="font-size:.82rem;">
                 <strong>Pelanggan Gratis</strong> — tidak ditagih, tidak kena auto-isolir
               </label>
@@ -214,7 +213,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </form>
 </div>
 @endsection
 
@@ -342,6 +341,14 @@ document.addEventListener('DOMContentLoaded', function() {
     startEl.addEventListener('input', refreshProrationPreview);
     startEl.addEventListener('change', refreshProrationPreview);
   }
+
+  if (typeof flatpickr !== 'undefined' && startEl) {
+    flatpickr(startEl, {
+      dateFormat: 'Y-m-d',
+      onChange: refreshProrationPreview
+    });
+  }
+
   refreshProrationPreview();
 });
 </script>

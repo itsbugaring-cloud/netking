@@ -18,7 +18,11 @@ class MapController extends Controller
 
         $areas = Area::all();
 
-        return view('admin.maps.index', compact('customers', 'areas'));
+        $areasWithCoords = Area::whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get(['id', 'name', 'latitude', 'longitude', 'router_ip', 'vlan_pppoe']);
+
+        return view('admin.maps.index', compact('customers', 'areas', 'areasWithCoords'));
     }
 
     public function status(Request $request)

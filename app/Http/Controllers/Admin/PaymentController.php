@@ -9,6 +9,8 @@ use App\Models\Payment;
 use App\Services\MikroTikService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -371,6 +373,179 @@ class PaymentController extends Controller
             return ['success' => false, 'deisolated' => false, 'error' => $result['error'] ?? 'Unknown MikroTik error.'];
         } catch (\Throwable $e) {
             return ['success' => false, 'deisolated' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Import bulk payments from Excel file
+     */
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'file'          => 'required|file|max:10240',
+            'periode_bulan' => 'required|integer|min:1|max:12',
+            'periode_tahun' => 'required|integer|min:2020|max:2030',
+        ]);
+
+        $file = $request->file('file');
+        $bulan = $request->input('periode_bulan');
+        $tahun = $request->input('periode_tahun');
+
+        try {
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+
+            if (count($rows) <= 1) {
+                return back()->with('error', 'File kosong atau tidak ada data baris.');
+            }
+
+            $successCount = 0;
+            $skippedCount = 0;
+            $failedCount = 0;
+
+            // Header mapping check (opsional, tapi kita asumsi format fix sesuai export)
+            // Index 1 = ID Pelanggan
+            // Index 7 = Bayar (Rp)
+            // Index 10 = Tgl Bayar
+            // Index 11 = Pembayaran (Metode / Lunas)
+            // Index 12 = Rekening
+            // Index 14 = Keterangan
+
+            foreach ($rows as $index => $row) {
+                if ($index === 0) continue; // Skip header
+
+                $customerCode = trim($row[1] ?? '');
+                if (empty($customerCode)) continue;
+
+                $tglBayarRaw = trim($row[10] ?? '');
+                $pembayaranRaw = trim($row[11] ?? '');
+
+                $isPaid = false;
+                if (!empty($tglBayarRaw) || in_array(strtolower($pembayaranRaw), ['lunas', 'y', 'transfer', 'cash', 'tunai'])) {
+                    $isPaid = true;
+                }
+
+                if (!$isPaid) {
+                    continue; // Skip pelanggan yang tidak terindikasi bayar
+                }
+
+                $customer = Customer::where('customer_code', $customerCode)->with('area')->first();
+                if (!$customer) {
+                    $failedCount++;
+                    continue;
+                }
+
+                // Cek apakah sudah ada payment LUNAS di bulan & tahun ini
+                $existingPaid = Payment::where('customer_id', $customer->id)
+                    ->where('periode_bulan', $bulan)
+                    ->where('periode_tahun', $tahun)
+                    ->where('status', 'approved')
+                    ->exists();
+
+                if ($existingPaid) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                $bayarRp = (float) str_replace(['Rp', '.', ',', ' '], '', trim($row[7] ?? ''));
+                if ($bayarRp <= 0) {
+                    $bayarRp = $customer->package->price ?? 0;
+                }
+
+                $metode = in_array(strtolower($pembayaranRaw), ['cash', 'tunai']) ? 'cash' : 'transfer';
+                $rekening = trim($row[12] ?? '') ?: 'Cash/Transfer';
+                $keterangan = trim($row[14] ?? '') ?: 'Import Otomatis';
+
+                // Cari apakah ada yang pending di bulan tsb, kalau ada update, kalau tidak buat baru
+                $payment = Payment::where('customer_id', $customer->id)
+                    ->where('periode_bulan', $bulan)
+                    ->where('periode_tahun', $tahun)
+                    ->where('status', 'pending')
+                    ->first();
+
+                if ($payment) {
+                    $payment->update([
+                        'status'              => 'approved',
+                        'jumlah'              => $bayarRp,
+                        'metode'              => $metode,
+                        'rekening_tujuan'     => $rekening,
+                        'catatan'             => $keterangan,
+                        'approved_by_user_id' => auth()->id(),
+                        'approved_at'         => now(),
+                    ]);
+                } else {
+                    Payment::create([
+                        'customer_id'         => $customer->id,
+                        'periode_bulan'       => $bulan,
+                        'periode_tahun'       => $tahun,
+                        'jumlah'              => $bayarRp,
+                        'metode'              => $metode,
+                        'rekening_tujuan'     => $rekening,
+                        'status'              => 'approved',
+                        'approved_by_user_id' => auth()->id(),
+                        'approved_at'         => now(),
+                        'catatan'             => $keterangan,
+                        'created_by_user_id'  => auth()->id(),
+                    ]);
+                }
+
+                // Lepas Isolir
+                $deisolate = $this->tryDeisolate($customer);
+                if ($customer->status === 'suspended') {
+                    $customer->update(['status' => 'active']);
+                }
+
+                // Update billing_start_date jika kolom Tgl Berlangganan diisi
+                $tglBerlanggananRaw = trim($row[9] ?? '');
+                if (!empty($tglBerlanggananRaw)) {
+                    try {
+                        $parsedDate = \Carbon\Carbon::createFromFormat('d/m/Y', $tglBerlanggananRaw);
+                        if ($parsedDate && $parsedDate->toDateString() !== optional($customer->billing_start_date)->toDateString()) {
+                            $customer->update(['billing_start_date' => $parsedDate->toDateString()]);
+                        }
+                    } catch (\Throwable $e) {
+                        // Try other date formats
+                        try {
+                            $parsedDate = \Carbon\Carbon::parse($tglBerlanggananRaw);
+                            if ($parsedDate && $parsedDate->toDateString() !== optional($customer->billing_start_date)->toDateString()) {
+                                $customer->update(['billing_start_date' => $parsedDate->toDateString()]);
+                            }
+                        } catch (\Throwable $e2) {
+                            // Invalid date format — skip
+                        }
+                    }
+                }
+
+                // Update package (Layanan) jika kolom diisi dan berbeda
+                $layananRaw = trim($row[6] ?? '');
+                if (!empty($layananRaw)) {
+                    $package = \App\Models\Package::where('name', $layananRaw)
+                        ->where('area_id', $customer->area_id)
+                        ->where('is_active', true)
+                        ->first();
+                    if ($package && $package->id !== $customer->package_id) {
+                        $customer->update([
+                            'package_id' => $package->id,
+                            'package_price' => $package->price,
+                        ]);
+                    }
+                }
+
+                // Update nama pelanggan jika kolom diisi dan berbeda
+                $namaRaw = trim($row[4] ?? '');
+                if (!empty($namaRaw) && $namaRaw !== $customer->name) {
+                    $customer->update(['name' => $namaRaw]);
+                }
+
+                $successCount++;
+            }
+
+            return back()->with('success', "Import selesai: $successCount Lunas, $skippedCount Di-skip (Sudah Lunas), $failedCount Gagal (ID tidak valid).");
+
+        } catch (\Throwable $e) {
+            Log::error('Error Import Pembayaran Excel: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses file Excel: ' . $e->getMessage());
         }
     }
 }

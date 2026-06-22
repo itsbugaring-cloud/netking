@@ -16,11 +16,18 @@ class Area extends Model
         'router_ip',
         'vlan_pppoe',
         'vlan_mgmt',
+        'latitude',
+        'longitude',
         'router_user',
         'router_pass',
         'router_identity',
         'ip_pool_start',
         'ip_pool_end',
+    ];
+
+    protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     protected $hidden = [

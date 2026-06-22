@@ -503,28 +503,9 @@ class TelegramConfigBotController extends Controller
                     $this->promptCurrentField($chatId, $state);
                     return;
                 }
-
-                // Live MikroTik check to prevent overwriting existing secret
-                $areaId = (int) ($state['draft']['area_id'] ?? 0);
-                $area = Area::query()->find($areaId);
-                if ($area) {
-                    try {
-                        $service = MikroTikService::forArea($area);
-                        if ($service->isConnected()) {
-                            $exists = $service->secretExists($value);
-                            if (($exists['success'] ?? false) === true && ($exists['exists'] ?? false) === true) {
-                                $this->sendMessage(
-                                    $chatId,
-                                    "⚠️ PPPoE ini sudah ada/aktif di router MikroTik area {$area->name}.\nCoba gunakan username lain ya."
-                                );
-                                $this->promptCurrentField($chatId, $state);
-                                return;
-                            }
-                        }
-                    } catch (\Throwable $e) {
-                        // Fallback silently if connection failed
-                    }
-                }
+                // NOTE: Live MikroTik check removed — was causing 3-8s delay per request.
+                // Duplicate PPPoE check is already done above via findDuplicatePppoe (DB).
+                // MikroTik secretExists check will happen at provisioning time.
             }
 
             $state['draft'][$editingField] = $value;
@@ -699,11 +680,27 @@ class TelegramConfigBotController extends Controller
                 $buttons[] = $row;
             }
 
+            if (empty($buttons)) {
+                $this->sendMessage($chatId, "⚠️ Tidak ada area/router yang tersedia. Hubungi admin.");
+                return;
+            }
+
             $msgId = $this->sendMessage(
                 $chatId,
                 "⚡ PILIH MIKROTIK\n{$progress}\nPilih router tujuan dulu, habis itu lanjut isi data.",
                 ['reply_markup' => ['inline_keyboard' => $buttons]]
             );
+
+            // Retry sekali jika sendMessage gagal (timeout dll)
+            if (!$msgId) {
+                sleep(1);
+                $msgId = $this->sendMessage(
+                    $chatId,
+                    "⚡ PILIH MIKROTIK\n{$progress}\nPilih router tujuan dulu, habis itu lanjut isi data.",
+                    ['reply_markup' => ['inline_keyboard' => $buttons]]
+                );
+            }
+
             $this->rememberPromptMessage($chatId, $msgId);
             return;
         }
@@ -903,22 +900,23 @@ class TelegramConfigBotController extends Controller
         }
 
         if (!empty($missing)) {
-            $this->sendMessage($chatId, '⚠️ Datanya belum lengkap nih: ' . implode(', ', $missing));
+            $this->sendMessage($chatId, "<tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji> Sing Baleg Siahhh...Can Lengkap <tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji>\n(Kurang: " . implode(', ', $missing) . ")", ['parse_mode' => 'HTML']);
             return;
         }
 
         if (empty($draft['photo_file_id'])) {
-            $this->sendMessage($chatId, "⚠️ Foto SN belum ada. Kirim dulu lewat tombol 📷 ya.");
+            $this->sendMessage($chatId, "⚠️ Hayoh Kirim Foto SN...");
             return;
         }
 
         $typedSn = strtoupper(trim((string) ($draft['sn_ont'] ?? '')));
         $ocrSn = strtoupper(trim((string) ($draft['photo_sn_ocr'] ?? $draft['photo_sn_ont'] ?? '')));
         if (($draft['photo_sn_verified'] ?? false) !== true || $typedSn === '' || $ocrSn === '' || $typedSn !== $ocrSn) {
-            $this->sendMessage(
-                $chatId,
-                "⚠️ Validasi SN foto belum lolos.\nSN teks: {$typedSn}\nHasil baca foto: " . ($ocrSn !== '' ? $ocrSn : 'tidak terbaca') . "\nKirim ulang foto SN yang lebih jelas."
-            );
+            $text = "<tg-emoji emoji-id=\"5368324170671202286\">❌</tg-emoji> Validasi SN foto belum lolos. <tg-emoji emoji-id=\"5368324170671202286\">❌</tg-emoji>\n" .
+                "SN teks: {$typedSn}\n" .
+                "Hasil baca foto: " . ($ocrSn !== '' ? $ocrSn : 'tidak terbaca') . "\n" .
+                "<tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji> Sing Baleg Siahhh Kirim Fotona... <tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji>";
+            $this->sendMessage($chatId, $text, ['parse_mode' => 'HTML']);
             return;
         }
 
@@ -1057,14 +1055,14 @@ class TelegramConfigBotController extends Controller
         $this->cleanupTransientMessages($chatId);
 
         $submitMsg = (($push['success'] ?? false) === true)
-            ? "✅ Konfig PPPoE berhasil masuk ke MikroTik.\nPassword default PPPoE: `" . ($draft['pppoe_pass'] ?? self::DEFAULT_PPPOE_PASSWORD) . "`\nTinggal lanjut konfigurasi di ONT.\n\nStatus active connection MikroTik ditampilkan di bawah ini."
-            : "⚠️ Data sudah tersimpan, tapi push ke router gagal.\n\nKlik *Status* buat lihat detailnya.";
+            ? "<tg-emoji emoji-id=\"5368324170671202286\">🔥</tg-emoji> LEKUY BOSS <tg-emoji emoji-id=\"5368324170671202286\">🔥</tg-emoji>\n<tg-emoji emoji-id=\"5368324170671202286\">👇</tg-emoji> Cek Status dicinih <tg-emoji emoji-id=\"5368324170671202286\">👇</tg-emoji>\n(Password default PPPoE: <code>" . ($draft['pppoe_pass'] ?? self::DEFAULT_PPPOE_PASSWORD) . "</code>)"
+            : "⚠️ Data sudah tersimpan, tapi push ke router gagal.\n\nKlik <b>Status</b> buat lihat detailnya.";
 
         $this->sendMessage(
             $chatId,
             $submitMsg,
             [
-                'parse_mode' => 'Markdown',
+                'parse_mode' => 'HTML',
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
@@ -1203,8 +1201,18 @@ class TelegramConfigBotController extends Controller
             $pppoePass = trim((string) ($draft['pppoe_pass'] ?? 'netking'));
             $phone = trim((string) ($draft['no_hp'] ?? ''));
             $address = trim((string) ($draft['address'] ?? $draft['lokasi'] ?? ''));
-            $latitude = isset($draft['latitude']) ? (float) $draft['latitude'] : null;
-            $longitude = isset($draft['longitude']) ? (float) $draft['longitude'] : null;
+            $latitude = null;
+            $longitude = null;
+            if (isset($draft['coordinates'])) {
+                $coords = $this->parseCoordinates((string) $draft['coordinates']);
+                if ($coords) {
+                    $latitude = $coords['latitude'];
+                    $longitude = $coords['longitude'];
+                }
+            } else {
+                $latitude = isset($draft['latitude']) ? (float) $draft['latitude'] : null;
+                $longitude = isset($draft['longitude']) ? (float) $draft['longitude'] : null;
+            }
             $sn = strtoupper(str_replace('-', '', trim((string) ($draft['sn_ont'] ?? ''))));
             $packageId = (int) ($draft['paket_id'] ?? 0);
             $packagePrice = (float) ($draft['harga'] ?? 0);
@@ -1447,14 +1455,15 @@ class TelegramConfigBotController extends Controller
     {
         $name = (string) ($from['first_name'] ?? 'Partner');
 
-        $text = "NETKING-SENUT siap bantu\n\n" .
-            "Halo {$name} 👋\n" .
-            "Langsung pilih menu di bawah buat mulai.";
+        $text = "<tg-emoji emoji-id=\"5368324170671202286\">🚀</tg-emoji> NETKING-SENUT <tg-emoji emoji-id=\"5368324170671202286\">🚀</tg-emoji>\n\n" .
+            "Halo {$name} <tg-emoji emoji-id=\"5368324170671202286\">👋</tg-emoji>\n" .
+            "Gaskeun konfig <tg-emoji emoji-id=\"5368324170671202286\">🔥</tg-emoji>";
 
         $this->sendMessage(
             $chatId,
             $text,
             [
+                'parse_mode' => 'HTML',
                 'reply_markup' => [
                     'keyboard' => $this->mainKeyboardRows(),
                     'resize_keyboard' => true,
@@ -2540,23 +2549,24 @@ class TelegramConfigBotController extends Controller
 
     private function getState(string $chatId): array
     {
-        $path = self::BOT_DIR . '/states/' . $chatId . '.json';
-        if (!Storage::disk('local')->exists($path)) {
-            return [
-                'collecting' => false,
-                'field_index' => 0,
-                'draft' => ['pppoe_pass' => 'netking'],
-            ];
-        }
-
-        $raw = Storage::disk('local')->get($path);
-        $data = json_decode($raw, true);
+        $cacheKey = 'tg_bot_state_' . $chatId;
+        $data = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        
         if (!is_array($data)) {
-            return [
-                'collecting' => false,
-                'field_index' => 0,
-                'draft' => ['pppoe_pass' => 'netking'],
-            ];
+            // Coba ambil dari file lama sebagai fallback migrasi (satu kali saja)
+            $path = self::BOT_DIR . '/states/' . $chatId . '.json';
+            if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+                $raw = \Illuminate\Support\Facades\Storage::disk('local')->get($path);
+                $data = json_decode($raw, true);
+            }
+            
+            if (!is_array($data)) {
+                return [
+                    'collecting' => false,
+                    'field_index' => 0,
+                    'draft' => ['pppoe_pass' => 'netking'],
+                ];
+            }
         }
 
         return $data;
@@ -2564,11 +2574,9 @@ class TelegramConfigBotController extends Controller
 
     private function saveState(string $chatId, array $state): void
     {
-        $path = self::BOT_DIR . '/states/' . $chatId . '.json';
-        Storage::disk('local')->put(
-            $path,
-            json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-        );
+        $cacheKey = 'tg_bot_state_' . $chatId;
+        // Simpan state di Cache selama 7 hari (Database driver aman dari race condition file)
+        \Illuminate\Support\Facades\Cache::put($cacheKey, $state, now()->addDays(7));
     }
 
     private function resetInputState(string $chatId, bool $clearDraft): void
@@ -2900,8 +2908,8 @@ class TelegramConfigBotController extends Controller
 
         try {
             $res = Http::asJson()
-                ->connectTimeout(1)
-                ->timeout(2)
+                ->connectTimeout(5)
+                ->timeout(10)
                 ->post($url, $payload);
 
             if (!$res->successful()) {

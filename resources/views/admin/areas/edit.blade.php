@@ -80,6 +80,20 @@
                 <input type="password" name="router_pass" class="form-control @error('router_pass') is-invalid @enderror" placeholder="Kosongkan untuk tidak mengubah">
                 @error('router_pass')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
+              <div class="col-md-12 mt-2">
+                <label class="form-label">Lokasi Router (Google Maps Link)</label>
+                <input type="text" id="google_maps_link" name="google_maps_link" class="form-control @error('google_maps_link') is-invalid @enderror" value="{{ old('google_maps_link') }}" placeholder="Paste link Google Maps...">
+                @error('google_maps_link')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <div class="form-text">Paste URL dari Google Maps atau ketik langsung koordinat (lat,long). Koordinat otomatis diambil.</div>
+              </div>
+              <div class="col-md-6 mt-2">
+                <label class="form-label">Latitude</label>
+                <input type="text" name="latitude" id="input-latitude" class="form-control" value="{{ old('latitude', $area->latitude) }}" readonly>
+              </div>
+              <div class="col-md-6 mt-2">
+                <label class="form-label">Longitude</label>
+                <input type="text" name="longitude" id="input-longitude" class="form-control" value="{{ old('longitude', $area->longitude) }}" readonly>
+              </div>
             </div>
           </div>
         </div>
@@ -263,6 +277,58 @@
   }
 
   bindRemoveButtons();
+
+  // === Google Maps Link Coordinate Extraction ===
+  var gmapsInput = document.getElementById('google_maps_link');
+  var latInput = document.getElementById('input-latitude');
+  var lngInput = document.getElementById('input-longitude');
+
+  function extractCoords(text) {
+    if (!text) return null;
+    text = text.trim();
+
+    // Direct format: -7.194529,107.573512
+    var directMatch = text.match(/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/);
+    if (directMatch) return { lat: directMatch[1], lng: directMatch[2] };
+
+    // Pattern: @-6.9502,107.6614
+    var atMatch = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (atMatch) return { lat: atMatch[1], lng: atMatch[2] };
+
+    // Pattern: ?q=-6.9502,107.6614 or &q=
+    var qMatch = text.match(/[\?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (qMatch) return { lat: qMatch[1], lng: qMatch[2] };
+
+    // Pattern: /place/-6.9502,107.6614
+    var placeMatch = text.match(/\/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (placeMatch) return { lat: placeMatch[1], lng: placeMatch[2] };
+
+    // Pattern: !3d-6.9502!4d107.6614
+    var dMatch = text.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+    if (dMatch) return { lat: dMatch[1], lng: dMatch[2] };
+
+    return null;
+  }
+
+  if (gmapsInput) {
+    gmapsInput.addEventListener('input', function() {
+      var coords = extractCoords(this.value);
+      if (coords) {
+        latInput.value = coords.lat;
+        lngInput.value = coords.lng;
+      }
+    });
+    gmapsInput.addEventListener('paste', function() {
+      var self = this;
+      setTimeout(function() {
+        var coords = extractCoords(self.value);
+        if (coords) {
+          latInput.value = coords.lat;
+          lngInput.value = coords.lng;
+        }
+      }, 50);
+    });
+  }
 })();
 </script>
 @endsection

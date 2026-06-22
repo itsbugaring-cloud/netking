@@ -80,8 +80,16 @@ class TelegramRequestController extends Controller
         $offset = ($page - 1) * $perPage;
         $items = array_slice($rows, $offset, $perPage);
 
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $total,
+            $perPage,
+            $page,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
+        );
+
         return view('admin.telegram.requests.index', [
-            'items' => $items,
+            'items' => $paginator,
             'status' => $status,
             'q' => $q,
             'page' => $page,

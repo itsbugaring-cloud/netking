@@ -533,7 +533,7 @@
     function pppoeArTick() {
         pppoeArCurrent--;
         var label = document.getElementById('pppoe-ar-label');
-        if (label) label.textContent = 'Refresh dalam ' + pppoeArCurrent + 'd';
+        if (label) label.textContent = 'Refresh dalam ' + pppoeArCurrent + 'dtk';
         if (pppoeArCurrent <= 0) { clearInterval(pppoeArTimer); location.reload(); }
     }
 

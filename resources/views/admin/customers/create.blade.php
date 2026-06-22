@@ -63,14 +63,6 @@
                 <select name="area_id" id="area-select" class="form-select @error('area_id') is-invalid @enderror" required>
                   <option value="">Pilih Area</option>
                   @foreach($areas as $area)
-                <input type="text" name="ont_sn" class="form-control @error('ont_sn') is-invalid @enderror" value="{{ old('ont_sn') }}" placeholder="cth. HWTC12345678">
-                @error('ont_sn')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Area <span class="text-danger">*</span></label>
-                <select name="area_id" id="area-select" class="form-select @error('area_id') is-invalid @enderror" required>
-                  <option value="">Pilih Area</option>
-                  @foreach($areas as $area)
                   <option value="{{ $area->id }}" {{ old('area_id', auth()->user()->role === 'partner' ? auth()->user()->area_id : '') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
                   @endforeach
                 </select>
@@ -127,7 +119,7 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label">Tanggal Mulai Tagihan <span class="text-danger">*</span></label>
-                <input type="date" name="billing_start_date" id="billing-start-date" class="form-control @error('billing_start_date') is-invalid @enderror" value="{{ old('billing_start_date', now()->toDateString()) }}" required>
+                <input type="text" name="billing_start_date" id="billing-start-date" class="form-control js-flatpickr @error('billing_start_date') is-invalid @enderror" style="background:var(--surface);cursor:pointer;" value="{{ old('billing_start_date', now()->toDateString()) }}" placeholder="YYYY-MM-DD" required>
                 <div class="form-text">Dipakai untuk hitung prorata invoice bulan pertama.</div>
                 @error('billing_start_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
@@ -136,6 +128,13 @@
                   <strong>Preview Prorata:</strong> <span id="proration-preview-text">-</span>
                 </div>
               </div>
+            </div>
+
+            <div class="form-check mt-3 mb-2">
+              <input class="form-check-input" type="checkbox" name="is_free" value="1" id="is-free-check" {{ old('is_free') ? 'checked' : '' }}>
+              <label class="form-check-label" for="is-free-check" style="font-size:.85rem;color:var(--txt);">
+                <strong>Pelanggan Gratis</strong> — tidak ditagih, tidak kena auto-isolir
+              </label>
             </div>
 
             <div class="alert alert-info py-2 mb-0 mt-3" style="font-size:.85rem;background:var(--blue-lt);border-color:var(--blue-md);color:var(--txt);">
@@ -313,6 +312,13 @@ $(function() {
 
   $price.on('input change', refreshProrationPreview);
   $billingStart.on('change input', refreshProrationPreview);
+
+  if (typeof flatpickr !== 'undefined' && $billingStart.length > 0) {
+    flatpickr($billingStart[0], {
+      dateFormat: 'Y-m-d',
+      onChange: refreshProrationPreview
+    });
+  }
 
   loadPackages($area.val());
   refreshProrationPreview();

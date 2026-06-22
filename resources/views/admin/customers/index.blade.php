@@ -436,7 +436,7 @@
             <i class='bx bx-search'></i>
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, PPPoE, HP..." autocomplete="off">
           </div>
-          <select name="per_page" onchange="this.form.submit()" style="height:34px;width:68px;padding:0 6px;font-size:.8rem;font-weight:600;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--txt);outline:none;cursor:pointer;">
+          <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()" style="height:34px;width:auto;min-width:75px;font-size:.8rem;font-weight:600;border-radius:9px;cursor:pointer;">
             <option value="25" @selected(($perPage ?? 50) == 25)>25</option>
             <option value="50" @selected(($perPage ?? 50) == 50)>50</option>
             <option value="100" @selected(($perPage ?? 50) == 100)>100</option>
@@ -566,6 +566,25 @@
                     @unless($isFinance)
                     <li><hr class="dropdown-divider" style="margin:3px 0;"></li>
                     <li><a class="dropdown-item" href="{{ route('admin.customers.edit', $customer) }}"><i class='bx bx-edit' style="color:var(--orange,#f97316);"></i> Edit Pelanggan</a></li>
+                    @if($customer->status !== 'suspended')
+                    <li>
+                      <form action="{{ route('admin.customers.isolir', $customer) }}" method="POST" class="m-0" data-confirm="Isolir {{ $customer->name }}? IP-nya akan diblokir.">
+                        @csrf
+                        <button type="submit" class="dropdown-item" style="color:#dc2626;">
+                          <i class='bx bx-lock-alt' style="color:#dc2626;"></i> Isolir
+                        </button>
+                      </form>
+                    </li>
+                    @else
+                    <li>
+                      <form action="{{ route('admin.customers.lepas-isolir', $customer) }}" method="POST" class="m-0" data-confirm="Lepas isolir {{ $customer->name }}?">
+                        @csrf
+                        <button type="submit" class="dropdown-item" style="color:#16a34a;">
+                          <i class='bx bx-lock-open-alt' style="color:#16a34a;"></i> Lepas Isolir
+                        </button>
+                      </form>
+                    </li>
+                    @endif
                     <li>
                       <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" class="m-0" data-confirm="Hapus {{ $customer->name }}?">
                         @csrf @method('DELETE')

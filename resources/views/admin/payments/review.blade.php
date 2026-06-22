@@ -245,7 +245,7 @@
 @endphp
 
 <div class="ms-page review-page">
-  <div class="ms-page-head">
+  <div class="ms-page-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
     <div>
       <div class="ms-page-kicker"><i class='bx bx-check-shield'></i> Review Pembayaran</div>
       <h1 class="ms-page-title">Antrian Review
@@ -254,9 +254,25 @@
         @endif
       </h1>
     </div>
+    <div>
+      <button onclick="document.getElementById('importModal').style.display='flex'" class="ms-btn-primary" style="display:flex; align-items:center; gap:0.5rem; border-radius:8px;">
+        <i class='bx bx-import'></i> Import Excel
+      </button>
+    </div>
   </div>
 
   {{-- Flash messages --}}
+  @if($errors->any())
+    <div style="background:#fee2e2;color:#991b1b;border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.85rem;font-weight:500;">
+      <i class='bx bx-error-circle me-1'></i> <strong>Gagal:</strong>
+      <ul style="margin-top:.5rem; margin-bottom:0; padding-left:1.5rem;">
+        @foreach($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
+
   @foreach(['success','warning','error','info'] as $type)
     @if(session($type))
       @php
@@ -420,6 +436,78 @@
     <button type="button" class="btn-bulk-cancel" onclick="clearAll()">Batalkan</button>
   </div>
 </div>
+
+{{-- Import Modal --}}
+<div id="importModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+  <div style="background:var(--surface); width:100%; max-width:480px; border-radius:16px; padding:1.5rem; box-shadow:0 10px 40px rgba(0,0,0,0.1);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3 style="margin:0; font-size:1.1rem; color:var(--txt);"><i class='bx bx-import' style="color:var(--blue); margin-right:5px;"></i> Import Pembayaran Excel</h3>
+      <button type="button" onclick="document.getElementById('importModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--txt-3);">&times;</button>
+    </div>
+    <form action="{{ route('admin.payments.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
+      @csrf
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:.85rem; color:var(--txt-2); margin-bottom:.3rem;">Periode Bulan Tagihan</label>
+        <select name="periode_bulan" class="ms-input" required style="width:100%; padding:.6rem; border-radius:8px; border:1px solid var(--border);">
+          @foreach($months as $k => $v)
+            @if($k > 0)
+              <option value="{{ $k }}" {{ now()->month == $k ? 'selected' : '' }}>{{ $v }}</option>
+            @endif
+          @endforeach
+        </select>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:.85rem; color:var(--txt-2); margin-bottom:.3rem;">Tahun Tagihan</label>
+        <input type="number" name="periode_tahun" class="ms-input" required value="{{ now()->year }}" min="2020" max="2030" style="width:100%; padding:.6rem; border-radius:8px; border:1px solid var(--border);">
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:.85rem; color:var(--txt-2); margin-bottom:.3rem;">File Excel</label>
+        <div id="dropZone" onclick="document.getElementById('fileInput').click()"
+             style="border:2px dashed var(--border); border-radius:10px; padding:1.5rem; text-align:center; cursor:pointer; transition:all .2s; background:var(--surface-2, #f9fafb);">
+          <i class='bx bx-cloud-upload' style="font-size:2rem; color:var(--blue); display:block; margin-bottom:.4rem;"></i>
+          <span id="dropLabel" style="font-size:.82rem; color:var(--txt-3);">Klik atau drag file Excel ke sini</span>
+          <div style="font-size:.7rem; color:var(--txt-3); margin-top:.3rem;">.xlsx, .xls, .csv — Max 10MB</div>
+        </div>
+        <input type="file" name="file" id="fileInput" accept=".xlsx,.xls,.csv" required style="display:none;" onchange="updateFileName(this)">
+      </div>
+      <div style="background:#f8fafc; border:1px dashed #cbd5e1; padding:.75rem 1rem; border-radius:8px; font-size:.78rem; color:#475569; margin-bottom:1.25rem; line-height:1.6;">
+        <strong>Yang di-update saat import:</strong><br>
+        ✅ Pembayaran (Tgl Bayar + Metode) → tandai lunas & buka isolir<br>
+        ✅ Nama Pelanggan → update jika berubah<br>
+        ✅ Layanan → update paket jika berubah<br>
+        ✅ Tgl Berlangganan → update jika diisi
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:.5rem;">
+        <button type="button" onclick="document.getElementById('importModal').style.display='none'" class="ms-btn-secondary" style="padding:.6rem 1.2rem; border-radius:8px;">Batal</button>
+        <button type="submit" class="ms-btn-primary" style="padding:.6rem 1.2rem; border-radius:8px;" onclick="this.innerHTML='<i class=\'bx bx-loader-alt bx-spin\'></i> Memproses...'; this.style.pointerEvents='none'; this.form.submit();">Import Data</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function updateFileName(input) {
+  var label = document.getElementById('dropLabel');
+  var zone = document.getElementById('dropZone');
+  if (input.files.length > 0) {
+    label.textContent = '📄 ' + input.files[0].name;
+    zone.style.borderColor = 'var(--blue)';
+    zone.style.background = 'rgba(37,99,235,.04)';
+  }
+}
+(function() {
+  var zone = document.getElementById('dropZone');
+  if (!zone) return;
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.style.borderColor='var(--blue)'; zone.style.background='rgba(37,99,235,.06)'; });
+  zone.addEventListener('dragleave', function() { zone.style.borderColor='var(--border)'; zone.style.background='var(--surface-2, #f9fafb)'; });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.style.borderColor='var(--blue)'; zone.style.background='rgba(37,99,235,.04)';
+    var input = document.getElementById('fileInput');
+    input.files = e.dataTransfer.files;
+    updateFileName(input);
+  });
+})();
+</script>
 
 @endsection
 

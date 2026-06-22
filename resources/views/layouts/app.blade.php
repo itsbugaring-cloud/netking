@@ -746,24 +746,24 @@
 
     /* ======= DARK MODE — Complete ======= */
     [data-theme="dark"] {
-      --blue: #334155;
-      --blue-dk: #1e293b;
-      --blue-lt: rgba(51, 65, 85, 0.16);
-      --blue-md: rgba(51, 65, 85, 0.22);
-      --blue-glow: rgba(51, 65, 85, 0.32);
-      --hover-bg: rgba(255, 255, 255, 0.05);
+      --blue: #3b82f6;
+      --blue-dk: #2563eb;
+      --blue-lt: rgba(59, 130, 246, 0.16);
+      --blue-md: rgba(59, 130, 246, 0.22);
+      --blue-glow: rgba(59, 130, 246, 0.32);
+      --hover-bg: rgba(255, 255, 255, 0.08);
       --bg: #09090b;
       --surface: #09090b;
-      --surface-2: #111113;
-      --border: rgba(255, 255, 255, .08);
-      --bd-dk: rgba(255, 255, 255, .1);
-      --txt: #f4f4f5;
-      --txt-2: #a1a1aa;
-      --txt-3: #71717a;
+      --surface-2: #18181b;
+      --border: rgba(255, 255, 255, .15);
+      --bd-dk: rgba(255, 255, 255, .2);
+      --txt: #ffffff;
+      --txt-2: #f4f4f5;
+      --txt-3: #d4d4d8;
       --shadow-xs: none;
-      --shadow-sm: 0 0 0 1px rgba(255,255,255,0.03);
-      --shadow-md: 0 0 0 1px rgba(255,255,255,0.04), 0 18px 40px rgba(0,0,0,0.32);
-      --shadow-lg: 0 0 0 1px rgba(255,255,255,0.05), 0 24px 60px rgba(0,0,0,0.4);
+      --shadow-sm: 0 0 0 1px rgba(255,255,255,0.05);
+      --shadow-md: 0 0 0 1px rgba(255,255,255,0.08), 0 18px 40px rgba(0,0,0,0.32);
+      --shadow-lg: 0 0 0 1px rgba(255,255,255,0.1), 0 24px 60px rgba(0,0,0,0.4);
       color-scheme: dark;
 
       /* Force Bootstrap 5 CSS variables to dark */
@@ -6099,11 +6099,11 @@
   .nk-confirm-popup { border-radius: 12px !important; padding: 1.5rem !important; font-family: 'Inter', sans-serif !important; max-width: 340px !important; }
   .nk-confirm-popup .swal2-icon { display: none !important; }
   .nk-confirm-popup .swal2-title { display: none !important; }
-  .nk-confirm-popup .swal2-html-container { font-size: .9rem !important; font-weight: 500 !important; color: #1f2937 !important; margin: 0 !important; padding: 0 !important; }
+  .nk-confirm-popup .swal2-html-container { font-size: .9rem !important; font-weight: 500 !important; color: var(--txt-2) !important; margin: 0 !important; padding: 0 !important; }
   .nk-confirm-popup .swal2-actions { margin-top: 1.25rem !important; gap: .5rem !important; }
-  .nk-confirm-btn { font-size: .8125rem !important; padding: .5rem 1.25rem !important; border-radius: 8px !important; font-weight: 600 !important; }
-  .nk-cancel-btn { font-size: .8125rem !important; padding: .5rem 1.25rem !important; border-radius: 8px !important; font-weight: 500 !important; color: #374151 !important; background: #f3f4f6 !important; border: 1px solid #e5e7eb !important; }
-  .nk-cancel-btn:hover { background: #e5e7eb !important; }
+  .nk-confirm-btn { font-size: .8125rem !important; padding: .5rem 1.25rem !important; border-radius: 8px !important; font-weight: 500 !important; background: var(--blue) !important; border: none !important; }
+  .nk-cancel-btn { font-size: .8125rem !important; padding: .5rem 1.25rem !important; border-radius: 8px !important; font-weight: 500 !important; color: var(--txt-2) !important; background: var(--surface-2) !important; border: 1px solid var(--border) !important; }
+  .nk-cancel-btn:hover { background: var(--surface-3) !important; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Flatpickr -->

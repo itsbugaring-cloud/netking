@@ -175,6 +175,7 @@ class CustomerController extends Controller
 
         $customer = Customer::create([
             ...$validated,
+            'is_free'         => $request->boolean('is_free'),
             'portal_password' => Hash::make(Str::random(12)),
             'status'          => 'provisioning',
         ]);
@@ -352,8 +353,96 @@ class CustomerController extends Controller
         return back()->with('success', 'Customer status updated to ' . $newStatus);
     }
 
+    public function isolir(Customer $customer)
+    {
+        $this->authorizeArea($customer);
+        $customer->loadMissing('area');
+
+        try {
+            $mikrotik = \App\Services\MikroTikService::forArea($customer->area);
+            if (!$mikrotik->isConnected()) {
+                return back()->with('error', 'MikroTik tidak bisa dihubungi.');
+            }
+
+            // Ambil IP dari sesi aktif PPPoE
+            $ip = null;
+            $sessions = $mikrotik->getActiveSessions($customer->pppoe_user);
+            if (($sessions['success'] ?? false) && !empty($sessions['data'])) {
+                foreach ($sessions['data'] as $s) {
+                    if (strtolower($s['name'] ?? '') === strtolower($customer->pppoe_user)) {
+                        $ip = $s['address'] ?? null;
+                        break;
+                    }
+                }
+            }
+            if (!$ip) $ip = $customer->remote_ip ?? null;
+
+            if (!$ip) {
+                return back()->with('error', "Pelanggan {$customer->name} tidak ada sesi aktif / IP tidak ditemukan. Pastikan sedang online.");
+            }
+
+            $check = $mikrotik->checkAddressList($ip, 'isolir');
+            if (($check['found'] ?? false) === true) {
+                return back()->with('warning', "IP {$ip} sudah ada di list isolir.");
+            }
+
+            $result = $mikrotik->addToAddressList($ip, 'isolir', null, "isolir:{$customer->pppoe_user}");
+            if (!($result['success'] ?? false)) {
+                return back()->with('error', 'Gagal isolir: ' . ($result['error'] ?? 'unknown'));
+            }
+
+            $customer->update(['status' => 'suspended']);
+            Log::info("Isolir customer {$customer->pppoe_user} IP {$ip}");
+
+            return back()->with('success', "✅ {$customer->name} berhasil diisolir. IP {$ip} masuk list isolir.");
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    public function lepasIsolir(Customer $customer)
+    {
+        $this->authorizeArea($customer);
+        $customer->loadMissing('area');
+
+        try {
+            $mikrotik = \App\Services\MikroTikService::forArea($customer->area);
+            if (!$mikrotik->isConnected()) {
+                return back()->with('error', 'MikroTik tidak bisa dihubungi.');
+            }
+
+            $listResult = $mikrotik->getAddressList('isolir');
+            if (!($listResult['success'] ?? false)) {
+                return back()->with('error', 'Gagal ambil address list: ' . ($listResult['error'] ?? ''));
+            }
+
+            $removed = 0;
+            foreach (($listResult['data'] ?? []) as $entry) {
+                $entryComment = $entry['comment'] ?? '';
+                $entryId = $entry['.id'] ?? null;
+                if (!$entryId) continue;
+
+                if (
+                    str_contains($entryComment, $customer->pppoe_user) ||
+                    ($customer->remote_ip && ($entry['address'] ?? '') === $customer->remote_ip)
+                ) {
+                    $mikrotik->removeFromAddressList($entryId);
+                    $removed++;
+                }
+            }
+
+            $customer->update(['status' => 'active']);
+            Log::info("Lepas isolir customer {$customer->pppoe_user}, removed {$removed} entries");
+
+            return back()->with('success', "✅ {$customer->name} berhasil dilepas dari isolir. ({$removed} entry dihapus)");
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
     public function enablePppoe(Customer $customer)
     {
+
         $this->authorizeArea($customer);
 
         try {

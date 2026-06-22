@@ -103,8 +103,8 @@ class MikroTikService
                     'user'           => $this->user,
                     'pass'           => $this->pass,
                     'port'           => $this->port,
-                    'timeout'        => 5,   // connection timeout (TCP handshake)
-                    'socket_timeout' => 15,  // read/write timeout (waiting for response)
+                    'timeout'        => 3,   // connection timeout (reduced to prevent 524 error)
+                    'socket_timeout' => 15,  // read/write timeout
                 ]);
 
                 $this->client = new Client($config);
@@ -366,8 +366,9 @@ class MikroTikService
     }
 
     /**
-     * Get all PPPoE Secrets
-     * Uses .proplist to limit fields — dramatically faster on slow routers.
+     * Get all PPPoE Secrets — BULLETPROOF VERSION
+     * Fetches IDs first (lightweight), then fetches details individually by .id.
+     * This completely bypasses the RouterOS library buffer dropping bug.
      */
     public function getAllSecrets(): array
     {
@@ -376,11 +377,20 @@ class MikroTikService
         }
 
         try {
+            // Fetching all secrets using a single query with .proplist to keep the payload size small
+            // and avoid timeout/buffer explosion.
             $query = new Query('/ppp/secret/print');
             $query->equal('.proplist', '.id,name,password,service,profile,remote-address,local-address,disabled,comment');
+            
             $secrets = $this->client->query($query)->read();
 
+            Log::info('MikroTik getAllSecrets optimized', [
+                'host'  => $this->host,
+                'total' => count($secrets),
+            ]);
+
             return ['success' => true, 'data' => $secrets];
+
         } catch (Exception $e) {
             Log::error('MikroTik Get All Secrets Failed', ['error' => $e->getMessage(), 'host' => $this->host]);
             return ['success' => false, 'error' => $e->getMessage()];

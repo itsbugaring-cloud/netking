@@ -45,7 +45,11 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->appendOutputTo(storage_path('logs/router-backup.log'));
 
-        // [REMOVED] Auto-suspend command removed — invoice system replaced by payments
+        // Auto-isolate customers with unpaid bills
+        $schedule->command('billing:auto-isolate')
+                 ->dailyAt('00:05')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/auto-isolate.log'));
 
         // [REMOVED] Commission recap — feature removed
     }
