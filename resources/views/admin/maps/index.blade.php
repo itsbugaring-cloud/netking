@@ -31,8 +31,9 @@
           <select id="status-filter" class="form-select">
             <option value="">Semua Status</option>
             <option value="active">Aktif (Hijau)</option>
-            <option value="isolated">Isolir (Orange)</option>
-            <option value="suspended">Nonaktif (Merah)</option>
+            <option value="suspended">Diisolir/Suspended (Kuning)</option>
+            <option value="failed">Gagal (Merah)</option>
+            <option value="provisioning">Dalam Proses</option>
           </select>
         </div>
         <div class="col-md-2 d-flex align-items-end">
@@ -92,7 +93,7 @@
       customersList.forEach(function(cust) {
         if (cust.latitude && cust.longitude && cust.latitude != 0 && cust.longitude != 0) {
           hasValidMarkers = true;
-          var statusColor = cust.status === 'active' ? 'green' : (cust.status === 'isolated' ? 'orange' : 'red');
+          var statusColor = cust.status === 'active' ? 'green' : (cust.status === 'suspended' ? 'orange' : 'red');
           var sn = cust.ont_sn ? cust.ont_sn : '<i class="text-muted">Kosong</i>';
           
           var popupContent = `

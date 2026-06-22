@@ -317,6 +317,38 @@ class MikroTikService
     }
 
     /**
+     * Update PPPoE secret fields (profile, password, comment, remote-address, etc.)
+     * Finds secret by username, then sets specified fields.
+     */
+    public function updateSecret(string $username, array $params): array
+    {
+        if (!$this->connect()) {
+            return ['success' => false, 'error' => 'Not connected to MikroTik'];
+        }
+        try {
+            $query = new Query('/ppp/secret/print');
+            $query->equal('.proplist', '.id,name');
+            $query->where('name', $username);
+            $secrets = $this->client->query($query)->read();
+            if (empty($secrets)) {
+                return ['success' => false, 'error' => 'Secret not found: ' . $username];
+            }
+            $secretId = $secrets[0]['.id'];
+            $setQuery = new Query('/ppp/secret/set');
+            $setQuery->equal('.id', $secretId);
+            foreach ($params as $key => $value) {
+                $setQuery->equal($key, $value ?? '');
+            }
+            $this->client->query($setQuery)->read();
+            Log::info('MikroTik PPPoE Secret Updated', ['username' => $username, 'params' => array_keys($params), 'host' => $this->host]);
+            return ['success' => true];
+        } catch (Exception $e) {
+            Log::error('MikroTik Update Secret Failed', ['username' => $username, 'error' => $e->getMessage()]);
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
      * Get Active PPPoE Sessions with full traffic stats
      */
     public function getActiveSessions(?string $username = null): array
@@ -1097,6 +1129,14 @@ class MikroTikService
         } catch (Exception $e) {
             return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Alias for findInAddressList — check if address is in a list
+     */
+    public function checkAddressList(string $address, string $listName = 'isolir'): array
+    {
+        return $this->findInAddressList($address, $listName);
     }
 
     /**

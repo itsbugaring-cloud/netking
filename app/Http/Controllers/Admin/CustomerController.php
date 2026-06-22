@@ -49,7 +49,9 @@ class CustomerController extends Controller
                 $q->where('name', 'like', '%' . $search . '%')
                     ->orWhere('pppoe_user', 'like', '%' . $search . '%')
                     ->orWhere('phone', 'like', '%' . $search . '%')
-                    ->orWhere('address', 'like', '%' . $search . '%');
+                    ->orWhere('address', 'like', '%' . $search . '%')
+                    ->orWhere('ont_sn', 'like', '%' . $search . '%')
+                    ->orWhere('customer_code', 'like', '%' . $search . '%');
             });
         }
 

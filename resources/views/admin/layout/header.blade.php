@@ -1,6 +1,7 @@
 @php
 $pendingPayments = \App\Models\Payment::where('status', 'pending')->count();
-$notifCount = $pendingPayments;
+$unreadNotifs = \App\Models\AdminNotification::forUser(auth()->id())->where('read', false)->count();
+$notifCount = $pendingPayments + $unreadNotifs;
 @endphp
 <header class="navbar navbar-expand-md d-none d-lg-flex d-print-none">
     <div class="container-xl">
@@ -30,6 +31,26 @@ $notifCount = $pendingPayments;
                                 </div>
                             </a>
                             @endif
+                            {{-- Recent AdminNotifications --}}
+                            @php
+                            $recentNotifs = \App\Models\AdminNotification::forUser(auth()->id())
+                                ->orderByDesc('id')
+                                ->limit(5)
+                                ->get();
+                            @endphp
+                            @foreach($recentNotifs as $notif)
+                            <a href="{{ $notif->link ?? '#' }}" class="list-group-item list-group-item-action" onclick="markNotifRead({{ $notif->id }})">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="status-dot {{ $notif->read ? 'bg-secondary' : 'bg-blue' }} d-block"></span>
+                                    </div>
+                                    <div class="col text-truncate">
+                                        <div class="d-block text-reset fw-semibold">{{ $notif->title }}</div>
+                                        <div class="d-block text-muted text-truncate mt-n1">{{ $notif->message }}</div>
+                                    </div>
+                                </div>
+                            </a>
+                            @endforeach
                             @if($notifCount === 0)
                             <div class="list-group-item">
                                 <div class="row align-items-center">
@@ -73,3 +94,9 @@ $notifCount = $pendingPayments;
         </div>
     </div>
 </header>
+
+<script>
+function markNotifRead(id) {
+    fetch('/admin/notifications/' + id + '/read', {method:'POST', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'Content-Type':'application/json'}});
+}
+</script>
