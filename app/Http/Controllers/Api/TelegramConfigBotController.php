@@ -172,7 +172,7 @@ class TelegramConfigBotController extends Controller
         }
 
         if ($textLc === '🔍 cek pppoe') {
-            $this->sendMessage($chatId, "🔍 Ketik username PPPoE yang ingin dicek:\nContoh: cek N-210");
+            $this->sendCekAreaSelection($chatId);
             return;
         }
 
@@ -328,6 +328,11 @@ class TelegramConfigBotController extends Controller
 
         if ($type === 'aok') {
             $this->sendMessage($chatId, "ℹ️ Mode approve dimatikan. Sekarang submit langsung push ke MikroTik.");
+            return;
+        }
+
+        if ($type === 'cekarea') {
+            $this->handleCekAreaSessions($chatId, (int) $value);
             return;
         }
 
@@ -2493,6 +2498,112 @@ class TelegramConfigBotController extends Controller
         }
 
         return 0;
+    }
+
+    private function sendCekAreaSelection(string $chatId): void
+    {
+        $areas = Area::query()->orderBy('name')->get(['id', 'name', 'router_identity']);
+
+        if ($areas->isEmpty()) {
+            $this->sendMessage($chatId, "⚠️ Belum ada area terdaftar.");
+            return;
+        }
+
+        $buttons = [];
+        $row = [];
+        foreach ($areas as $area) {
+            $label = $this->areaButtonLabel($area);
+            $row[] = ['text' => $label, 'callback_data' => 'cfg:cekarea:' . $area->id];
+            if (count($row) === 2) {
+                $buttons[] = $row;
+                $row = [];
+            }
+        }
+        if (!empty($row)) {
+            $buttons[] = $row;
+        }
+
+        $this->sendMessage(
+            $chatId,
+            "🔍 *Cek Active Session PPPoE*\nPilih area/router:",
+            [
+                'parse_mode' => 'Markdown',
+                'reply_markup' => ['inline_keyboard' => $buttons]
+            ]
+        );
+    }
+
+    private function handleCekAreaSessions(string $chatId, int $areaId): void
+    {
+        $area = Area::query()->find($areaId);
+        if (!$area) {
+            $this->sendMessage($chatId, "⚠️ Area tidak ditemukan.");
+            return;
+        }
+
+        $this->sendChatAction($chatId, 'typing');
+        $areaLabel = $this->areaDisplayName($area);
+
+        try {
+            $service = MikroTikService::forArea($area);
+            if (!$service->isConnected()) {
+                $this->sendMessage($chatId, "⚠️ Tidak bisa konek ke router {$areaLabel}.");
+                return;
+            }
+
+            $sessions = $service->getActiveSessions(null);
+            if (($sessions['success'] ?? false) !== true) {
+                $this->sendMessage($chatId, "⚠️ Gagal ambil active session: " . ($sessions['error'] ?? 'unknown'));
+                return;
+            }
+
+            $rows = (array) ($sessions['data'] ?? []);
+            if (empty($rows)) {
+                $this->sendMessage($chatId, "📡 *{$areaLabel}*\n\nTidak ada active session saat ini.", ['parse_mode' => 'Markdown']);
+                return;
+            }
+
+            $lines = [
+                "📡 *Active Sessions — {$areaLabel}*",
+                "Total: " . count($rows) . " koneksi aktif",
+                "━━━━━━━━━━━━━━━",
+            ];
+
+            $count = 0;
+            foreach ($rows as $row) {
+                if ($count >= 30) {
+                    $lines[] = "... +" . (count($rows) - 30) . " lainnya";
+                    break;
+                }
+                $user = trim((string) ($row['name'] ?? '-'));
+                $ip = trim((string) ($row['address'] ?? '-'));
+                $uptime = trim((string) ($row['uptime'] ?? '-'));
+                $lines[] = "• {$user} | {$ip} | ⏱ {$uptime}";
+                $count++;
+            }
+
+            // Split into chunks if too long (Telegram max 4096 chars)
+            $text = implode("\n", $lines);
+            if (strlen($text) > 4000) {
+                $chunks = array_chunk($rows, 20);
+                $this->sendMessage($chatId, implode("\n", array_slice($lines, 0, 4)), ['parse_mode' => 'Markdown']);
+                foreach ($chunks as $i => $chunk) {
+                    $chunkLines = [];
+                    foreach ($chunk as $row) {
+                        $user = trim((string) ($row['name'] ?? '-'));
+                        $ip = trim((string) ($row['address'] ?? '-'));
+                        $uptime = trim((string) ($row['uptime'] ?? '-'));
+                        $chunkLines[] = "• {$user} | {$ip} | {$uptime}";
+                    }
+                    $this->sendMessage($chatId, implode("\n", $chunkLines));
+                }
+            } else {
+                $this->sendMessage($chatId, $text, ['parse_mode' => 'Markdown']);
+            }
+
+        } catch (\Throwable $e) {
+            $this->sendMessage($chatId, "⚠️ Error: " . $e->getMessage());
+        }
     }
 
     private function handleCekPppoe(string $chatId, string $username): void
