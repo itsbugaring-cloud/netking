@@ -222,6 +222,28 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
+        if (str_starts_with($textLc, '/bandwidth') || str_starts_with($textLc, 'bw ') || str_starts_with($textLc, 'bandwidth ')) {
+            $username = trim(preg_replace('/^\/?(bandwidth|bw)\s+/i', '', $text));
+            if ($username) {
+                $this->handleBandwidth($chatId, $username);
+                return;
+            } else {
+                $this->sendMessage($chatId, "📶 Ketik: bandwidth [pppoe_user]\nContoh: bandwidth NPL-210");
+                return;
+            }
+        }
+
+        if (str_starts_with($textLc, '/restart') || str_starts_with($textLc, 'restart ')) {
+            $username = trim(preg_replace('/^\/?(restart)\s+/i', '', $text));
+            if ($username) {
+                $this->handleRestartSession($chatId, $username);
+                return;
+            } else {
+                $this->sendMessage($chatId, "🔄 Ketik: restart [pppoe_user]\nContoh: restart NPL-210");
+                return;
+            }
+        }
+
         // Hindari spam "menu" untuk pesan yang tidak dikenali.
         // Keyboard sudah dipasang pada greeting dan aksi utama.
         return;
@@ -1286,6 +1308,19 @@ class TelegramConfigBotController extends Controller
                 'longitude' => $longitude,
                 'status' => 'active',
             ]);
+
+            // Notify admin via bell notification
+            try {
+                $area = Area::query()->find($areaId);
+                \App\Models\AdminNotification::notify(
+                    'new_customer',
+                    '👷 Pelanggan Baru dari Bot',
+                    ($name ?? '-') . ' (' . ($pppoeUser ?? '-') . ') — Area: ' . ($area?->name ?? '-'),
+                    'bx-user-plus',
+                    'green',
+                    '/admin/customers/' . $customer->id
+                );
+            } catch (\Throwable $e) {}
 
             // Link ONT if SN matches
             if ($sn !== '') {
@@ -2592,6 +2627,149 @@ class TelegramConfigBotController extends Controller
 
         } catch (\Throwable $e) {
             $this->sendMessage($chatId, "⚠️ Error: " . $e->getMessage());
+        }
+    }
+
+    private function handleBandwidth(string $chatId, string $username): void
+    {
+        $username = trim($username);
+        if ($username === '') {
+            $this->sendMessage($chatId, "⚠️ Username PPPoE tidak boleh kosong.");
+            return;
+        }
+
+        $this->sendChatAction($chatId, 'typing');
+
+        /** @var Customer|null $customer */
+        $customer = Customer::query()
+            ->with(['area'])
+            ->whereRaw('LOWER(TRIM(pppoe_user)) = ?', [mb_strtolower($username)])
+            ->first();
+
+        if ($customer === null) {
+            $this->sendMessage($chatId, "⚠️ PPPoE `{$username}` tidak ditemukan di database.", ['parse_mode' => 'Markdown']);
+            return;
+        }
+
+        $area = $customer->area;
+        $pppoeUser = (string) $customer->pppoe_user;
+
+        if (!$area) {
+            $this->sendMessage($chatId, "⚠️ Area tidak ditemukan untuk pelanggan ini.");
+            return;
+        }
+
+        $formatBytes = function (int $bytes): string {
+            if ($bytes >= 1073741824) return number_format($bytes / 1073741824, 2) . ' GB';
+            if ($bytes >= 1048576)    return number_format($bytes / 1048576, 1)    . ' MB';
+            if ($bytes >= 1024)       return number_format($bytes / 1024, 1)        . ' KB';
+            return $bytes . ' B';
+        };
+
+        $formatRate = function (int $bps): string {
+            if ($bps >= 1000000) return number_format($bps / 1000000, 1) . ' Mbps';
+            if ($bps >= 1000)    return number_format($bps / 1000, 0)    . ' Kbps';
+            return $bps . ' bps';
+        };
+
+        try {
+            $service = MikroTikService::forArea($area);
+            if (!$service->isConnected()) {
+                $this->sendMessage($chatId, "⚠️ Tidak bisa konek ke router area {$area->name}.");
+                return;
+            }
+
+            $sessions = $service->getActiveSessions($pppoeUser);
+            if (($sessions['success'] ?? false) !== true) {
+                $this->sendMessage($chatId, "⚠️ Gagal ambil data sesi: " . ($sessions['error'] ?? 'unknown'));
+                return;
+            }
+
+            $rows = (array) ($sessions['data'] ?? []);
+            if (empty($rows)) {
+                $this->sendMessage($chatId, "🔴 {$pppoeUser} sedang OFFLINE");
+                return;
+            }
+
+            $s = (array) $rows[0];
+            $bytesIn  = (int) ($s['bytes-in']  ?? 0);
+            $bytesOut = (int) ($s['bytes-out'] ?? 0);
+            $rateIn   = (int) ($s['rate-in']   ?? 0);
+            $rateOut  = (int) ($s['rate-out']  ?? 0);
+            $uptime   = trim((string) ($s['uptime'] ?? '-'));
+
+            $statusLabel = '🟢 Aktif';
+            $customerName = (string) ($customer->name ?? '-');
+
+            $lines = [
+                "📶 Bandwidth: {$pppoeUser}",
+                "━━━━━━━━━━━━━━━",
+                "👤 {$customerName} — {$statusLabel}",
+                "⏱ Uptime: {$uptime}",
+                "📥 Download: " . $formatBytes($bytesIn) . " | " . $formatRate($rateIn),
+                "📤 Upload: "   . $formatBytes($bytesOut) . " | " . $formatRate($rateOut),
+            ];
+
+            $this->sendMessage($chatId, implode("\n", $lines));
+        } catch (\Throwable $e) {
+            $this->sendMessage($chatId, "⚠️ Gagal cek bandwidth: " . $e->getMessage());
+        }
+    }
+
+    private function handleRestartSession(string $chatId, string $username): void
+    {
+        $username = trim($username);
+        if ($username === '') {
+            $this->sendMessage($chatId, "⚠️ Username PPPoE tidak boleh kosong.");
+            return;
+        }
+
+        $this->sendChatAction($chatId, 'typing');
+
+        /** @var Customer|null $customer */
+        $customer = Customer::query()
+            ->with(['area'])
+            ->whereRaw('LOWER(TRIM(pppoe_user)) = ?', [mb_strtolower($username)])
+            ->first();
+
+        if ($customer === null) {
+            $this->sendMessage($chatId, "⚠️ PPPoE `{$username}` tidak ditemukan di database.", ['parse_mode' => 'Markdown']);
+            return;
+        }
+
+        $area = $customer->area;
+        $pppoeUser = (string) $customer->pppoe_user;
+
+        if (!$area) {
+            $this->sendMessage($chatId, "⚠️ Area tidak ditemukan untuk pelanggan ini.");
+            return;
+        }
+
+        try {
+            $service = MikroTikService::forArea($area);
+            if (!$service->isConnected()) {
+                $this->sendMessage($chatId, "⚠️ Tidak bisa konek ke router area {$area->name}.");
+                return;
+            }
+
+            $result = $service->disconnectSession($pppoeUser);
+
+            if (($result['success'] ?? false) !== true) {
+                $error = (string) ($result['error'] ?? 'unknown');
+                if (str_contains(strtolower($error), 'no active session')) {
+                    $this->sendMessage($chatId, "🔴 {$pppoeUser} tidak sedang online, tidak ada sesi yang perlu di-restart.");
+                } else {
+                    $this->sendMessage($chatId, "⚠️ Gagal restart sesi: {$error}");
+                }
+                return;
+            }
+
+            $this->sendMessage(
+                $chatId,
+                "🔄 Session {$pppoeUser} berhasil di-restart.\nPelanggan akan reconnect otomatis dalam beberapa detik."
+            );
+        } catch (\Throwable $e) {
+            $this->sendMessage($chatId, "⚠️ Gagal restart sesi: " . $e->getMessage());
         }
     }
 

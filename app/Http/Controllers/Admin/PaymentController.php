@@ -50,6 +50,18 @@ class PaymentController extends Controller
         $customer = $payment->customer->load('area');
         $deisolate = $this->tryDeisolate($customer);
 
+        // Notify admin via bell notification
+        try {
+            \App\Models\AdminNotification::notify(
+                'payment_approved',
+                '✅ Pembayaran Disetujui',
+                $customer->name . ' — Rp ' . number_format($payment->jumlah, 0, ',', '.'),
+                'bx-check-circle',
+                'green',
+                '/admin/payments/review'
+            );
+        } catch (\Throwable $e) {}
+
         if (!$deisolate['success']) {
             return back()->with('warning', 'Pembayaran disetujui, namun de-isolir MikroTik gagal: ' . $deisolate['error'] . '. Lakukan de-isolir manual.');
         }
