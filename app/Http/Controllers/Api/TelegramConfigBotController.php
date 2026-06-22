@@ -2558,47 +2558,36 @@ class TelegramConfigBotController extends Controller
             }
 
             $rows = (array) ($sessions['data'] ?? []);
-            if (empty($rows)) {
+            $total = count($rows);
+
+            if ($total === 0) {
                 $this->sendMessage($chatId, "📡 *{$areaLabel}*\n\nTidak ada active session saat ini.", ['parse_mode' => 'Markdown']);
                 return;
             }
 
-            $lines = [
-                "📡 *Active Sessions — {$areaLabel}*",
-                "Total: " . count($rows) . " koneksi aktif",
-                "━━━━━━━━━━━━━━━",
-            ];
+            // Send header message
+            $this->sendMessage($chatId, "📡 *Active Sessions — {$areaLabel}*\nTotal: *{$total}* koneksi aktif", ['parse_mode' => 'Markdown']);
 
-            $count = 0;
+            // Build all lines
+            $allLines = [];
             foreach ($rows as $row) {
-                if ($count >= 30) {
-                    $lines[] = "... +" . (count($rows) - 30) . " lainnya";
-                    break;
-                }
                 $user = trim((string) ($row['name'] ?? '-'));
                 $ip = trim((string) ($row['address'] ?? '-'));
                 $uptime = trim((string) ($row['uptime'] ?? '-'));
-                $lines[] = "• {$user} | {$ip} | ⏱ {$uptime}";
-                $count++;
+                $comment = trim((string) ($row['comment'] ?? ''));
+                $line = "• {$user} | {$ip} | {$uptime}";
+                if ($comment !== '') {
+                    $line .= " | {$comment}";
+                }
+                $allLines[] = $line;
             }
 
-            // Split into chunks if too long (Telegram max 4096 chars)
-            $text = implode("\n", $lines);
-            if (strlen($text) > 4000) {
-                $chunks = array_chunk($rows, 20);
-                $this->sendMessage($chatId, implode("\n", array_slice($lines, 0, 4)), ['parse_mode' => 'Markdown']);
-                foreach ($chunks as $i => $chunk) {
-                    $chunkLines = [];
-                    foreach ($chunk as $row) {
-                        $user = trim((string) ($row['name'] ?? '-'));
-                        $ip = trim((string) ($row['address'] ?? '-'));
-                        $uptime = trim((string) ($row['uptime'] ?? '-'));
-                        $chunkLines[] = "• {$user} | {$ip} | {$uptime}";
-                    }
-                    $this->sendMessage($chatId, implode("\n", $chunkLines));
-                }
-            } else {
-                $this->sendMessage($chatId, $text, ['parse_mode' => 'Markdown']);
+            // Split into chunks of ~50 lines per message to stay under Telegram 4096 char limit
+            $chunks = array_chunk($allLines, 50);
+            foreach ($chunks as $i => $chunk) {
+                $msgPart = implode("\n", $chunk);
+                // Escape markdown characters in IPs/usernames to avoid parse errors
+                $this->sendMessage($chatId, $msgPart);
             }
 
         } catch (\Throwable $e) {

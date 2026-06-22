@@ -331,7 +331,7 @@ class MikroTikService
             $query = new Query('/ppp/active/print');
             $query->equal('.proplist', implode(',', [
                 '.id', 'name', 'service', 'caller-id', 'address', 'uptime',
-                'encoding', 'session-id',
+                'encoding', 'session-id', 'comment',
                 'bytes-in', 'bytes-out',   // RouterOS 6
                 'rx-byte',  'tx-byte',      // RouterOS 7 alias
                 'rate-in',  'rate-out',     // current rate (bps), if available
