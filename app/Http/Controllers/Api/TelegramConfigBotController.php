@@ -166,6 +166,24 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
+        if (in_array($textLc, ['/stats', '📊 stats', 'stats'], true)) {
+            $this->handleStats($chatId);
+            return;
+        }
+
+        if ($textLc === '🔍 cek pppoe') {
+            $this->sendMessage($chatId, "🔍 Ketik username PPPoE yang ingin dicek:\nContoh: cek N-210");
+            return;
+        }
+
+        if (str_starts_with($textLc, '/cek') || str_starts_with($textLc, 'cek ')) {
+            $username = trim(preg_replace('/^\/?(cek\s+)/i', '', $text));
+            if ($username) {
+                $this->handleCekPppoe($chatId, $username);
+                return;
+            }
+        }
+
         if (in_array($textLc, ['/guide', '📚 panduan mikrotik pppoe', '📚 guide', 'guide'], true) || str_contains($textLc, 'panduan mikrotik pppoe')) {
             $this->sendMessage($chatId, "Menu ini saya nonaktifkan dulu ya. Langsung klik *Input* buat mulai.", ['parse_mode' => 'Markdown']);
             return;
@@ -739,7 +757,7 @@ class TelegramConfigBotController extends Controller
             'nama' => '🧾 Masukkan NAMA pelanggan:',
             'no_hp' => '📱 Masukkan nomor HP:',
             'address' => '📍 Masukkan alamat pelanggan:',
-            'coordinates' => "🛰️ Kirim titik koordinat rumah pelanggan:\nBisa share location Telegram atau ketik format: -6.123456, 107.123456",
+            'coordinates' => "📍 Kirim Lokasi ONT:\n• Klik 📎 → Location → Share My Location (GPS otomatis)\n• ATAU ketik koordinat: -6.9502503,107.6614869\n• ATAU paste link Google Maps",
             'sn_ont' => '🔌 Masukkan SN ONT:',
             'pppoe_user' => '🌐 Masukkan PPPoE User:',
         ];
@@ -1502,7 +1520,8 @@ class TelegramConfigBotController extends Controller
                 ['text' => '✅ Submit']
             ],
             [
-                ['text' => '🧾 Template'],
+                ['text' => '📊 Stats'],
+                ['text' => '🔍 Cek PPPoE'],
                 ['text' => '♻️ Reset']
             ],
         ];
@@ -1851,6 +1870,11 @@ class TelegramConfigBotController extends Controller
         }
 
         if ($field === 'coordinates') {
+            // Try extended parsing (Google Maps links, space-separated coords)
+            $parsedExt = $this->parseCoordinatesFromText($value);
+            if ($parsedExt !== null) {
+                return $this->formatCoordinates($parsedExt['latitude'], $parsedExt['longitude']);
+            }
             $parsed = $this->parseCoordinates($value);
             return $parsed ? $this->formatCoordinates($parsed['latitude'], $parsed['longitude']) : $value;
         }
@@ -1889,6 +1913,59 @@ class TelegramConfigBotController extends Controller
             'latitude' => $latitude,
             'longitude' => $longitude,
         ];
+    }
+
+    /**
+     * Parse coordinates from various text formats:
+     * - "-6.9502503,107.6614869"
+     * - "-6.9502503 107.6614869"
+     * - Google Maps link containing @lat,lng
+     */
+    private function parseCoordinatesFromText(string $text): ?array
+    {
+        $text = trim($text);
+        if ($text === '') {
+            return null;
+        }
+
+        // Google Maps link: extract @lat,lng from URL
+        if (str_contains($text, 'maps.google') || str_contains($text, 'google.com/maps') || str_contains($text, 'goo.gl/maps')) {
+            if (preg_match('/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/', $text, $m)) {
+                $lat = (float) $m[1];
+                $lng = (float) $m[2];
+                if ($lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                    return ['latitude' => $lat, 'longitude' => $lng];
+                }
+            }
+            // Also try ?q=lat,lng format
+            if (preg_match('/[?&]q=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/', $text, $m)) {
+                $lat = (float) $m[1];
+                $lng = (float) $m[2];
+                if ($lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                    return ['latitude' => $lat, 'longitude' => $lng];
+                }
+            }
+        }
+
+        // Comma-separated: -6.9502503,107.6614869
+        if (preg_match('/^\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*$/', $text, $m)) {
+            $lat = (float) $m[1];
+            $lng = (float) $m[2];
+            if ($lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                return ['latitude' => $lat, 'longitude' => $lng];
+            }
+        }
+
+        // Space-separated: -6.9502503 107.6614869
+        if (preg_match('/^\s*(-?\d{1,3}(?:\.\d+)?)\s+(-?\d{1,3}(?:\.\d+)?)\s*$/', $text, $m)) {
+            $lat = (float) $m[1];
+            $lng = (float) $m[2];
+            if ($lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                return ['latitude' => $lat, 'longitude' => $lng];
+            }
+        }
+
+        return null;
     }
 
     private function formatCoordinates(float $latitude, float $longitude): string
@@ -2416,6 +2493,199 @@ class TelegramConfigBotController extends Controller
         }
 
         return 0;
+    }
+
+    private function handleCekPppoe(string $chatId, string $username): void
+    {
+        $username = trim($username);
+        if ($username === '') {
+            $this->sendMessage($chatId, "⚠️ Username PPPoE tidak boleh kosong.");
+            return;
+        }
+
+        $this->sendChatAction($chatId, 'typing');
+
+        // Search customer in DB across all areas (or restrict to area_id if PIC)
+        $query = Customer::query()
+            ->with(['area', 'package'])
+            ->whereRaw('LOWER(TRIM(pppoe_user)) = ?', [mb_strtolower(trim($username))]);
+
+        // If user is a PIC/partner restricted to one area, filter by their area
+        $authorizedUser = User::query()
+            ->whereRaw('LOWER(telegram_chat_id) = ?', [mb_strtolower($chatId)])
+            ->first();
+        if ($authorizedUser && $authorizedUser->role === 'partner' && $authorizedUser->area_id) {
+            $query->where('area_id', $authorizedUser->area_id);
+        }
+
+        /** @var Customer|null $customer */
+        $customer = $query->first();
+
+        if ($customer === null) {
+            $this->sendMessage($chatId, "⚠️ PPPoE `{$username}` tidak ditemukan di database.", ['parse_mode' => 'Markdown']);
+            return;
+        }
+
+        $area = $customer->area;
+        $package = $customer->package;
+        $pppoeUser = (string) $customer->pppoe_user;
+        $areaName = $area ? $this->areaDisplayName($area) : '-';
+        $packageName = $package ? (string) $package->name : '-';
+        $packagePrice = $package ? number_format((float) $package->price, 0, ',', '.') : '-';
+
+        // Check MikroTik status
+        $secretInfo = null;
+        $sessionInfo = null;
+        $mikrotikError = null;
+
+        if ($area) {
+            try {
+                $service = MikroTikService::forArea($area);
+                if ($service->isConnected()) {
+                    // Get secret info (profile, disabled status)
+                    $allSecrets = $service->getAllSecrets();
+                    if (($allSecrets['success'] ?? false) === true) {
+                        foreach ((array) ($allSecrets['data'] ?? []) as $row) {
+                            if (mb_strtolower(trim((string) ($row['name'] ?? ''))) === mb_strtolower($pppoeUser)) {
+                                $secretInfo = $row;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Get active session
+                    $sessions = $service->getActiveSessions($pppoeUser);
+                    if (($sessions['success'] ?? false) === true) {
+                        $rows = (array) ($sessions['data'] ?? []);
+                        $sessionInfo = count($rows) > 0 ? (array) $rows[0] : null;
+                    }
+                } else {
+                    $mikrotikError = 'Koneksi ke router gagal';
+                }
+            } catch (\Throwable $e) {
+                $mikrotikError = $e->getMessage();
+            }
+        } else {
+            $mikrotikError = 'Area tidak ditemukan';
+        }
+
+        // Build message
+        $lines = [
+            "🔍 Cek PPPoE: {$pppoeUser}",
+            "━━━━━━━━━━━━━━━",
+            "👤 Nama: " . ($customer->name ?? '-'),
+            "📍 Area: {$areaName}",
+        ];
+
+        if ($packageName !== '-') {
+            $lines[] = "📦 Paket: {$packageName} (Rp {$packagePrice})";
+        }
+
+        $lines[] = "";
+        $lines[] = "📡 Status MikroTik:";
+
+        if ($mikrotikError !== null) {
+            $lines[] = "• ⚠️ Tidak bisa cek: {$mikrotikError}";
+        } else {
+            // Secret status
+            if ($secretInfo !== null) {
+                $isDisabled = ($secretInfo['disabled'] ?? 'false') === 'true';
+                $secretStatus = $isDisabled ? '✅ Ada (disabled/suspended)' : '✅ Ada (enabled)';
+                $lines[] = "• Secret: {$secretStatus}";
+                $profile = trim((string) ($secretInfo['profile'] ?? '-'));
+                if ($profile !== '' && $profile !== '-') {
+                    $lines[] = "• Profile: {$profile}";
+                }
+            } else {
+                $lines[] = "• Secret: ❌ Tidak ada di router";
+            }
+
+            // Session status
+            if ($sessionInfo !== null) {
+                $ip = trim((string) ($sessionInfo['address'] ?? '-'));
+                $uptime = trim((string) ($sessionInfo['uptime'] ?? '-'));
+                $bytesIn = (int) ($sessionInfo['bytes-in'] ?? 0);
+                $bytesOut = (int) ($sessionInfo['bytes-out'] ?? 0);
+
+                $formatBytes = function (int $bytes): string {
+                    if ($bytes >= 1073741824) return number_format($bytes / 1073741824, 1) . ' GB';
+                    if ($bytes >= 1048576) return number_format($bytes / 1048576, 1) . ' MB';
+                    if ($bytes >= 1024) return number_format($bytes / 1024, 1) . ' KB';
+                    return $bytes . ' B';
+                };
+
+                $lines[] = "• Session: 🟢 ONLINE";
+                $lines[] = "• IP: {$ip}";
+                $lines[] = "• Uptime: {$uptime}";
+                $lines[] = "• Download: " . $formatBytes($bytesIn);
+                $lines[] = "• Upload: " . $formatBytes($bytesOut);
+            } else {
+                $lines[] = "• Session: 🔴 OFFLINE";
+            }
+        }
+
+        $this->sendMessage($chatId, implode("\n", $lines));
+    }
+
+    private function handleStats(string $chatId): void
+    {
+        $this->sendChatAction($chatId, 'typing');
+
+        $areas = Area::query()->orderBy('name')->get(['id', 'name', 'router_identity']);
+
+        if ($areas->isEmpty()) {
+            $this->sendMessage($chatId, "⚠️ Belum ada area yang terdaftar.");
+            return;
+        }
+
+        // Count customers per area grouped by status
+        $customerStats = Customer::query()
+            ->selectRaw('area_id, status, COUNT(*) as total')
+            ->groupBy('area_id', 'status')
+            ->get()
+            ->groupBy('area_id');
+
+        $lines = [
+            "📊 Statistik Area Netking",
+            "━━━━━━━━━━━━━━━━━━━━━",
+        ];
+
+        $grandTotal = 0;
+        $grandActive = 0;
+        $grandSuspend = 0;
+
+        foreach ($areas as $area) {
+            $areaStats = $customerStats->get($area->id, collect());
+            $areaTotal = 0;
+            $areaActive = 0;
+            $areaSuspend = 0;
+
+            foreach ($areaStats as $row) {
+                $cnt = (int) $row->total;
+                $areaTotal += $cnt;
+                if (in_array($row->status, ['active', 'aktif'], true)) {
+                    $areaActive += $cnt;
+                } elseif (in_array($row->status, ['suspended', 'suspend', 'isolir', 'isolated'], true)) {
+                    $areaSuspend += $cnt;
+                }
+            }
+
+            $grandTotal += $areaTotal;
+            $grandActive += $areaActive;
+            $grandSuspend += $areaSuspend;
+
+            $areaLabel = $this->areaDisplayName($area);
+            $lines[] = "";
+            $lines[] = "🏘️ {$areaLabel}";
+            $lines[] = "   👥 Total: {$areaTotal} | ✅ Aktif: {$areaActive} | ⚠️ Suspend: {$areaSuspend}";
+        }
+
+        $lines[] = "";
+        $lines[] = "━━━━━━━━━━━━━━━━━━━━━";
+        $lines[] = "📈 TOTAL: {$grandTotal} pelanggan";
+        $lines[] = "✅ Aktif: {$grandActive} | ⚠️ Suspend: {$grandSuspend}";
+
+        $this->sendMessage($chatId, implode("\n", $lines));
     }
 
     private function extractSnFromText(string $text): ?string
