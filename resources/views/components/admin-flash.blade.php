@@ -3,6 +3,10 @@
 @php
 use Illuminate\Support\Str;
 
+$viewErrors = (($errors ?? null) instanceof \Illuminate\Support\ViewErrorBag)
+    ? $errors
+    : new \Illuminate\Support\ViewErrorBag();
+
 $types = [
     'success' => [
         'class' => 'success',
@@ -248,7 +252,7 @@ foreach ($types as $type => $config) {
 
 <!-- Floating Toasts Container -->
 <!-- SweetAlert2 Toasts -->
-@if($errors->any() || !empty($flashItems))
+@if($viewErrors->any() || !empty($flashItems))
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof Swal === 'undefined') return;
@@ -267,13 +271,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    @if($errors->any())
+    @if($viewErrors->any())
         Toast.fire({
             icon: 'error',
             title: 'Perlu diperbaiki',
             html: `
                 <ul class="text-start mb-0 ps-3" style="font-size: 0.85rem; margin-top: 4px;">
-                    @foreach($errors->all() as $error)
+                    @foreach($viewErrors->all() as $error)
                         <li>{{ addslashes($error) }}</li>
                     @endforeach
                 </ul>
