@@ -267,11 +267,21 @@
     @if($selectedArea && !$error)
 
     @php
-        $totalSecrets  = count($secrets);
-        $activeCount   = $activeSessions->count();
-        $offlineCount  = $totalSecrets - $activeCount;
-        $disabledCount = collect($secrets)->where('disabled', 'true')->count();
-        $onlinePct     = $totalSecrets > 0 ? round($activeCount / $totalSecrets * 100) : 0;
+        $secretRows = collect($secrets)
+            ->filter(fn ($secret) => filled($secret['name'] ?? null))
+            ->values();
+
+        $totalSecrets  = $secretRows->count();
+        $disabledCount = $secretRows->where('disabled', 'true')->count();
+        $onlineCount   = $secretRows->filter(function ($secret) use ($activeSessions) {
+            $secretName = $secret['name'] ?? null;
+
+            return ($secret['disabled'] ?? 'false') !== 'true'
+                && $secretName
+                && $activeSessions->has($secretName);
+        })->count();
+        $offlineCount  = $totalSecrets - $disabledCount - $onlineCount;
+        $onlinePct     = $totalSecrets > 0 ? round($onlineCount / $totalSecrets * 100) : 0;
 
         $fmtBytes = function($bytes) {
             $bytes = (int)$bytes;
@@ -306,7 +316,7 @@
             <div class="ms-stat-icon"><i class='bx bx-check-circle' style="font-size:1.3rem;"></i></div>
             <div>
                 <div class="ms-stat-label">Sesi Aktif</div>
-                <div class="ms-stat-value" style="color:var(--green);">{{ $activeCount }}</div>
+                <div class="ms-stat-value" style="color:var(--green);">{{ $onlineCount }}</div>
                 <div class="ms-stat-meta">{{ $onlinePct }}% rasio online</div>
             </div>
             <div class="ms-auto" style="width:72px;">
@@ -348,7 +358,7 @@
             </div>
             <div class="pppoe-filter-pills">
                 <span class="pppoe-pill active" data-filter="all">Semua ({{ $totalSecrets }})</span>
-                <span class="pppoe-pill" data-filter="online">Online ({{ $activeCount }})</span>
+                <span class="pppoe-pill" data-filter="online">Online ({{ $onlineCount }})</span>
                 <span class="pppoe-pill" data-filter="offline">Offline ({{ $offlineCount }})</span>
                 @if($disabledCount > 0)
                 <span class="pppoe-pill" data-filter="disabled">Disabled ({{ $disabledCount }})</span>
