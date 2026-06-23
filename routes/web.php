@@ -21,17 +21,6 @@ use App\Http\Controllers\Admin\MapController;
 // Isolir Landing Page
 Route::view('/isolir', 'isolir')->name('isolir.page');
 
-// Landing page
-Route::get('/fix', function() {
-    $duplicate = \App\Models\Customer::where('pppoe_user', 'NGL-013')->first();
-    if ($duplicate) {
-        $duplicate->pppoe_user = 'NGL-013-DUPLICATE-' . rand(100, 999);
-        $duplicate->save();
-        return 'Berhasil! Kloningan NGL-013 sudah dihapus namanya jadi ' . $duplicate->pppoe_user;
-    }
-    return 'Kloningan NGL-013 tidak ditemukan (sudah aman).';
-});
-
 Route::get('/', function () {
     $buildMeta = static function (string $filename): array {
         $path = public_path('downloads/' . $filename);

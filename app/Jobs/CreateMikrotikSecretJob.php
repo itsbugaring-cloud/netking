@@ -59,6 +59,14 @@ class CreateMikrotikSecretJob implements ShouldQueue
                 return;
             }
 
+            $exists = $mikrotik->secretExists($this->customer->pppoe_user);
+            if (($exists['success'] ?? false) !== true) {
+                throw new \RuntimeException("MikroTik duplicate check failed: " . ($exists['error'] ?? 'Unknown error'));
+            }
+            if (($exists['exists'] ?? false) === true) {
+                throw new \RuntimeException("PPPoE username {$this->customer->pppoe_user} sudah ada di MikroTik area {$this->customer->area->name}.");
+            }
+
             // Create PPPoE secret on the area's router
             $result = $mikrotik->createSecret(
                 username: $this->customer->pppoe_user,

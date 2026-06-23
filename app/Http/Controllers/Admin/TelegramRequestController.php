@@ -524,14 +524,12 @@ class TelegramRequestController extends Controller
                 return ['success' => false, 'error' => 'PPPOE_USER kosong'];
             }
 
-            $all = $service->getAllSecrets();
-            if (($all['success'] ?? false) === true) {
-                $exists = collect($all['data'] ?? [])->contains(function ($row) use ($pppoeUser) {
-                    return mb_strtolower((string) ($row['name'] ?? '')) === mb_strtolower($pppoeUser);
-                });
-                if ($exists) {
-                    return ['success' => false, 'error' => 'PPPOE_USER sudah ada di MikroTik area'];
-                }
+            $exists = $service->secretExists($pppoeUser);
+            if (($exists['success'] ?? false) !== true) {
+                return ['success' => false, 'error' => (string) ($exists['error'] ?? 'Gagal cek duplikasi PPPoE di MikroTik')];
+            }
+            if (($exists['exists'] ?? false) === true) {
+                return ['success' => false, 'error' => 'PPPOE_USER sudah ada di MikroTik area'];
             }
 
             $result = $service->createSecret(

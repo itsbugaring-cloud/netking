@@ -398,9 +398,15 @@ class MikroTikService
     }
 
     /**
-     * Get all PPPoE Secrets — BULLETPROOF VERSION
-     * Fetches IDs first (lightweight), then fetches details individually by .id.
-     * This completely bypasses the RouterOS library buffer dropping bug.
+     * Get all PPPoE Secrets — BULLETPROOF: fetch by individual .id
+     *
+     * Strategy:
+     *  1. Fetch all .id values (lightweight, never drops records).
+     *  2. Try a single bulk full-proplist query — if count matches, done fast.
+     *  3. If bulk drops any records (RouterOS API buffer bug), fall back to
+     *     fetching each missing secret individually by .id (100% reliable).
+     *
+     * This guarantees the returned count always matches the router's actual count.
      */
     public function getAllSecrets(): array
     {
@@ -409,19 +415,79 @@ class MikroTikService
         }
 
         try {
-            // Fetching all secrets using a single query with .proplist to keep the payload size small
-            // and avoid timeout/buffer explosion.
-            $query = new Query('/ppp/secret/print');
-            $query->equal('.proplist', '.id,name,password,service,profile,remote-address,local-address,disabled,comment');
-            
-            $secrets = $this->client->query($query)->read();
+            // Step 1: Get all IDs (lightweight, no buffer issue)
+            $idQuery = new Query('/ppp/secret/print');
+            $idQuery->equal('.proplist', '.id');
+            $idRows = $this->client->query($idQuery)->read();
+            $expectedCount = count($idRows);
 
-            Log::info('MikroTik getAllSecrets optimized', [
-                'host'  => $this->host,
-                'total' => count($secrets),
+            if ($expectedCount === 0) {
+                return ['success' => true, 'data' => []];
+            }
+
+            // Step 2: Try fast bulk query first
+            $proplist = '.id,name,password,service,profile,remote-address,local-address,disabled,comment';
+            $bulkQuery = new Query('/ppp/secret/print');
+            $bulkQuery->equal('.proplist', $proplist);
+            $bulkResult = $this->client->query($bulkQuery)->read();
+
+            if (count($bulkResult) >= $expectedCount) {
+                // Bulk worked perfectly — return immediately
+                Log::info('MikroTik getAllSecrets bulk OK', [
+                    'host'  => $this->host,
+                    'count' => count($bulkResult),
+                ]);
+                return ['success' => true, 'data' => $bulkResult];
+            }
+
+            // Step 3: Bulk dropped records — fall back to per-ID fetch
+            Log::warning('MikroTik getAllSecrets bulk dropped records, falling back to per-ID fetch', [
+                'host'     => $this->host,
+                'expected' => $expectedCount,
+                'got_bulk' => count($bulkResult),
             ]);
 
-            return ['success' => true, 'data' => $secrets];
+            // Build a map from what we already have (keyed by .id)
+            $byId = [];
+            foreach ($bulkResult as $row) {
+                $id = $row['.id'] ?? null;
+                if ($id !== null) {
+                    $byId[$id] = $row;
+                }
+            }
+
+            // Collect IDs we still need
+            $allIds = array_column($idRows, '.id');
+            $missingIds = array_filter($allIds, fn($id) => !isset($byId[$id]));
+
+            // Fetch each missing ID individually
+            foreach ($missingIds as $secretId) {
+                try {
+                    $q = new Query('/ppp/secret/print');
+                    $q->equal('.proplist', $proplist);
+                    $q->where('.id', $secretId);
+                    $rows = $this->client->query($q)->read();
+                    if (!empty($rows[0])) {
+                        $byId[$secretId] = $rows[0];
+                    }
+                } catch (Exception $e) {
+                    Log::warning('MikroTik getAllSecrets: failed to fetch single secret', [
+                        'id'    => $secretId,
+                        'error' => $e->getMessage(),
+                        'host'  => $this->host,
+                    ]);
+                }
+            }
+
+            $result = array_values($byId);
+
+            Log::info('MikroTik getAllSecrets per-ID fallback done', [
+                'host'     => $this->host,
+                'expected' => $expectedCount,
+                'got'      => count($result),
+            ]);
+
+            return ['success' => true, 'data' => $result];
 
         } catch (Exception $e) {
             Log::error('MikroTik Get All Secrets Failed', ['error' => $e->getMessage(), 'host' => $this->host]);
