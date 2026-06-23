@@ -23,14 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
 
         $middleware->alias([
-            'admin'    => \App\Http\Middleware\AdminMiddleware::class,
-            'partner'  => \App\Http\Middleware\PartnerMiddleware::class,
-            'role'     => \App\Http\Middleware\EnsureWebRole::class,
-            'guest'    => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'admin'     => \App\Http\Middleware\AdminMiddleware::class,
+            'role'      => \App\Http\Middleware\EnsureWebRole::class,
+            'guest'     => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'abilities' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
-            'ability'  => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
+            'ability'   => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
             // Strict role middleware for API routes (replaces insecure ability:role:* pattern)
-            'api.role' => \App\Http\Middleware\EnsureApiRole::class,
+            'api.role'  => \App\Http\Middleware\EnsureApiRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
