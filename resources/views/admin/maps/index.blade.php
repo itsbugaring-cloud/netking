@@ -13,9 +13,9 @@
   <div class="ms-panel mb-3">
     <div class="ms-panel-body p-3">
       <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label class="form-label text-muted" style="font-size:12px; font-weight:600;">Pencarian (Nama / SN)</label>
-          <input type="text" id="search-input" class="form-control" placeholder="Cari nama, kode, atau SN ONT...">
+          <input type="text" id="search-input" class="form-control" placeholder="Cari nama, kode, SN...">
         </div>
         <div class="col-md-3">
           <label class="form-label text-muted" style="font-size:12px; font-weight:600;">Filter Area</label>
@@ -36,8 +36,14 @@
             <option value="provisioning">Dalam Proses</option>
           </select>
         </div>
-        <div class="col-md-2 d-flex align-items-end">
-          <button id="reset-filter" class="btn btn-secondary w-100">Reset Filter</button>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="toggle-lines" checked>
+            <label class="form-check-label text-muted" style="font-size:12px; font-weight:600; cursor:pointer;" for="toggle-lines">
+              Garis ONT
+            </label>
+          </div>
+          <button id="reset-filter" class="btn btn-secondary flex-grow-1">Reset</button>
         </div>
       </div>
     </div>
@@ -93,6 +99,7 @@
       
       var hasValidMarkers = false;
       var bounds = L.latLngBounds();
+      var showLines = $('#toggle-lines').is(':checked');
 
       customersList.forEach(function(cust) {
         if (cust.latitude && cust.longitude && cust.latitude != 0 && cust.longitude != 0) {
@@ -132,12 +139,12 @@
           markersLayer.addLayer(marker);
           bounds.extend([cust.latitude, cust.longitude]);
 
-          if (cust.area && cust.area.latitude && cust.area.longitude) {
+          if (showLines && cust.area && cust.area.latitude && cust.area.longitude) {
             var lineColor = cust.status === 'active' ? '#10b981' : (cust.status === 'suspended' ? '#f59e0b' : '#ef4444');
             L.polyline([[cust.area.latitude, cust.area.longitude], [cust.latitude, cust.longitude]], {
               color: lineColor,
               weight: 1,
-              opacity: 0.25,
+              opacity: 0.15,
               dashArray: '2, 4'
             }).addTo(customerLinesLayer);
           }
@@ -184,7 +191,7 @@
 
     // Event Listeners
     $('#search-input').on('keyup', applyFilters);
-    $('#area-filter, #status-filter').on('change', applyFilters);
+    $('#area-filter, #status-filter, #toggle-lines').on('change', applyFilters);
 
     $('#reset-filter').on('click', function() {
       $('#search-input').val('');
