@@ -88,11 +88,11 @@
               </div>
               <div class="col-md-6 mt-2">
                 <label class="form-label">Latitude</label>
-                <input type="text" name="latitude" id="input-latitude" class="form-control" value="{{ old('latitude', $area->latitude) }}" readonly>
+                <input type="text" name="latitude" id="input-latitude" class="form-control" value="{{ old('latitude', $area->latitude) }}">
               </div>
               <div class="col-md-6 mt-2">
                 <label class="form-label">Longitude</label>
-                <input type="text" name="longitude" id="input-longitude" class="form-control" value="{{ old('longitude', $area->longitude) }}" readonly>
+                <input type="text" name="longitude" id="input-longitude" class="form-control" value="{{ old('longitude', $area->longitude) }}">
               </div>
             </div>
           </div>
