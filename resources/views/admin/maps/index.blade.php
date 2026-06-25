@@ -82,10 +82,14 @@
       zoomToBoundsOnClick: true
     });
     
+    var customerLinesLayer = L.layerGroup();
+    map.addLayer(customerLinesLayer);
+    
     map.addLayer(markersLayer);
 
     function renderMarkers(customersList) {
       markersLayer.clearLayers();
+      customerLinesLayer.clearLayers();
       
       var hasValidMarkers = false;
       var bounds = L.latLngBounds();
@@ -127,6 +131,16 @@
           var marker = L.marker([cust.latitude, cust.longitude], {icon: customIcon}).bindPopup(popupContent);
           markersLayer.addLayer(marker);
           bounds.extend([cust.latitude, cust.longitude]);
+
+          if (cust.area && cust.area.latitude && cust.area.longitude) {
+            var lineColor = cust.status === 'active' ? '#10b981' : (cust.status === 'suspended' ? '#f59e0b' : '#ef4444');
+            L.polyline([[cust.area.latitude, cust.area.longitude], [cust.latitude, cust.longitude]], {
+              color: lineColor,
+              weight: 1,
+              opacity: 0.25,
+              dashArray: '2, 4'
+            }).addTo(customerLinesLayer);
+          }
         }
       });
 
