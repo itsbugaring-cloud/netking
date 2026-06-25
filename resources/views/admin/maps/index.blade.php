@@ -143,9 +143,9 @@
             var lineColor = cust.status === 'active' ? '#10b981' : (cust.status === 'suspended' ? '#f59e0b' : '#ef4444');
             L.polyline([[cust.area.latitude, cust.area.longitude], [cust.latitude, cust.longitude]], {
               color: lineColor,
-              weight: 1,
-              opacity: 0.15,
-              dashArray: '2, 4'
+              weight: 2,
+              opacity: 0.6,
+              dashArray: '4, 6'
             }).addTo(customerLinesLayer);
           }
         }
