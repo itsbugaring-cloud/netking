@@ -499,6 +499,27 @@ class AreaController extends Controller
 
         $url = trim($url);
 
+        // Resolve Google Maps shortlinks (e.g., maps.app.goo.gl or goo.gl/maps)
+        if (str_contains($url, 'maps.app.goo.gl') || str_contains($url, 'goo.gl')) {
+            try {
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HEADER, true);
+                curl_setopt($ch, CURLOPT_NOBODY, true);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+                curl_exec($ch);
+                $redirectUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
+                curl_close($ch);
+                
+                if (!empty($redirectUrl)) {
+                    $url = $redirectUrl;
+                }
+            } catch (\Exception $e) {
+                // Proceed with original URL if it fails
+            }
+        }
+
         // Direct format: -7.194529,107.573512 (no URL, just coordinates)
         if (preg_match('/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/', $url, $m)) {
             return [(float) $m[1], (float) $m[2]];
