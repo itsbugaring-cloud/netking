@@ -25,13 +25,14 @@ class PaymentPageController extends Controller
                 ->first();
 
             if (!$customer) {
+                session()->flash('error', 'ID pelanggan tidak ditemukan.');
                 return view('payments.public', [
                     'customerCode' => $customerCode,
                     'customer' => null,
                     'currentPayment' => null,
                     'paymentHistory' => collect(),
                     'paymentSettings' => $this->paymentSettings(),
-                ])->with('error', 'ID pelanggan tidak ditemukan.');
+                ]);
             }
         }
 

@@ -310,7 +310,7 @@
               @else
                 {{-- Upload Form --}}
                 <h4 class="mb-3">Upload Bukti Pembayaran</h4>
-                <form method="POST" action="{{ route('payment.public.submit') }}" enctype="multipart/form-data">
+                <form id="paymentUploadForm" method="POST" action="{{ route('payment.public.submit') }}" enctype="multipart/form-data">
                   @csrf
                   <input type="hidden" name="customer_code" value="{{ $customer->customer_code }}">
 
@@ -515,7 +515,7 @@
 
     // Validate rekening selected before upload submit
     document.addEventListener('DOMContentLoaded', function() {
-      var uploadForm = document.querySelector('form[action*="payment"]');
+      var uploadForm = document.getElementById('paymentUploadForm');
       if (uploadForm) {
         uploadForm.addEventListener('submit', function(e) {
           var rek = document.getElementById('selectedRekening');
