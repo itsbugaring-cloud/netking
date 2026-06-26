@@ -59,6 +59,8 @@ class TelegramConfigBotController extends Controller
 
         $update = $request->all();
 
+        Log::error('webhook_debug', ['update' => $update, 'secret' => $secret]);
+
         try {
             if (isset($update['callback_query']) && is_array($update['callback_query'])) {
                 $this->handleCallbackQuery($update['callback_query']);
