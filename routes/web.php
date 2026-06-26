@@ -93,10 +93,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         : redirect()->route('admin.login')
     );
 
-    // Guest routes (rate-limited to prevent brute force)
-    Route::middleware(['guest', 'throttle:5,1'])->group(function () {
+    // Guest routes (rate-limited POST to prevent brute force)
+    Route::middleware(['guest'])->group(function () {
         Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+        Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.post');
     });
 
     // ── Base internal routes (Admin, Finance) ───────────────────────────────
