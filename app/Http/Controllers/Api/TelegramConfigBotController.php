@@ -3468,7 +3468,7 @@ class TelegramConfigBotController extends Controller
     {
         $token = trim($this->cfg('telegram_config_bot_token', 'TELEGRAM_CONFIG_BOT_TOKEN', ''));
         if ($token === '') {
-            Log::warning('telegram_config_bot_missing_token', ['method' => $method]);
+            Log::error('telegram_config_bot_missing_token', ['method' => $method]);
             return null;
         }
 
@@ -3481,7 +3481,7 @@ class TelegramConfigBotController extends Controller
                 ->post($url, $payload);
 
             if (!$res->successful()) {
-                Log::warning('telegram_config_bot_telegram_error', [
+                Log::error('telegram_config_bot_telegram_error', [
                     'method' => $method,
                     'status' => $res->status(),
                     'body' => $res->body(),
@@ -3492,7 +3492,7 @@ class TelegramConfigBotController extends Controller
             $json = $res->json();
             return is_array($json) ? $json : null;
         } catch (\Throwable $e) {
-            Log::warning('telegram_config_bot_http_exception', [
+            Log::error('telegram_config_bot_http_exception', [
                 'method' => $method,
                 'error' => $e->getMessage(),
             ]);
