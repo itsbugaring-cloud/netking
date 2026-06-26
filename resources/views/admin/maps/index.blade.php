@@ -93,6 +93,34 @@
     
     map.addLayer(markersLayer);
 
+    // === PRECALCULATE AREA LATLNGS WITH JITTER TO PREVENT OVERLAPPING ===
+    var areaLatLngs = {};
+    var usedCoords = {};
+    var serverLatLng = [-6.9502503, 107.6614869];
+    usedCoords[serverLatLng[0].toFixed(6) + ',' + serverLatLng[1].toFixed(6)] = 1;
+
+    var areasWithCoords = @json($areasWithCoords ?? []);
+    areasWithCoords.forEach(function(area) {
+      if (!area.latitude || !area.longitude) return;
+
+      var lat = parseFloat(area.latitude);
+      var lng = parseFloat(area.longitude);
+      var coordKey = lat.toFixed(6) + ',' + lng.toFixed(6);
+
+      if (usedCoords[coordKey]) {
+        var count = usedCoords[coordKey];
+        var angle = count * (2 * Math.PI / 6); // spread around in a hexagon
+        var radius = 0.00035 * (Math.floor((count - 1) / 6) + 1); // spiral outwards (approx 38m increments)
+        lat += Math.sin(angle) * radius;
+        lng += Math.cos(angle) * radius;
+        usedCoords[coordKey] = count + 1;
+      } else {
+        usedCoords[coordKey] = 1;
+      }
+
+      areaLatLngs[area.id] = [lat, lng];
+    });
+
     function renderMarkers(customersList) {
       markersLayer.clearLayers();
       customerLinesLayer.clearLayers();
@@ -140,8 +168,9 @@
           bounds.extend([cust.latitude, cust.longitude]);
 
           if (showLines && cust.area && cust.area.latitude && cust.area.longitude) {
+            var areaLatLng = areaLatLngs[cust.area_id] || [cust.area.latitude, cust.area.longitude];
             var lineColor = cust.status === 'active' ? '#10b981' : (cust.status === 'suspended' ? '#f59e0b' : '#ef4444');
-            L.polyline([[cust.area.latitude, cust.area.longitude], [cust.latitude, cust.longitude]], {
+            L.polyline([areaLatLng, [cust.latitude, cust.longitude]], {
               color: lineColor,
               weight: 2,
               opacity: 0.6,
@@ -204,7 +233,6 @@
     renderMarkers(allCustomers);
 
     // === Server Marker (Netking Server Utama) ===
-    var serverLatLng = [-6.9502503, 107.6614869];
     var serverIcon = L.divIcon({
       className: '',
       html: `<div style="position:relative;text-align:center;">
@@ -221,11 +249,9 @@
       .addTo(map);
 
     // === Area Router Markers + Backbone Lines ===
-    var areasWithCoords = @json($areasWithCoords ?? []);
     areasWithCoords.forEach(function(area) {
-      if (!area.latitude || !area.longitude) return;
-
-      var areaLatLng = [area.latitude, area.longitude];
+      var areaLatLng = areaLatLngs[area.id];
+      if (!areaLatLng) return;
 
       // Router icon - NOC style with blue glow
       var routerIcon = L.divIcon({
