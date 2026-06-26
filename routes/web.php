@@ -135,6 +135,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Payment Management
         Route::prefix('payments')->name('payments.')->group(function () {
+            Route::get('/clear-test-nk001732', function() {
+                $customer = \App\Models\Customer::where('customer_code', 'NK001732')->first();
+                if ($customer) {
+                    \App\Models\Payment::where('customer_id', $customer->id)->delete();
+                    return "Deleted payments for customer NK001732 successfully!";
+                }
+                return "Customer NK001732 not found";
+            });
             Route::get('/quick', [PaymentController::class, 'quickPayment'])->name('quick');
             Route::get('/review', [PaymentController::class, 'reviewIndex'])->name('review');
             Route::post('/import', [PaymentController::class, 'importExcel'])->name('import');
