@@ -61,19 +61,27 @@ class TelegramConfigBotController extends Controller
 
         Log::error('webhook_debug', ['update' => $update, 'secret' => $secret]);
 
-        try {
-            if (isset($update['callback_query']) && is_array($update['callback_query'])) {
-                $this->handleCallbackQuery($update['callback_query']);
-            } elseif (isset($update['message']) && is_array($update['message'])) {
-                $this->handleMessage($update['message']);
+        // Process webhook updates in the background (during Laravel's terminate lifecycle)
+        // so that Telegram gets a fast 200 OK response and never retries.
+        app()->terminating(function () use ($update) {
+            if (function_exists('fastcgi_finish_request')) {
+                fastcgi_finish_request();
             }
-        } catch (\Throwable $e) {
-            Log::error('telegram_config_bot_error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'update' => $update,
-            ]);
-        }
+
+            try {
+                if (isset($update['callback_query']) && is_array($update['callback_query'])) {
+                    $this->handleCallbackQuery($update['callback_query']);
+                } elseif (isset($update['message']) && is_array($update['message'])) {
+                    $this->handleMessage($update['message']);
+                }
+            } catch (\Throwable $e) {
+                Log::error('telegram_config_bot_error', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'update' => $update,
+                ]);
+            }
+        });
 
         return response()->json(['ok' => true]);
     }
@@ -2040,7 +2048,7 @@ class TelegramConfigBotController extends Controller
         @rename($tmpBase, $tmpImage);
 
         try {
-            $download = Http::timeout(15)->get($fileUrl);
+            $download = $this->httpTelegram()->timeout(15)->get($fileUrl);
             if (!$download->successful()) {
                 return ['success' => false, 'error' => 'Download foto Telegram gagal'];
             }
@@ -2166,9 +2174,12 @@ class TelegramConfigBotController extends Controller
             return null;
         }
 
-        $response = Http::timeout(10)->get("https://api.telegram.org/bot{$token}/getFile", [
-            'file_id' => $fileId,
-        ]);
+        $response = $this->httpTelegram()
+            ->connectTimeout(5)
+            ->timeout(10)
+            ->get("https://api.telegram.org/bot{$token}/getFile", [
+                'file_id' => $fileId,
+            ]);
 
         if (!$response->successful()) {
             return null;
@@ -2190,7 +2201,10 @@ class TelegramConfigBotController extends Controller
         }
 
         try {
-            $response = Http::timeout(15)->get($photoUrl);
+            $response = $this->httpTelegram()
+                ->connectTimeout(5)
+                ->timeout(15)
+                ->get($photoUrl);
             if (!$response->successful()) {
                 return null;
             }
@@ -3475,7 +3489,8 @@ class TelegramConfigBotController extends Controller
         $url = "https://api.telegram.org/bot{$token}/{$method}";
 
         try {
-            $res = Http::asJson()
+            $res = $this->httpTelegram()
+                ->asJson()
                 ->connectTimeout(5)
                 ->timeout(10)
                 ->post($url, $payload);
@@ -3498,6 +3513,45 @@ class TelegramConfigBotController extends Controller
             ]);
             return null;
         }
+    }
+
+    /**
+     * Resolve and cache the IP address of api.telegram.org to bypass system DNS resolution flakiness
+     */
+    private function getTelegramApiIp(): ?string
+    {
+        return Cache::remember('telegram_api_resolved_ip', 1800, function () {
+            try {
+                $ip = gethostbyname('api.telegram.org');
+                if ($ip && $ip !== 'api.telegram.org' && filter_var($ip, FILTER_VALIDATE_IP)) {
+                    return $ip;
+                }
+            } catch (\Throwable $e) {
+                // Ignore and fallback
+            }
+
+            // Fallback to one of Telegram's stable API IPs
+            return '149.154.167.220';
+        });
+    }
+
+    /**
+     * Get a PendingRequest instance preconfigured with CURLOPT_RESOLVE mapping
+     */
+    private function httpTelegram(): \Illuminate\Http\Client\PendingRequest
+    {
+        $ip = $this->getTelegramApiIp();
+        $options = [];
+        if ($ip) {
+            $optResolve = defined('CURLOPT_RESOLVE') ? CURLOPT_RESOLVE : 10203;
+            $options['curl'] = [
+                $optResolve => [
+                    "api.telegram.org:443:{$ip}"
+                ]
+            ];
+        }
+
+        return Http::withOptions($options);
     }
 
     private function rememberTransientMessage(string $chatId, ?int $messageId): void

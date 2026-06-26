@@ -93,6 +93,12 @@ class MikroTikService
             return false;
         }
 
+        // Fail fast if host is unreachable (unstable network, VPN offline)
+        if (!$this->isReachable(1.0)) {
+            Log::warning('MikroTik: Host port is unreachable, failing fast', ['host' => $this->host, 'port' => $this->port]);
+            return false;
+        }
+
         $attempts = 2; // try twice: first attempt + 1 retry
         $lastError = '';
 
@@ -138,6 +144,31 @@ class MikroTikService
     public function isConnected(): bool
     {
         return $this->connected || $this->connect();
+    }
+
+    /**
+     * Quick check if host port is reachable before full client connection
+     */
+    public function isReachable(float $timeout = 1.0): bool
+    {
+        if (empty($this->host)) {
+            return false;
+        }
+
+        if (!function_exists('fsockopen')) {
+            return true; // assume reachable if fsockopen is disabled
+        }
+
+        try {
+            $fp = @fsockopen($this->host, $this->port, $errno, $errstr, $timeout);
+            if ($fp) {
+                fclose($fp);
+                return true;
+            }
+        } catch (\Throwable $e) {
+            // Ignore
+        }
+        return false;
     }
 
     /**
