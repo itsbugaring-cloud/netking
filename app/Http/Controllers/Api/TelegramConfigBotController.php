@@ -2351,6 +2351,14 @@ class TelegramConfigBotController extends Controller
             return null;
         }
 
+        // 1. Check cache first to avoid DB query if cached
+        $cacheKey = $this->lastPppoeCacheKey($areaId);
+        $cached = Cache::get($cacheKey);
+        if (is_array($cached) && !empty($cached['pppoe_user'])) {
+            return $cached;
+        }
+
+        // 2. Fetch latest customer for this area from DB
         $dbLatest = Customer::query()
             ->select(['name', 'pppoe_user'])
             ->where('area_id', $areaId)
@@ -2358,41 +2366,6 @@ class TelegramConfigBotController extends Controller
             ->where('pppoe_user', '!=', '')
             ->orderByDesc('id')
             ->first();
-
-        $expectedPrefix = $this->detectAreaPppoePrefix($areaId, $dbLatest?->pppoe_user);
-
-        // Prioritaskan data live dari MikroTik supaya hint "secret terakhir" akurat.
-        $area = Area::query()->find($areaId);
-        if ($area) {
-            try {
-                $service = MikroTikService::forArea($area);
-                if ($service->isConnected()) {
-                    $all = $service->getAllSecrets();
-                    if (($all['success'] ?? false) === true) {
-                        $rows = is_array($all['data'] ?? null) ? $all['data'] : [];
-                        $best = $this->pickLatestRouterSecret($rows, $expectedPrefix);
-
-                        if (is_array($best)) {
-                            $result = [
-                                'name' => trim((string) ($best['comment'] ?? '')) ?: '-',
-                                'pppoe_user' => trim((string) ($best['name'] ?? '')),
-                                'source' => 'router',
-                            ];
-                            $this->cacheLastPppoeHint($areaId, $result);
-                            return $result;
-                        }
-                    }
-                }
-            } catch (\Throwable $e) {
-                // Fallback ke DB jika router tidak bisa dibaca.
-            }
-        }
-
-        $cacheKey = $this->lastPppoeCacheKey($areaId);
-        $cached = Cache::get($cacheKey);
-        if (is_array($cached) && !empty($cached['pppoe_user'])) {
-            return $cached;
-        }
 
         if (!$dbLatest) {
             return null;
@@ -2690,14 +2663,9 @@ class TelegramConfigBotController extends Controller
             if ($package) {
                 $profileName = (string) ($package->mikrotik_profile ?: $package->code ?: $package->name);
             } else {
-                $allSecrets = $service->getAllSecrets();
-                if (($allSecrets['success'] ?? false) === true) {
-                    foreach ((array) ($allSecrets['data'] ?? []) as $row) {
-                        if (mb_strtolower(trim((string) ($row['name'] ?? ''))) === mb_strtolower($pppoeUser)) {
-                            $profileName = (string) ($row['profile'] ?? '-');
-                            break;
-                        }
-                    }
+                $secretResult = $service->getSecretByName($pppoeUser);
+                if (($secretResult['success'] ?? false) === true && !empty($secretResult['data'])) {
+                    $profileName = (string) ($secretResult['data']['profile'] ?? '-');
                 }
             }
 
@@ -2876,14 +2844,9 @@ class TelegramConfigBotController extends Controller
                 $service = MikroTikService::forArea($area);
                 if ($service->isConnected()) {
                     // Get secret info (profile, disabled status)
-                    $allSecrets = $service->getAllSecrets();
-                    if (($allSecrets['success'] ?? false) === true) {
-                        foreach ((array) ($allSecrets['data'] ?? []) as $row) {
-                            if (mb_strtolower(trim((string) ($row['name'] ?? ''))) === mb_strtolower($pppoeUser)) {
-                                $secretInfo = $row;
-                                break;
-                            }
-                        }
+                    $secretResult = $service->getSecretByName($pppoeUser);
+                    if (($secretResult['success'] ?? false) === true && !empty($secretResult['data'])) {
+                        $secretInfo = $secretResult['data'];
                     }
 
                     // Get active session

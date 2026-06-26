@@ -546,6 +546,36 @@ class MikroTikService
     }
 
     /**
+     * Get a specific PPPoE secret by username.
+     */
+    public function getSecretByName(string $username): array
+    {
+        if (!$this->connect()) {
+            return ['success' => false, 'error' => 'Not connected to MikroTik'];
+        }
+
+        try {
+            $query = new Query('/ppp/secret/print');
+            $query->where('name', $username);
+            $rows = $this->client->query($query)->read();
+
+            if (empty($rows)) {
+                return ['success' => true, 'data' => null];
+            }
+
+            return ['success' => true, 'data' => $rows[0]];
+        } catch (Exception $e) {
+            Log::error('MikroTik Get Secret By Name Failed', [
+                'username' => $username,
+                'error' => $e->getMessage(),
+                'host' => $this->host,
+            ]);
+
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
      * Get all PPPoE Profiles (for package sync)
      * Uses .proplist to limit fields — prevents memory explosion on large routers.
      */
