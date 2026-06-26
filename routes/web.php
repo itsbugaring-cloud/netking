@@ -135,15 +135,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Payment Management
         Route::prefix('payments')->name('payments.')->group(function () {
-            Route::get('/clear-test-nk001732', function() {
-                $customer = \App\Models\Customer::whereRaw('UPPER(TRIM(customer_code)) = ?', ['NK001732'])->first();
-                if (!$customer) {
-                    $list = \App\Models\Customer::limit(10)->pluck('customer_code')->toArray();
-                    return "Customer NK001732 not found. First 10 customer codes in DB: " . implode(', ', $list);
-                }
-                $deletedCount = \App\Models\Payment::where('customer_id', $customer->id)->delete();
-                return "Deleted " . $deletedCount . " payments for customer ID: " . $customer->id . " (" . $customer->customer_code . ") successfully!";
-            });
             Route::get('/quick', [PaymentController::class, 'quickPayment'])->name('quick');
             Route::get('/review', [PaymentController::class, 'reviewIndex'])->name('review');
             Route::post('/import', [PaymentController::class, 'importExcel'])->name('import');
