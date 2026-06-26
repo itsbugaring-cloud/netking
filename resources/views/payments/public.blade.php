@@ -552,13 +552,30 @@
     // Auto-format customer code: uppercase + NK prefix
     const codeInput = document.querySelector('input[name="customer_code"]');
     if (codeInput) {
-      codeInput.addEventListener('input', function() {
+      // Format only on blur (when user finishes typing and leaves the field)
+      codeInput.addEventListener('blur', function() {
         let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
         if (/^\d+$/.test(val) && val.length > 0) {
           val = 'NK' + val.padStart(6, '0');
+        } else {
+          val = this.value.toUpperCase();
         }
         this.value = val;
       });
+
+      // Also ensure it is formatted on form submit
+      const form = codeInput.closest('form');
+      if (form) {
+        form.addEventListener('submit', function() {
+          let val = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          if (/^\d+$/.test(val) && val.length > 0) {
+            val = 'NK' + val.padStart(6, '0');
+          } else {
+            val = codeInput.value.toUpperCase();
+          }
+          codeInput.value = val;
+        });
+      }
     }
 
     // Drag & drop + preview
