@@ -575,7 +575,7 @@ class TelegramConfigBotController extends Controller
 
             $msg = "✅ Field {$editingField} diperbarui.";
             if ($editingField === 'sn_ont') {
-                $msg .= "\n📷 Karena SN berubah, kirim ulang foto SN yang jelas supaya saya cek ulang dari gambar.";
+                $msg .= "\n📷 Karena SN berubah, kirim ulang foto SN yang baru.";
             }
             $this->sendMessage($chatId, $msg);
             $this->sendDraftSummary($chatId, true);
@@ -834,69 +834,17 @@ class TelegramConfigBotController extends Controller
             return;
         }
 
-        $state['draft']['photo_file_id'] = null;
+        $state['draft']['photo_file_id'] = (string) $largest['file_id'];
         $state['draft']['photo_storage_path'] = null;
         $state['draft']['photo_uploaded_at'] = now()->toDateTimeString();
-        $state['draft']['photo_sn_matched'] = false;
-        $state['draft']['photo_sn_verified'] = false;
+        $state['draft']['photo_sn_matched'] = true;
+        $state['draft']['photo_sn_verified'] = true;
         $state['draft']['photo_sn_ont'] = $typedSn;
         $state['draft']['photo_ocr_error'] = null;
-        $state['draft']['photo_ocr_text'] = null;
-        $state['draft']['photo_sn_ocr'] = null;
+        $state['draft']['photo_ocr_text'] = 'Bypassed OCR';
+        $state['draft']['photo_sn_ocr'] = $typedSn;
 
-        $loadingMessageId = $this->startProgressMessage($chatId, 'Validasi OCR SN', '⏳ Membaca serial dari foto...');
-        $ocr = $this->extractSnFromTelegramPhoto((string) $largest['file_id'], $typedSn);
-
-        if (($ocr['success'] ?? false) !== true) {
-            $state['draft']['photo_ocr_error'] = (string) ($ocr['error'] ?? 'OCR gagal membaca serial');
-            $state['draft']['photo_ocr_text'] = trim((string) ($ocr['raw_text'] ?? ''));
-            $this->saveState($chatId, $state);
-            $this->finishProgressMessage($chatId, $loadingMessageId, false, 'SN foto tidak cocok');
-
-            if ($incomingMessageId > 0) {
-                $this->deleteMessage($chatId, $incomingMessageId);
-            }
-
-            $ocrText = trim((string) ($ocr['raw_text'] ?? ''));
-            $lines = [
-                '⚠️ SN di foto tidak cocok.',
-                'SN teks: ' . $typedSn,
-                'Hasil baca foto: ' . ($ocrText !== '' ? $ocrText : 'tidak terbaca'),
-                'Kirim ulang foto SN yang lebih jelas ya.',
-            ];
-            if (!empty($ocr['error'])) {
-                $lines[] = 'Catatan: ' . $ocr['error'];
-            }
-            $this->sendMessage($chatId, implode("\n", $lines));
-            return;
-        }
-
-        $ocrSn = strtoupper(trim((string) ($ocr['sn'] ?? $typedSn)));
-        if ($ocrSn !== $typedSn) {
-            $state['draft']['photo_ocr_error'] = 'SN hasil baca foto berbeda dengan SN teks';
-            $state['draft']['photo_ocr_text'] = trim((string) ($ocr['raw_text'] ?? ''));
-            $state['draft']['photo_sn_ocr'] = $ocrSn;
-            $this->saveState($chatId, $state);
-            $this->finishProgressMessage($chatId, $loadingMessageId, false, 'SN foto tidak cocok');
-
-            if ($incomingMessageId > 0) {
-                $this->deleteMessage($chatId, $incomingMessageId);
-            }
-
-            $this->sendMessage(
-                $chatId,
-                "⚠️ SN di foto tidak cocok.\nSN teks: {$typedSn}\nHasil baca foto: {$ocrSn}\nKirim ulang foto SN yang lebih jelas ya."
-            );
-            return;
-        }
-
-        $state['draft']['photo_file_id'] = (string) $largest['file_id'];
-        $state['draft']['photo_sn_matched'] = $ocrSn === $typedSn;
-        $state['draft']['photo_sn_verified'] = $ocrSn === $typedSn;
-        $state['draft']['photo_sn_ont'] = $typedSn;
-        $state['draft']['photo_ocr_error'] = null;
-        $state['draft']['photo_ocr_text'] = trim((string) ($ocr['raw_text'] ?? ''));
-        $state['draft']['photo_sn_ocr'] = $ocrSn;
+        $loadingMessageId = $this->startProgressMessage($chatId, 'Menyimpan Foto SN', '⏳ Mengunduh dan menyimpan foto...');
 
         $storedPath = $this->storeSnPhotoToPublic((string) $largest['file_id'], $chatId, $typedSn);
         if ($storedPath !== null) {
@@ -907,13 +855,13 @@ class TelegramConfigBotController extends Controller
         $state['updated_at'] = now()->toDateTimeString();
         $this->saveState($chatId, $state);
 
-        $this->finishProgressMessage($chatId, $loadingMessageId, true, 'Foto SN valid & tersimpan');
+        $this->finishProgressMessage($chatId, $loadingMessageId, true, 'Foto SN berhasil disimpan');
 
         if ($incomingMessageId > 0) {
             $this->deleteMessage($chatId, $incomingMessageId);
         }
 
-        $this->sendMessage($chatId, "✅ Foto SN lolos cek.\nOCR: {$ocrSn}\nFoto tersimpan, draft siap dicek.");
+        $this->sendMessage($chatId, "✅ Foto SN berhasil disimpan.\nSN: {$typedSn}\nFoto tersimpan, draft siap dicek.");
 
         $this->sendDraftSummary($chatId, true);
     }
@@ -1006,12 +954,8 @@ class TelegramConfigBotController extends Controller
         }
 
         $typedSn = strtoupper(trim((string) ($draft['sn_ont'] ?? '')));
-        $ocrSn = strtoupper(trim((string) ($draft['photo_sn_ocr'] ?? $draft['photo_sn_ont'] ?? '')));
-        if (($draft['photo_sn_verified'] ?? false) !== true || $typedSn === '' || $ocrSn === '' || $typedSn !== $ocrSn) {
-            $text = "<tg-emoji emoji-id=\"5368324170671202286\">❌</tg-emoji> Validasi SN foto belum lolos. <tg-emoji emoji-id=\"5368324170671202286\">❌</tg-emoji>\n" .
-                "SN teks: {$typedSn}\n" .
-                "Hasil baca foto: " . ($ocrSn !== '' ? $ocrSn : 'tidak terbaca') . "\n" .
-                "<tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji> Sing Baleg Siahhh Kirim Fotona... <tg-emoji emoji-id=\"5368324170671202286\">🤬</tg-emoji>";
+        if (($draft['photo_sn_verified'] ?? false) !== true || $typedSn === '') {
+            $text = "<tg-emoji emoji-id=\"5368324170671202286\">❌</tg-emoji> Foto SN belum terunggah atau belum valid. <tg-emoji emoji-id=\"5368324170671202286\">❌</tg-emoji>";
             $this->sendMessage($chatId, $text, ['parse_mode' => 'HTML']);
             return;
         }
@@ -1515,8 +1459,6 @@ class TelegramConfigBotController extends Controller
             '• Username: @' . (data_get($draft, 'requested_by.telegram_username', '-') ?: '-'),
             '',
             'Foto SN: ' . $fotoOk,
-            'OCR SN: ' . ($ocrSn !== '' ? $ocrSn : '-'),
-            'Validasi SN: ' . $snOk,
         ];
 
         if ($ocrErr !== '') {
@@ -1906,8 +1848,7 @@ class TelegramConfigBotController extends Controller
             "- PPPoE otomatis dicek duplikat per area.\n" .
             "- Tanggal pasang otomatis pakai tanggal hari ini.\n" .
             "- Koordinat bisa share location atau ketik format lat,lng.\n" .
-            "- Foto SN tetap wajib kirim lewat tombol 📷.\n" .
-            "- Foto SN harus terbaca OCR dari gambar, jadi kirim yang fokus dan dekat.";
+            "- Foto SN tetap wajib kirim lewat tombol 📷.";
 
         $this->sendMessage(
             $chatId,
@@ -1935,7 +1876,7 @@ class TelegramConfigBotController extends Controller
 
         $this->sendMessage(
             $chatId,
-            "📷 Kirim foto label SN ONT yang jelas.\nSN teks sekarang: {$typedSn}\nBot akan cocokkan isi foto dengan SN ini."
+            "📷 Kirim foto label SN ONT yang jelas.\nSN teks sekarang: {$typedSn}"
         );
     }
 
