@@ -2374,14 +2374,38 @@ class TelegramConfigBotController extends Controller
             return $cached;
         }
 
-        // 2. Fetch latest customer for this area from DB
-        $dbLatest = Customer::query()
+        // 2. Fetch all customers for this area from DB
+        $customers = Customer::query()
             ->select(['name', 'pppoe_user'])
             ->where('area_id', $areaId)
             ->whereNotNull('pppoe_user')
             ->where('pppoe_user', '!=', '')
-            ->orderByDesc('id')
-            ->first();
+            ->get();
+
+        $maxNum = -1;
+        $dbLatest = null;
+
+        foreach ($customers as $c) {
+            $user = trim((string) $c->pppoe_user);
+            if (preg_match('/-(\d+)$/', $user, $m)) {
+                $num = (int) $m[1];
+                if ($num > $maxNum) {
+                    $maxNum = $num;
+                    $dbLatest = $c;
+                }
+            }
+        }
+
+        // Fallback to ordering by ID if no numeric suffix matches
+        if (!$dbLatest) {
+            $dbLatest = Customer::query()
+                ->select(['name', 'pppoe_user'])
+                ->where('area_id', $areaId)
+                ->whereNotNull('pppoe_user')
+                ->where('pppoe_user', '!=', '')
+                ->orderByDesc('id')
+                ->first();
+        }
 
         if (!$dbLatest) {
             return null;
