@@ -2387,8 +2387,11 @@ class TelegramConfigBotController extends Controller
 
         foreach ($customers as $c) {
             $user = trim((string) $c->pppoe_user);
-            if (preg_match('/-(\d+)$/', $user, $m)) {
-                $num = (int) $m[1];
+            if (stripos($user, 'DUPLICATE') !== false) {
+                continue;
+            }
+            if (preg_match('/^([A-Za-z0-9]+)-(\d+)$/i', $user, $m)) {
+                $num = (int) $m[2];
                 if ($num > $maxNum) {
                     $maxNum = $num;
                     $dbLatest = $c;
