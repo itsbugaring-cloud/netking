@@ -94,7 +94,7 @@ class MikroTikService
         }
 
         // Fail fast if host is unreachable (unstable network, VPN offline)
-        if (!$this->isReachable(1.0)) {
+        if (!$this->isReachable(3.0)) {
             Log::warning('MikroTik: Host port is unreachable, failing fast', ['host' => $this->host, 'port' => $this->port]);
             return false;
         }
